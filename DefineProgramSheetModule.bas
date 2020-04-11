@@ -8,12 +8,15 @@ Sub ワークブック名前定義()
     Call Header名前定義(sProgramFormatSheetName)
     Call Prog名前定義(sProgramFormatSheetName)
     Call 記録画面名前定義("記録画面")
-    Call 学童マスターズ大会種目区分名前定義("学童マスターズ種目区分")
-    Call 学童マスターズ大会記録名前定義("学童マスターズ大会記録")
-    Call 市民大会種目区分名前定義("市民大会種目区分")
-    Call 市民大会記録名前定義("市民大会記録")
-    Call 選手権大会種目区分名前定義("選手権大会種目区分")
-    Call 選手権大会記録名前定義("選手権大会記録")
+    Call 学童マスターズ大会種目区分名前定義
+    Call 学童マスターズ大会記録名前定義
+    Call 学童マスターズ大会優勝者名前定義
+    Call 市民大会種目区分名前定義
+    Call 市民大会記録名前定義
+    Call 市民大会優勝者名前定義
+    Call 選手権大会種目区分名前定義
+    Call 選手権大会記録名前定義
+    Call 選手権大会優勝者名前定義
     Call 大会名定義("プログラム作成マクロ")
     Call 賞状名前定義
     
@@ -123,9 +126,9 @@ End Sub
 '
 ' sSheetName    IN      シート名
 '
-Sub 学童マスターズ大会種目区分名前定義(sSheetName As String)
+Sub 学童マスターズ大会種目区分名前定義(Optional sValue As String = "")
 
-    Sheets(sSheetName).Select
+    Sheets("学童マスターズ種目区分").Select
     ActiveSheet.Unprotect
 
     ' 名前をすべて削除
@@ -136,7 +139,6 @@ Sub 学童マスターズ大会種目区分名前定義(sSheetName As String)
     Call SetName("学マ年齢区分", TableRangeAddress("$H$1"))
     Call SetName("学マ学童区分", TableRangeAddress("$K$1"))
     Call SetName("学マ学年表示", TableRangeAddress("$N$1"))
-
     
     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
 End Sub
@@ -146,8 +148,8 @@ End Sub
 '
 ' sSheetName    IN      シート名
 '
-Sub 学童マスターズ大会記録名前定義(sSheetName As String)
-    Sheets(sSheetName).Select
+Sub 学童マスターズ大会記録名前定義(Optional sValue As String = "")
+    Sheets("学童マスターズ大会記録").Select
     ActiveSheet.Unprotect
 
     ' 名前をすべて削除
@@ -163,14 +165,14 @@ End Sub
 '
 ' sSheetName    IN      シート名
 '
-Sub 学童マスターズ大会優勝者名前定義(sSheetName As String)
-    Sheets(sSheetName).Select
+Sub 学童マスターズ大会優勝者名前定義(Optional sValue As String = "")
+    Sheets("学童マスターズ優勝者").Select
     ActiveSheet.Unprotect
 
     ' 名前をすべて削除
     Call DeleteName("学マ大会優勝者")
     
-    Call SetName("学マ大会優勝者", TableRangeAddress("$B$1"))
+    Call SetName("学マ大会優勝者", TableRangeAddress("$A$1"))
     
     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
 End Sub
@@ -180,9 +182,9 @@ End Sub
 '
 ' sSheetName    IN      シート名
 '
-Sub 市民大会種目区分名前定義(sSheetName As String)
+Sub 市民大会種目区分名前定義(Optional sValue As String = "")
 
-    Sheets(sSheetName).Select
+    Sheets("市民大会種目区分").Select
     ActiveSheet.Unprotect
 
     ' 名前をすべて削除
@@ -202,8 +204,8 @@ End Sub
 '
 ' sSheetName    IN      シート名
 '
-Sub 市民大会記録名前定義(sSheetName As String)
-    Sheets(sSheetName).Select
+Sub 市民大会記録名前定義(Optional sValue As String = "")
+    Sheets("市民大会記録").Select
     ActiveSheet.Unprotect
 
     ' 名前をすべて削除
@@ -215,13 +217,30 @@ Sub 市民大会記録名前定義(sSheetName As String)
 End Sub
 
 '
+' 市民大会優勝者の名前を定義する
+'
+' sSheetName    IN      シート名
+'
+Sub 市民大会優勝者名前定義(Optional sValue As String = "")
+    Sheets("市民大会優勝者").Select
+    ActiveSheet.Unprotect
+
+    ' 名前をすべて削除
+    Call DeleteName("市民大会優勝者")
+    
+    Call SetName("市民大会優勝者", TableRangeAddress("$A$1"))
+    
+    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+End Sub
+
+'
 ' 選手権大会種目区分の名前を定義する
 '
 ' sSheetName    IN      シート名
 '
-Sub 選手権大会種目区分名前定義(sSheetName As String)
+Sub 選手権大会種目区分名前定義(Optional sValue As String = "")
 
-    Sheets(sSheetName).Select
+    Sheets("選手権大会種目区分").Select
     ActiveSheet.Unprotect
 
     ' 名前をすべて削除
@@ -237,14 +256,31 @@ End Sub
 '
 ' sSheetName    IN      シート名
 '
-Sub 選手権大会記録名前定義(sSheetName As String)
-    Sheets(sSheetName).Select
+Sub 選手権大会記録名前定義(Optional sValue As String = "")
+    Sheets("選手権大会記録").Select
     ActiveSheet.Unprotect
 
     ' 名前をすべて削除
     Call DeleteName("選手権大会記録")
     
-    Call SetName("選手権大会記録", TableRangeAddress("$A$2"))
+    Call SetName("選手権大会記録", TableRangeAddress("$A$1"))
+    
+    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+End Sub
+
+'
+' 選手権大会優勝者の名前を定義する
+'
+' sSheetName    IN      シート名
+'
+Sub 選手権大会優勝者名前定義(Optional sValue As String = "")
+    Sheets("選手権大会優勝者").Select
+    ActiveSheet.Unprotect
+
+    ' 名前をすべて削除
+    Call DeleteName("選手権大会優勝者")
+    
+    Call SetName("選手権大会優勝者", TableRangeAddress("$A$1"))
     
     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
 End Sub
