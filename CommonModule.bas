@@ -440,24 +440,37 @@ Function GetAreaColumnIndex(sName As String, sColName As String)
     For Each oCell In GetRange(sName).Rows(1).Columns
         If Replace(Replace(oCell.Value, "　", ""), " ", "") = sColName Then
             GetAreaColumnIndex = nIndex
-            End Function
+            Exit Function
         End If
         nIndex = nIndex + 1
     Next
 End Function
 
 '
-' 範囲から指定した値に対応するカラム値を返す
+' 範囲のヘッダ行を除くキー列を取得する
 '
 ' sName      IN      範囲名
 ' sColName   IN      カラム名
-' sValue     IN      検索値
+'            OUT     列の番号
+'
+Function GetAreaKeyData(sName As String)
+    Dim oRange As Range
+    Set oRange = GetRange(sName)
+    Set GetAreaKeyData = oRange.Offset(1, 0).Resize(oRange.Rows.Count - 1, 1).Rows()
+End Function
+
+
+'
+' 範囲から指定した値に対応するカラム値を返す
+'
+' vValue     IN      検索値
+' sName      IN      範囲名
+' sColName   IN      カラム名
 ' bFlag      IN      VLookuUp関数の検索の型（False:完全一致／True:一番近いデータ）
 '            OUT     一致した値
 '
-Function VLookupArea(sName As String, sColName As String, sValue As String, Optional bFlag As Boolean = False)
-    VLookupArea = Application.WorksheetFunction.VLookup( _
-        sValue, GetRange(sName), GetAreaColumnIndex(sName, sColName), bFlag)
+Function VLookupArea(vValue As Variant, sName As String, sColName As String, Optional bFlag As Boolean = False)
+    VLookupArea = Application.WorksheetFunction.VLookup(vValue, GetRange(sName), GetAreaColumnIndex(sName, sColName), bFlag)
 End Function
 
 '

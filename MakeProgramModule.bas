@@ -177,7 +177,7 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
     nMaxProNo = GetRange(GetMaster(GetRange("大会名").Value)).Columns(1).Rows().Count
     
     ' プログラム番号毎
-    For Each nProNo In GetRange(GetMaster(GetRange("大会名").Value)).Columns(1).Rows()
+    For Each nProNo In GetAreaKeyData(GetMaster(GetRange("大会名").Value))
         If oEntryList.Exists(Int(nProNo)) Then
             ' 申込みのあるプロNo
             Set oProNo = oEntryList.Item(Int(nProNo))

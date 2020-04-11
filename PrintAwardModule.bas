@@ -138,9 +138,13 @@ sStyle As String)
 
 End Sub
 
+Sub 賞状名前定義(Optional sValue As String = "")
+    Call 学マ賞状名前定義
+End Sub
 
-Sub 賞状名前定義()
+Sub 学マ賞状名前定義(Optional sValue As String = "")
     Sheets("学マ賞状").Select
+    ActiveSheet.Unprotect
 
     ' 名前をすべて削除
     Call DeleteName("賞状*")
@@ -153,6 +157,8 @@ Sub 賞状名前定義()
     Call SetName("賞状大会新", "$S$14")
     Call SetName("賞状氏名", "$C$20")
     Call SetName("賞状所属", "$C$24")
+ 
+    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
  
 End Sub
 

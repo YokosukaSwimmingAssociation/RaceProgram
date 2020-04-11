@@ -92,10 +92,10 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
             Else
                 ' 横須賀マスターズ
                 If Cells(nRow, Range(sTableName & "[ソート区分]").Column).Value <> "" Then
-                    Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane2(nHeat, oProNo.Count, nNum)
+                    Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane2(nHeat, oProNo.Count, nNum, False)
                 ' 学童
                 Else
-                    Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nHeat, oProNo.Count, nNum)
+                    Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nHeat, oProNo.Count, nNum, False)
                 End If
             End If
         Next
@@ -225,8 +225,9 @@ End Function
 ' nHeat         IN      組番号
 ' nTotalNum     IN      プロNoの総人数
 ' nOrder        IN      順番
+' bFlag         In      True：通常／False：逆順
 '
-Function GetLane(nHeat As Integer, nTotalNum As Integer, nOrder As Integer)
+Function GetLane(nHeat As Integer, nTotalNum As Integer, nOrder As Integer, Optional bFlag As Boolean = True)
 
     Dim nMax As Integer
     Dim nNum As Integer
@@ -240,12 +241,17 @@ Function GetLane(nHeat As Integer, nTotalNum As Integer, nOrder As Integer)
     End If
     
     nNum = nMax - nOrder + 1
-    ' 4->3->5->2->6->1->7(なぜか学童はこちらだった)
-    GetLane = nCenterLane + Application.WorksheetFunction.Power(-1, nNum - 1) _
-                * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
-    ' 4->5->3->6->2->7->1
-    'GetLane = nCenterLane - Application.WorksheetFunction.Power(-1, nNum - 1) _
-    '            * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
+    
+    If bFlag Then
+        ' 4->5->3->6->2->7->1
+        GetLane = nCenterLane - Application.WorksheetFunction.Power(-1, nNum - 1) _
+                    * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
+    Else
+        ' 4->3->5->2->6->1->7(なぜか学童はこちらだった)
+        GetLane = nCenterLane + Application.WorksheetFunction.Power(-1, nNum - 1) _
+                    * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
+    End If
+
 End Function
 
 '
@@ -256,8 +262,9 @@ End Function
 ' nHeat         IN      組番号
 ' nTotalNum     IN      プロNoの総人数
 ' nOrder        IN      順番
+' bFlag         In      True：通常／False：逆順
 '
-Function GetLane2(nHeat As Integer, nTotalNum As Integer, nOrder As Integer)
+Function GetLane2(nHeat As Integer, nTotalNum As Integer, nOrder As Integer, Optional bFlag As Boolean = True)
 
     Dim nMax As Integer
     
@@ -269,10 +276,13 @@ Function GetLane2(nHeat As Integer, nTotalNum As Integer, nOrder As Integer)
         nMax = nNumberOfRace
     End If
     
-    ' 4->3->5->2->6->1->7(なぜか学童はこちらだった)
-    GetLane2 = nCenterLane + Application.WorksheetFunction.RoundUp(nMax / 2, 0) - (nMax - nOrder) - 1
-    ' 4->5->3->6->2->7->1
-    'GetLane2 = nCenterLane + nOrder - Application.WorksheetFunction.RoundUp(nMax / 2, 0)
+    If bFlag Then
+        ' 4->3->5->2->6->1->7(なぜか学童はこちらだった)
+        GetLane2 = nCenterLane + Application.WorksheetFunction.RoundUp(nMax / 2, 0) - (nMax - nOrder) - 1
+    Else
+        ' 4->5->3->6->2->7->1
+        GetLane2 = nCenterLane + nOrder - Application.WorksheetFunction.RoundUp(nMax / 2, 0)
+    End If
 End Function
 
 

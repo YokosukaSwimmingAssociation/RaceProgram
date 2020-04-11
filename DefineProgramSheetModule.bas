@@ -15,7 +15,10 @@ Sub ワークブック名前定義()
     Call 選手権大会種目区分名前定義("選手権大会種目区分")
     Call 選手権大会記録名前定義("選手権大会記録")
     Call 大会名定義("プログラム作成マクロ")
+    Call 賞状名前定義
     
+    Sheets("プログラム作成マクロ").Select
+    Range("$A$1").Select
     Call EventChange(True)
 End Sub
 
@@ -128,12 +131,11 @@ Sub 学童マスターズ大会種目区分名前定義(sSheetName As String)
     ' 名前をすべて削除
     Call DeleteName("学マ*")
     
-    Call SetName("学マ種目番号", TableRangeAddress("$A$1")) ' 種目名から種目番号を引く
-    Call SetName("学マ種目区分", "$B$2:$G$73") ' 種目番号から各要素を引く
+    Call SetName("学マ種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
     
-    Call SetName("学マ年齢区分", TableRangeAddress("$L$2"))
-    Call SetName("学マ学童区分", TableRangeAddress("$O$2"))
-    Call SetName("学マ学年表示", TableRangeAddress("$R$2"))
+    Call SetName("学マ年齢区分", TableRangeAddress("$H$1"))
+    Call SetName("学マ学童区分", TableRangeAddress("$K$1"))
+    Call SetName("学マ学年表示", TableRangeAddress("$N$1"))
 
     
     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
@@ -186,12 +188,11 @@ Sub 市民大会種目区分名前定義(sSheetName As String)
     ' 名前をすべて削除
     Call DeleteName("市民*")
     
-    Call SetName("市民種目番号", TableRangeAddress("$A$1")) ' 種目名から種目番号を引く
-    Call SetName("市民種目区分", "$B$2:$G$73") ' 種目番号から各要素を引く
+    Call SetName("市民種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
     
-    Call SetName("市民選手年齢区分", ColumnRangeAddress("$I$2"))
-    Call SetName("市民リレー年齢区分", ColumnRangeAddress("$J$2"))
-    Call SetName("市民年齢区分", TableRangeAddress("$P$2"))
+    Call SetName("市民選手年齢区分", ColumnRangeAddress("$H$1"))
+    Call SetName("市民リレー年齢区分", ColumnRangeAddress("$IJ$1"))
+    Call SetName("市民年齢区分", TableRangeAddress("$K$1"))
     
     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
 End Sub
@@ -226,11 +227,8 @@ Sub 選手権大会種目区分名前定義(sSheetName As String)
     ' 名前をすべて削除
     Call DeleteName("選手権*")
     
-    Call SetName("選手権種目番号", TableRangeAddress("$A$1")) ' 種目名から種目番号を引く
-    Call SetName("選手権種目区分", "$B$2:$H$47") ' 種目番号から各要素を引く
-    
-    Call SetName("選手権年齢区分", ColumnRangeAddress("$J$2"))
-    
+    Call SetName("選手権種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
+   
     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
 End Sub
 

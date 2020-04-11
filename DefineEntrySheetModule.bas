@@ -15,7 +15,7 @@ End Sub
 '
 ' シートに名前を定義する
 '
-Sub 名前定義()
+Sub 名前定義(Optional sValue As String = "")
 
     Sheets("記入票").Select
     ActiveSheet.Unprotect
@@ -494,7 +494,7 @@ End Sub
 '
 ' 入力制限設定
 '
-Sub 入力制限定義()
+Sub 入力制限定義(Optional sValue As String = "")
     Sheets("記入票").Select
     ActiveSheet.Unprotect
     
@@ -1213,7 +1213,7 @@ End Sub
 '
 ' 条件付き書式設定
 '
-Sub 条件付き書式定義()
+Sub 条件付き書式定義(Optional sValue As String = "")
     Sheets("記入票").Select
     ActiveSheet.Unprotect
     
@@ -1670,7 +1670,7 @@ End Sub
 '
 ' 印刷範囲を設定する
 '
-Sub 印刷範囲の設定()
+Sub 印刷範囲の設定(Optional sValue As String = "")
     Sheets("記入票").Select
     Application.PrintCommunication = True
     If Range("大会名").Value = "横須賀選手権水泳大会" Then

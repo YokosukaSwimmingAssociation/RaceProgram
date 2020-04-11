@@ -280,7 +280,7 @@ Sub ReadEntryLine(nNum As Integer, nRow As Integer, oEntry As Object)
         If Trim(Cells(nRow, oCell.Column).Value) <> "" And Cells(nRow, oCell.Column).Value <> "　" Then
             Set oLines = CreateObject("Scripting.Dictionary")
             oEntry.Add nNum, oLines
-
+            
             oLines.Add "種目番号", VLookupArea(Cells(nRow, oCell.Column).Value, "種目番号区分", "種目番号")
             oLines.Add "種目区分", VLookupArea(Cells(nRow, oCell.Column).Value, "種目番号区分", "区分")
             oLines.Add "種目名", ReplaceStyle(sStyle)
@@ -313,6 +313,7 @@ Sub CheckEntry(nRow As Integer, oEntry As Object, nNum As Integer)
     Dim sGender As String
     Dim sDistance As String
     Dim sStyle As String
+    
     sGender = VLookupArea(oLines.Item("種目番号"), "種目番号区分", "性別")
     sDistance = VLookupArea(oLines.Item("種目番号"), "種目番号区分", "距離")
     sStyle = VLookupArea(oLines.Item("種目番号"), "種目番号区分", "種目")
@@ -558,11 +559,11 @@ Sub WriteLine( _
         
         ' 個人年齢区分
         If oEntry.Item("区分") = "年齢区分" Then
-            nColumn = Application.WorksheetFunction.VLookup(oLine.Item("種目番号"), GetRange("市民種目区分"), 6, False)
+            nColumn = VLookupArea(oLine.Item("種目番号"), "市民種目区分", "タイプ")
             Cells(nRow, Range(sTable & "[区分]").Column).Value = _
                 Application.WorksheetFunction.VLookup(oEntry.Item("年齢"), GetRange("市民年齢区分"), nColumn, False)
             Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = _
-                Application.WorksheetFunction.VLookup(oEntry.Item("年齢"), GetRange("市民年齢区分"), 5, False)
+                VLookupArea(oEntry.Item("年齢"), "市民年齢区分", "ソート")
         ' 個人中高
         Else
             Cells(nRow, Range(sTable & "[種目区分]").Column).Value = oEntry.Item("区分")
@@ -575,16 +576,16 @@ Sub WriteLine( _
         Cells(nRow, Range(sTable & "[種目区分]").Column).Value = ""
         Cells(nRow, Range(sTable & "[年齢]").Column).Value = oEntry.Item("年齢")
         Cells(nRow, Range(sTable & "[区分]").Column).Value = _
-            Application.WorksheetFunction.VLookup(oEntry.Item("年齢"), GetRange("学マ年齢区分"), 2, False)
+            VLookupArea(oEntry.Item("年齢"), "学マ年齢区分", "M年齢区分")
         Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = _
-            Application.WorksheetFunction.VLookup(oEntry.Item("年齢"), GetRange("学マ年齢区分"), 2, False)
+            VLookupArea(oEntry.Item("年齢"), "学マ年齢区分", "M年齢区分")
 
     ElseIf CStr(sGame) = "横須賀市学童水泳競技大会" Then
         
         Cells(nRow, Range(sTable & "[種目区分]").Column).Value = oLine.Item("種目区分")
         Cells(nRow, Range(sTable & "[年齢]").Column).Value = ""
         Cells(nRow, Range(sTable & "[区分]").Column).Value = _
-            Application.WorksheetFunction.VLookup(oEntry.Item("区分"), GetRange("学マ学年表示"), 2, False)
+            VLookupArea(oEntry.Item("区分"), "学マ学年表示", "学年表示")
         Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = ""
     
     End If
@@ -622,16 +623,16 @@ Sub WriteRelayLine( _
     sMasterName = GetMaster(CStr(sGame))
     
     Cells(nRow, Range(sTable & "[種目区分]").Column).Value = _
-        Application.WorksheetFunction.VLookup(oLine.Item("種目番号"), Range(sMasterName), 2, False)
+        VLookupArea(oLine.Item("種目番号"), sMasterName, "区分")
     
     Cells(nRow, Range(sTable & "[性別]").Column).Value = _
-        Application.WorksheetFunction.VLookup(oLine.Item("種目番号"), Range(sMasterName), 3, False)
+        VLookupArea(oLine.Item("種目番号"), sMasterName, "性別")
     
     Cells(nRow, Range(sTable & "[距離]").Column).Value = _
-        Application.WorksheetFunction.VLookup(oLine.Item("種目番号"), Range(sMasterName), 4, False)
+        VLookupArea(oLine.Item("種目番号"), sMasterName, "距離")
     
     Cells(nRow, Range(sTable & "[種目名]").Column).Value = _
-        Application.WorksheetFunction.VLookup(oLine.Item("種目番号"), Range(sMasterName), 5, False)
+        VLookupArea(oLine.Item("種目番号"), sMasterName, "種目")
 
     Cells(nRow, Range(sTable & "[申込み時間]").Column).Value = oLine.Item("申込み時間")
     If oLine.Item("申込み時間") >= 10000 Then
