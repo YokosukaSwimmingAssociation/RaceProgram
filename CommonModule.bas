@@ -297,17 +297,71 @@ Sub SetTitleMenu(sTitle As String)
     End If
 End Sub
 
+
 '
-' 列の範囲取得
+' 同一行の範囲取得
 '
-' 指定したセルから最下層の範囲のアドレスを返す
+' 指定したセルから最右の範囲のアドレスを返す
+'
+' sTopAddres IN      先頭のセルアドレス
+'
+Function ColumnRange(sTopAddress As String)
+
+    Set ColumnRange = Range(Range(sTopAddress), _
+                    Range(sTopAddress).End(xlToRight))
+
+End Function
+
+'
+' 同一行の範囲取得
+'
+' 指定したセルから最右の範囲のアドレスを返す
 '
 ' sTopAddres IN      先頭のセルアドレス
 '
 Function ColumnRangeAddress(sTopAddress As String)
 
-    ColumnRangeAddress = Range(Range(sTopAddress), _
-                    Range(sTopAddress).End(xlDown)).Address
+    ColumnRangeAddress = ColumnRange(sTopAddress).Address
+
+End Function
+
+'
+' 同一列の範囲取得
+'
+' 指定したセルから最下層の範囲のアドレスを返す
+'
+' sTopAddres IN      先頭のセルアドレス
+'
+Function RowRange(sTopAddress As String)
+    Set RowRange = Range(Range(sTopAddress), _
+                    Range(sTopAddress).End(xlDown))
+End Function
+
+'
+' 同一列の範囲取得
+'
+' 指定したセルから最下層の範囲のアドレスを返す
+'
+' sTopAddres IN      先頭のセルアドレス
+'
+Function RowRangeAddress(sTopAddress As String)
+
+    RowRangeAddress = RowRange(sTopAddress).Address
+
+End Function
+
+'
+' 行列の範囲取得
+'
+' 指定したセルから最下層、際右端範囲のアドレスを返す
+'
+' sTopAddres IN      先頭のセルアドレス
+'
+Function TableRange(sTopAddress As String)
+
+    Dim oRng As Range
+    Set oRng = Range(Range(sTopAddress), Range(sTopAddress).End(xlDown))
+    Set TableRange = Range(oRng, oRng.End(xlToRight))
 
 End Function
 
@@ -320,9 +374,7 @@ End Function
 '
 Function TableRangeAddress(sTopAddress As String)
 
-    Dim oRng As Range
-    Set oRng = Range(Range(sTopAddress), Range(sTopAddress).End(xlDown))
-    TableRangeAddress = Range(oRng, oRng.End(xlToRight)).Address
+    TableRangeAddress = TableRange(sTopAddress).Address
 
 End Function
 
@@ -517,6 +569,12 @@ Sub ImportAll(oWorkBook As Workbook, sPath As String)
     Next
 End Sub
 
+'
+' モジュールの出力
+'
+' oWorkBook  IN      WorkBook
+' sPath      IN      フォルダパス
+'
 Sub ExportAll(oWorkBook As Workbook, sPath As String)
     On Error Resume Next
     
@@ -580,3 +638,20 @@ Function GetFiles(sPathName As String, sExt As String)
     Loop
     Set GetFiles = cFileList
 End Function
+
+
+'
+' シートの保護
+'
+' bFlag         IN      True：保護／False：解除
+'
+Sub SheetProtect(bFlag As Boolean)
+
+    If bFlag Then
+        ActiveSheet.Protect DrawingObjects:=True, Contents:=True, _
+            Scenarios:=True, UserInterfaceOnly:=True, AllowFiltering:=True
+    Else
+        ActiveSheet.Unprotect
+    End If
+
+End Sub

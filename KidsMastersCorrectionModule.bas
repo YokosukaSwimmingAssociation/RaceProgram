@@ -9,10 +9,17 @@ Sub 学マプログラム補正改()
     Sheets("エントリー一覧").Activate
     ' 1-2-4 同一レース
     Call ModCell("F2", "3")
+    Call ModCell("G2", "長谷部弘子・新原喜伊子・大串玲・桝田衣代")
     Call ModCell("F3", "4")
+    Call ModCell("G3", "長和佐・鶴岡美佐・佐野華子・木田美津子")
     Call ModCell("C4", "1")
     Call ModCell("C5", "1")
     Call ModCell("F5", "8")
+    Call ModCell("G5", "津田宏志朗・平山新・小林大虎・碇光太郎")
+    Call ModCell("G6", "清島邦子・鈴木博・新原光男・栗原恵美")
+    Call ModCell("G7", "高橋和枝・竹村昌子・丸茂健二・名倉健吾")
+    Call ModCell("G8", "鈴木治輝・大橋恵子・岩崎優美・森川昌三")
+    Call ModCell("G9", "岩根央学・市丸恵子・兼森伸児・野村洋子")
     ' 12-13 同一レース
     Call ModCell(SearchCell(12, "鈴木　とみ子", "レーン"), "4") ' "F33"
     Call ModCell(SearchCell(12, "川上　京子", "レーン"), "5") ' "F34"
@@ -21,14 +28,14 @@ Sub 学マプログラム補正改()
 
     ' 19 男子100M自由形
     Call ModCell(SearchCell(19, "中島　輝夫", "レーン"), "4") ' "F47"
-    Call ModCell(SearchCell(19, "冨田　清雄", "レーン"), "5") '"F48"
-    Call ModCell(SearchCell(19, "小杉　邦洋", "レーン"), "6") '"F49"
+    Call ModCell(SearchCell(19, "小杉　邦洋", "レーン"), "5") '"F49"
+    Call ModCell(SearchCell(19, "冨田　清雄", "レーン"), "6") '"F48"
     Call ModCell(SearchCell(19, "福本　光晴", "レースNo"), "16") '"C50"
     Call ModCell(SearchCell(19, "福本　光晴", "組"), "1") ' "E50"
     Call ModCell(SearchCell(19, "福本　光晴", "レーン"), "7") ' "F50"
     Call ModCell(SearchCell(19, "新原　光男", "レーン"), "4") ' "F51"
-    Call ModCell(SearchCell(19, "児玉　　暢", "レーン"), "5") ' "F52"
-    Call ModCell(SearchCell(19, "南　　清志", "レーン"), "6") ' "F53"
+    Call ModCell(SearchCell(19, "南　　清志", "レーン"), "5") ' "F53"
+    Call ModCell(SearchCell(19, "児玉　　暢", "レーン"), "6") ' "F52"
     Call ModCell(SearchCell(19, "岩根　央学", "レーン"), "7") ' "F54"
 
     ' 26-29 同一レース
@@ -48,6 +55,9 @@ Sub 学マプログラム補正改()
     Call ModCell(SearchCell(34, "根本　珠奈", "レーン"), "7")  '"F94"
     Call ModCell(SearchCell(34, "石井　春花", "レースNo"), "28") '"C95"
     Call ModCell(SearchCell(34, "石井　春花", "レーン"), "6")  '"F95"
+    
+    ' 36 混合メドレーリレー
+    Call ModCell("G99", "望月真澄・大串玲・武田深雪・国広真司")
     
     ' 37 女子50M背泳ぎ
     Call ModCell(SearchCell(37, "岩崎　摩耶子", "レーン"), "3")  ' "F100"
@@ -269,16 +279,31 @@ Sub 学マプログラム補正改()
     Call ModCell(SearchCell(62, "名倉　健吾", "レーン"), "6")  ' "F357"
     Call ModCell(SearchCell(62, "細井　　成", "レーン"), "7")  ' "F358"
     ' 70-71 同一レース
+    Call ModCell("G386", "山口孝子・山本栄子・三上美佐枝・柴恵子")
+    Call ModCell("G387", "野村洋子・市丸恵子・高梨加代子・座間千鶴子")
+    Call ModCell("G388", "武石淳子・柳澤亜矢子・川上京子・大村怜子")
+    Call ModCell("G389", "佐野華子・長和佐・木田美津子・鶴岡美佐")
+    Call ModCell("G390", "西昇・寺島圭一・西川博保・山田博康")
+    Call ModCell("G391", "安田晙一・中田光彦・青木貢・青木悟史")
+    Call ModCell("G392", "小林慶雄・杉山弘・南清志・池田薫")
     Call ModCell("F393", "3")
+    Call ModCell("G393", "斉藤百合音・鈴木萌依彩・高田楓佳・砂川絢音")
     Call ModCell("F394", "4")
+    Call ModCell("G394", "小澤琉楓・鈴木緋彩・桝永優郁・栃原一菜")
     Call ModCell("C395", "90")
     Call ModCell("F395", "6")
+    Call ModCell("G395", "鈴木輪友・水野庄・伊東楓・三冨啓幸")
     Call ModCell("C396", "90")
     Call ModCell("F396", "7")
+    Call ModCell("G396", "小林大虎・津田宏志朗・碇光太郎・平山新")
     Call ModCell("C397", "90")
     Call ModCell("F397", "8")
+    Call ModCell("G397", "藤本翔太・小泉柊介・高橋波瑠・高橋煌")
 
     Call EventChange(True)
+    
+    ' ブックの保存
+    ActiveWorkbook.Save
 End Sub
 
 '
@@ -1081,5 +1106,8 @@ Sub 学マ記録入力()
     Call 登録
     Call 順位決定
     Call 初期化
+    
+    ' ブックの保存
+    ActiveWorkbook.Save
 End Sub
 

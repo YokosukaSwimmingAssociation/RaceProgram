@@ -18,7 +18,7 @@ End Sub
 Sub 名前定義(Optional sValue As String = "")
 
     Sheets("記入票").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("*")
@@ -227,35 +227,35 @@ Sub 名前定義(Optional sValue As String = "")
 
     Sheets("記入票").Select
     Range("$A$1").Select
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True
+    Call SheetProtect(True)
 
     Sheets("種目番号区分").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     If Range("大会名").Value = "横須賀選手権水泳大会" Then
     
         Call SetName("種目番号区分", TableRangeAddress("$A$1"))
-        Call SetName("選手年齢区分", ColumnRangeAddress("$H$2"))
+        Call SetName("選手年齢区分", RowRangeAddress("$H$2"))
         Call SetName("申込み期間開始", "$J$2")
         Call SetName("申込み期間終了", "$J$3")
-        Call SetName("リレー種目番号", ColumnRangeAddress("$L$2"))
+        Call SetName("リレー種目番号", RowRangeAddress("$L$2"))
     
     ElseIf Range("大会名").Value = "横須賀市民体育大会" Then
 
         Call SetName("種目番号区分", TableRangeAddress("$A$1"))
-        Call SetName("選手年齢区分", ColumnRangeAddress("$G$2"))
-        Call SetName("リレー年齢区分", ColumnRangeAddress("$H$2"))
+        Call SetName("選手年齢区分", RowRangeAddress("$G$2"))
+        Call SetName("リレー年齢区分", RowRangeAddress("$H$2"))
         Call SetName("申込み期間開始", "$J$2")
         Call SetName("申込み期間終了", "$J$3")
-        Call SetName("リレー種目番号", ColumnRangeAddress("$L$2"))
+        Call SetName("リレー種目番号", RowRangeAddress("$L$2"))
 
     ElseIf Range("大会名").Value = "横須賀マスターズ大会" Then
     
         Call SetName("種目番号区分", TableRangeAddress("$A$1"))
-        Call SetName("リレー年齢区分", ColumnRangeAddress("$H$2"))
+        Call SetName("リレー年齢区分", RowRangeAddress("$H$2"))
         Call SetName("申込み期間開始", "$J$2")
         Call SetName("申込み期間終了", "$J$3")
-        Call SetName("リレー種目番号", ColumnRangeAddress("$L$2"))
+        Call SetName("リレー種目番号", RowRangeAddress("$L$2"))
     
     Else
     
@@ -263,13 +263,13 @@ Sub 名前定義(Optional sValue As String = "")
         Call SetName("選手区分ＴＢ", TableRangeAddress("$G$2"))
         Call SetName("申込み期間開始", "$J$2")
         Call SetName("申込み期間終了", "$J$3")
-        Call SetName("リレー種目番号", ColumnRangeAddress("$L$2"))
+        Call SetName("リレー種目番号", RowRangeAddress("$L$2"))
     
     End If
 
     Sheets("種目番号区分").Select
     Range("$A$1").Select
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True
+    Call SheetProtect(True)
 
     Sheets("記入票").Select
     Range("$A$1").Select
@@ -496,7 +496,7 @@ End Sub
 '
 Sub 入力制限定義(Optional sValue As String = "")
     Sheets("記入票").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
     
     ' 入力制限全解除
     Call ClearValidation("記入票")
@@ -536,7 +536,7 @@ Sub 入力制限定義(Optional sValue As String = "")
     
     Sheets("記入票").Select
     Range("$A$1").Select
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True
+    Call SheetProtect(True)
 End Sub
 
 '
@@ -1215,7 +1215,7 @@ End Sub
 '
 Sub 条件付き書式定義(Optional sValue As String = "")
     Sheets("記入票").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
     
     ' すべての条件付き書式をクリア
     Cells.FormatConditions.Delete
@@ -1262,7 +1262,7 @@ Sub 条件付き書式定義(Optional sValue As String = "")
     
     Sheets("記入票").Select
     Range("$A$1").Select
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True
+    Call SheetProtect(True)
 End Sub
 
 '

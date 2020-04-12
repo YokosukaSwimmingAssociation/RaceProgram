@@ -35,6 +35,9 @@ Sub プログラム作成()
 
     ' イベント発生を再開
     Call EventChange(True)
+    
+    ' シートを保存
+    oWorkBook.Save
 End Sub
 
 '

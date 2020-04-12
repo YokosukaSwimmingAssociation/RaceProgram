@@ -30,6 +30,9 @@ Sub 組み合わせ決定()
     
     ' イベント発生を発生
     Call EventChange(True)
+
+    ' シートを保存
+    oWorkBook.Save
 End Sub
 
 '
@@ -277,11 +280,11 @@ Function GetLane2(nHeat As Integer, nTotalNum As Integer, nOrder As Integer, Opt
     End If
     
     If bFlag Then
-        ' 4->3->5->2->6->1->7(なぜか学童はこちらだった)
-        GetLane2 = nCenterLane + Application.WorksheetFunction.RoundUp(nMax / 2, 0) - (nMax - nOrder) - 1
-    Else
         ' 4->5->3->6->2->7->1
         GetLane2 = nCenterLane + nOrder - Application.WorksheetFunction.RoundUp(nMax / 2, 0)
+    Else
+        ' 4->3->5->2->6->1->7(なぜか学童はこちらだった)
+        GetLane2 = nCenterLane + Application.WorksheetFunction.RoundUp(nMax / 2, 0) - (nMax - nOrder) - 1
     End If
 End Function
 

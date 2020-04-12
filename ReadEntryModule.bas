@@ -33,6 +33,9 @@ Sub エントリー読込み()
     ' ProNo、ソート区分、申込み時間でソート
     Call SortByProNo(oWorkSheet, sEntryTableName)
 
+    ' シートを保存
+    oWorkBook.Save
+
 End Sub
 
 '

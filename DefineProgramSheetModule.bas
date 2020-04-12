@@ -13,15 +13,11 @@ Sub ワークブック名前定義()
     Call 学童マスターズ大会優勝者名前定義
     Call 市民大会種目区分名前定義
     Call 市民大会記録名前定義
-    Call 市民大会優勝者名前定義
     Call 選手権大会種目区分名前定義
     Call 選手権大会記録名前定義
-    Call 選手権大会優勝者名前定義
-    Call 大会名定義("プログラム作成マクロ")
     Call 賞状名前定義
+    Call 大会名定義
     
-    Sheets("プログラム作成マクロ").Select
-    Range("$A$1").Select
     Call EventChange(True)
 End Sub
 
@@ -32,7 +28,7 @@ End Sub
 '
 Sub Header名前定義(sSheetName As String)
     Sheets(sSheetName).Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
     Range("$A$1").Select
 
     ' 名前をすべて削除
@@ -52,7 +48,7 @@ Sub Header名前定義(sSheetName As String)
         End If
     Next
 
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True
+     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, AllowFiltering:=True
 End Sub
 
 '
@@ -62,7 +58,7 @@ End Sub
 '
 Sub Prog名前定義(sSheetName As String)
     Sheets(sSheetName).Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
     Range("$A$1").Select
 
     ' 名前をすべて削除
@@ -92,7 +88,7 @@ Sub Prog名前定義(sSheetName As String)
     Call SetName("ProgレースNo", "$O$5")
     Call SetName("Progソート区分", "$P$5")
 
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True
+     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, AllowFiltering:=True, UserInterfaceOnly:=True
 End Sub
 
 '
@@ -103,7 +99,7 @@ End Sub
 Sub 記録画面名前定義(sSheetName As String)
 
     Sheets(sSheetName).Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("記録画面*")
@@ -118,7 +114,8 @@ Sub 記録画面名前定義(sSheetName As String)
     Call SetName("記録画面チーム名", "$E$5:$E$11")
     Call SetName("記録画面大会新", "$F$5:$F$11")
 
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+    ' シートのロック
+    Call SheetProtect(True)
 End Sub
 
 '
@@ -129,7 +126,7 @@ End Sub
 Sub 学童マスターズ大会種目区分名前定義(Optional sValue As String = "")
 
     Sheets("学童マスターズ種目区分").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("学マ*")
@@ -140,7 +137,8 @@ Sub 学童マスターズ大会種目区分名前定義(Optional sValue As String = "")
     Call SetName("学マ学童区分", TableRangeAddress("$K$1"))
     Call SetName("学マ学年表示", TableRangeAddress("$N$1"))
     
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+    ' シートのロック
+    Call SheetProtect(True)
 End Sub
 
 '
@@ -150,14 +148,15 @@ End Sub
 '
 Sub 学童マスターズ大会記録名前定義(Optional sValue As String = "")
     Sheets("学童マスターズ大会記録").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("学マ大会記録")
     
     Call SetName("学マ大会記録", TableRangeAddress("$A$1"))
     
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+    ' シートのロック
+    Call SheetProtect(True)
 End Sub
 
 '
@@ -167,14 +166,15 @@ End Sub
 '
 Sub 学童マスターズ大会優勝者名前定義(Optional sValue As String = "")
     Sheets("学童マスターズ優勝者").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("学マ大会優勝者")
     
-    Call SetName("学マ大会優勝者", TableRangeAddress("$A$1"))
+    Call SetName("学マ大会優勝者", ColumnRangeAddress("$A$1"))
     
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+    ' シートのロック
+    Call SheetProtect(True)
 End Sub
 
 '
@@ -185,18 +185,19 @@ End Sub
 Sub 市民大会種目区分名前定義(Optional sValue As String = "")
 
     Sheets("市民大会種目区分").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("市民*")
     
     Call SetName("市民種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
     
-    Call SetName("市民選手年齢区分", ColumnRangeAddress("$H$1"))
-    Call SetName("市民リレー年齢区分", ColumnRangeAddress("$IJ$1"))
+    Call SetName("市民選手年齢区分", RowRangeAddress("$H$1"))
+    Call SetName("市民リレー年齢区分", RowRangeAddress("$IJ$1"))
     Call SetName("市民年齢区分", TableRangeAddress("$K$1"))
     
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+    ' シートのロック
+    Call SheetProtect(True)
 End Sub
 
 '
@@ -206,14 +207,15 @@ End Sub
 '
 Sub 市民大会記録名前定義(Optional sValue As String = "")
     Sheets("市民大会記録").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("市民大会記録")
     
     Call SetName("市民大会記録", TableRangeAddress("$A$1"))
     
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+    ' シートのロック
+    Call SheetProtect(True)
 End Sub
 
 '
@@ -223,14 +225,15 @@ End Sub
 '
 Sub 市民大会優勝者名前定義(Optional sValue As String = "")
     Sheets("市民大会優勝者").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("市民大会優勝者")
     
     Call SetName("市民大会優勝者", TableRangeAddress("$A$1"))
     
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+    ' シートのロック
+    Call SheetProtect(True)
 End Sub
 
 '
@@ -241,14 +244,15 @@ End Sub
 Sub 選手権大会種目区分名前定義(Optional sValue As String = "")
 
     Sheets("選手権大会種目区分").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("選手権*")
     
     Call SetName("選手権種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
    
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+    ' シートのロック
+    Call SheetProtect(True)
 End Sub
 
 '
@@ -258,37 +262,45 @@ End Sub
 '
 Sub 選手権大会記録名前定義(Optional sValue As String = "")
     Sheets("選手権大会記録").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("選手権大会記録")
     
     Call SetName("選手権大会記録", TableRangeAddress("$A$1"))
     
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+    ' シートのロック
+    Call SheetProtect(True)
 End Sub
 
 '
 ' 選手権大会優勝者の名前を定義する
 '
-' sSheetName    IN      シート名
+' sValue        IN      ダミー
 '
 Sub 選手権大会優勝者名前定義(Optional sValue As String = "")
     Sheets("選手権大会優勝者").Select
-    ActiveSheet.Unprotect
+    Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("選手権大会優勝者")
     
     Call SetName("選手権大会優勝者", TableRangeAddress("$A$1"))
     
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+    ' シートのロック
+    Call SheetProtect(True)
 End Sub
 
-Sub 大会名定義(sSheetName As String)
-
-    Sheets(sSheetName).Select
-    ActiveSheet.Unprotect
+'
+' 大会名、年を定義
+'
+' sValue        IN      ダミー
+'
+Sub 大会名定義(Optional sValue As String = "")
+    '
+    Sheets("プログラム作成マクロ").Select
+    Call SheetProtect(False)
+    
     With Range("$B$1").Validation
         .Delete
         .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
@@ -304,7 +316,10 @@ Sub 大会名定義(sSheetName As String)
         .ShowError = True
     End With
     Call SetName("大会名", "$B$1")
-    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, UserInterfaceOnly:=True
+    Call SetName("大会年", "$B$2")
+    
+    ' シートのロック
+    Call SheetProtect(True)
 End Sub
 
 '
