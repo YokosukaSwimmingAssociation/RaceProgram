@@ -7,7 +7,7 @@ Public Const sProgramFormatSheetName As String = "プログラムフォーマット"
 Public Const nNumberOfRace As Integer = 7      ' １レースの人数
 Public Const nMaxLaneOfRace As Integer = 9     ' レーンの最大番号
 Public Const nMinLaneOfRace As Integer = 3     ' レーンの最小番号
-Public Const nCenterLane As Integer = 6        ' センターレーン番号
+'Public Const nCenterLane As Integer = 6        ' センターレーン番号
 
 Public Const sBlankName As String = "　　．　　．　　．"
 Private Const ARRAYSIZE = 10000

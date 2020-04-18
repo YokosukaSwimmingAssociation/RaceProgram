@@ -559,17 +559,16 @@ Sub WriteLine( _
     
         Cells(nRow, Range(sTable & "[学校名]").Column).Value = oEntry.Item("学校名")
         Cells(nRow, Range(sTable & "[年齢]").Column).Value = oEntry.Item("年齢")
+        Cells(nRow, Range(sTable & "[種目区分]").Column).Value = oEntry.Item("区分")
         
         ' 個人年齢区分
         If oEntry.Item("区分") = "年齢区分" Then
             nColumn = VLookupArea(oLine.Item("種目番号"), "市民種目区分", "タイプ")
-            Cells(nRow, Range(sTable & "[区分]").Column).Value = _
-                Application.WorksheetFunction.VLookup(oEntry.Item("年齢"), GetRange("市民年齢区分"), nColumn, False)
-            Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = _
-                VLookupArea(oEntry.Item("年齢"), "市民年齢区分", "ソート")
+            sType = Application.WorksheetFunction.VLookup(oEntry.Item("年齢"), GetRange("市民年齢区分"), nColumn, False)
+            Cells(nRow, Range(sTable & "[区分]").Column).Value = sType
+            Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = Left(sType, 2)
         ' 個人中高
         Else
-            Cells(nRow, Range(sTable & "[種目区分]").Column).Value = oEntry.Item("区分")
             Cells(nRow, Range(sTable & "[区分]").Column).Value = oEntry.Item("区分")
             Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = ""
         End If

@@ -48,62 +48,152 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
 
     oWorkSheet.Activate
     
+    ' 組み合わせが学マだけ逆な対応（検証用の暫定）
+    Dim bFlag As Boolean
+    If GetRange("大会名").Value = "学童マスターズ大会" Then
+        bFlag = False
+    Else
+        bFlag = True
+    End If
+    
     ' エントリー一覧
     Dim oEntryList As Object
     Set oEntryList = CreateObject("Scripting.Dictionary")
+    Dim oProNo As Object
     
     ' データを格納
     Call ReadProNo(sTableName, oEntryList)
 
-    Dim nRaceNo As Integer      ' レースNo
-    Dim nCount As Integer       ' プロNo毎の件数
-    Dim nRow As Integer         ' カレントの行番号
-    Dim nHeat As Integer        ' 組番号
-    Dim nPreHeat As Integer     ' これまでの組番号
-    Dim nNum As Integer
-    nTotalHeat = 0
+    Dim nRow As Integer             ' カレントの行番号
+    
+    Dim nNumOfProNo As Integer      ' プログラムNo毎の人数
+    Dim nRaceNo As Integer          ' レースNo
+    Dim nHeat As Integer            ' 組番号
+    Dim nHeats As Integer           ' 組数
+    Dim nNumOfHeat As Integer       ' 組の人数
+    Dim nNumOfHeats() As Integer    ' 組毎の人数
+    Dim nNumOfSortType As Integer   ' ソート区分毎の残り人数
+    
+    Dim nOrder As Integer           ' ProNo毎の順序（逆順）
+    Dim nStartLane As Integer       ' 組の開始位置
+    Dim nCenterLane As Integer      ' センターレーン
+    Dim nMax As Integer             ' 組の中でLane決定する人数
+    Dim nNum As Integer             ' Lene決定する人数の中の順位
+    
+    nRaceNo = 0
+    
     ' プログラムNo毎
     For Each nProNo In oEntryList.Keys
         Set oProNo = oEntryList.Item(nProNo)
-        nCount = oProNo.Count
-        nPreHeat = 0
+        
+        ' プログラムNo毎の人数
+        nNumOfProNo = GetNumberOfProNo(oProNo)
+        
+        ' 組数を算出
+        nHeats = GetHeats(nNumOfProNo)
+        Call GetNumberOfHeat(nNumOfProNo, nHeats, nNumOfHeats)
+        
+        ' ProNo毎の選手位置
+        nOrder = 1
         
         ' 組毎
-        For Each nOrder In oProNo.Keys
-            ' カレント行番号
-            nRow = oProNo.Item(nOrder)
-            ' 組番号を決定
-            nHeat = GetOrderHeat(nCount, Int(nOrder))
-            If nPreHeat <> nHeat Then
-                ' 組番号が変わった場合
-                nNum = 1
-                nPreHeat = nHeat
-                nRaceNo = nRaceNo + 1   ' レースNoをインクリメント
-            Else
-                nNum = nNum + 1
-            End If
-            ' レースNo、組の書込み
-            Cells(nRow, Range(sTableName & "[レースNo]").Column).Value = nRaceNo
-            Cells(nRow, Range(sTableName & "[組]").Column).Value = nHeat
-                      
-            ' 横須賀選手権水泳大会
-            If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
-                Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nHeat, oProNo.Count, nNum)
-            ' 横須賀市民体育大会
-            ElseIf GetRange("大会名").Value = "横須賀市民体育大会" Then
-                Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nHeat, oProNo.Count, nNum)
-            Else
-                ' 横須賀マスターズ
-                If Cells(nRow, Range(sTableName & "[ソート区分]").Column).Value <> "" Then
-                    Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane2(nHeat, oProNo.Count, nNum, False)
-                ' 学童
+        For nHeat = 1 To nHeats
+            ' レースNoをインクリメント
+            nRaceNo = nRaceNo + 1
+            
+            ' 組の人数
+            nNumOfHeat = nNumOfHeats(nHeat - 1)
+            ' 組の残り人数
+            nRemNumber = nNumOfHeat
+        
+            ' 組の開始位置
+            nStartLane = GetStartLane(nNumOfHeat)
+            
+            ' 組の人数が残っている間
+            While nRemNumber > 0
+                ' ソート区分毎の残り人数
+                nNumOfSortType = GetNumberOfSortType(nOrder, oProNo)
+                If nNumOfSortType <= nRemNumber Then
+                    ' Lane決定する人数
+                    nMax = nNumOfSortType
                 Else
-                    Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nHeat, oProNo.Count, nNum, False)
+                    nMax = nRemNumber
                 End If
-            End If
-        Next
-    Next
+                
+                ' レーンを決定する
+                For nNum = 1 To nMax
+                    ' カレント行番号
+                    nRow = GetProNoRow(nOrder, oProNo)
+                
+                    ' レースNo、組の書込み
+                    Cells(nRow, Range(sTableName & "[レースNo]").Column).Value = nRaceNo
+                    Cells(nRow, Range(sTableName & "[組]").Column).Value = nHeat
+                
+                    ' レースNo、組、レーンを記述
+                    nCenterLane = GetCenterLane(nMax, nStartLane)
+                    Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane3(nCenterLane, nMax, nNum, bFlag)
+                
+                    ' 順番をインクリメント
+                    nOrder = nOrder + 1
+                Next
+            
+                ' 開始位置を変更
+                nStartLane = nStartLane + nMax
+            
+                ' 残り人数を減算
+                nRemNumber = nRemNumber - nMax
+            Wend
+        Next nHeat
+    Next nProNo
 
+End Sub
+
+'
+' プロNoをキーにデータ格納
+'
+' プロNo毎に通番を振ってその行番号を格納する
+'
+' nRow          IN      行数
+' oProNo        IN      プロNo毎のエントリー配列
+' nRaceNo       IN      レースNo
+' nHeat         IN      組番号
+' nNum          IN      順序
+' nStartLane    IN      開始位置
+'
+Sub SetHeatLaneOrderRow(nRow As Integer, oProNo As Object, _
+nRaceNo As Integer, nHeat As Integer, _
+nNum As Integer, nStartLane As Integer)
+    
+    Dim sType As String             ' 種目区分
+    
+    ' レースNo、組の書込み
+    Cells(nRow, Range(sTableName & "[レースNo]").Column).Value = nRaceNo
+    Cells(nRow, Range(sTableName & "[組]").Column).Value = nHeat
+    
+    ' 横須賀選手権水泳大会
+    If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
+        Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nHeat, oProNo.Count, nNum)
+    ' 横須賀市民体育大会
+    ElseIf GetRange("大会名").Value = "横須賀市民体育大会" Then
+        ' 種目区分
+        sType = Cells(nRow, Range(sTableName & "[種目区分]").Column).Value
+              
+        If sType = "年齢区分" Then
+            ' 年齢区分
+            Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane2(nHeat, oProNo.Count, nNum)
+        Else
+            ' 中学、高校
+            Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nHeat, oProNo.Count, nNum)
+        End If
+    Else
+        ' 横須賀マスターズ
+        If Cells(nRow, Range(sTableName & "[ソート区分]").Column).Value <> "" Then
+            Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane2(nHeat, oProNo.Count, nNum, False)
+        ' 学童
+        Else
+            Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nHeat, oProNo.Count, nNum, False)
+        End If
+    End If
 End Sub
 
 '
@@ -124,8 +214,84 @@ Sub ReadProNo(sTableName As String, oEntryList As Object)
             Set oProNo = CreateObject("Scripting.Dictionary")
             oEntryList.Add cProNo.Value, oProNo
         End If
-        oProNo.Add oProNo.Count + 1, cProNo.Row
+        Set oRow = CreateObject("Scripting.Dictionary")
+        oRow.Add "Row", cProNo.Row
+        oRow.Add "SortType", Trim(Cells(cProNo.Row, Range(sTableName & "[ソート区分]").Column).Value)
+        oProNo.Add oProNo.Count + 1, oRow
     Next
+End Sub
+
+'
+' プロNo、ソート区分の件数
+'
+' oProNo        IN      プロNo毎のエントリー配列
+'
+Function GetNumberOfProNo(oProNo As Object)
+    GetNumberOfProNo = oProNo.Count
+End Function
+
+'
+' プロNoの順番の行
+'
+' nIndex        IN      順序番号
+' oProNo        IN      プロNo毎のエントリー配列
+'
+Function GetProNoRow(nIndex As Integer, oProNo As Object)
+    Dim oRow As Object
+    Set oRow = oProNo.Item(nIndex)
+    GetProNoRow = oRow.Item("Row")
+End Function
+
+'
+' 開始位置から同一ソート区分の件数
+'
+' nIndex        IN      開始位置
+' oProNo        IN      プロNo毎のエントリー配列
+'
+Function GetNumberOfSortType(nIndex As Integer, oProNo As Object)
+    
+    GetNumberOfSortType = 1
+    Dim oRow As Object
+    Set oRow = oProNo.Item(nIndex)
+    Dim sSortType As String
+    sSortType = oRow.Item("SortType")
+    
+    For i = nIndex + 1 To oProNo.Count
+        Set oRow = oProNo.Item(i)
+        If oRow.Item("SortType") = sSortType Then
+            GetNumberOfSortType = GetNumberOfSortType + 1
+        Else
+            Exit Function
+        End If
+    Next
+End Function
+
+
+'
+' 組人数配列を設定
+'
+' nTotalNum     IN      プロNoのエントリー数
+' nHeat         IN      組数
+' nNumberOfHeat() OUT     組毎の人数配列
+'
+Sub GetNumberOfHeat(nTotalNum As Integer, nHeats As Integer, nNumberOfHeat() As Integer)
+    
+    ReDim nNumberOfHeat(nHeats - 1) As Integer
+    
+    ' １組目人数算出
+    nNumberOfHeat(0) = GetFirstHeatNumber(nTotalNum)
+    
+    ' ２組目人数算出
+    If nHeats >= 2 Then
+        nNumberOfHeat(1) = GetSecondHeatNumber(nTotalNum)
+    
+        ' ３組目以降
+        If nHeats > 2 Then
+            For i = 2 To nHeats - 1
+                nNumberOfHeat(i) = nNumberOfRace
+            Next
+        End If
+    End If
 End Sub
 
 '
@@ -136,32 +302,21 @@ End Sub
 ' 組数、１組目の人数、２組目の人数を算出することで
 ' 組番号が算出可能
 '
-' nTotalNum     IN      プロNoの総人数
 ' nOrder        IN      順番
+' nHeats        IN      組数
+' nHeatNumber() IN      組毎の人数配列
 '
-Function GetOrderHeat(nTotalNum As Integer, nOrder As Integer)
+Function GetOrderHeat(nOrder As Integer, nHeats As Integer, nHeatNumber() As Integer)
 
-    ' 組数を算出
-    Dim nHeats As Integer
-    nHeats = GetHeats(nTotalNum)
-    
-    ' １組目人数算出
-    Dim nFirstHeatNumber As Integer
-    nFirstHeatNumber = GetFirstHeatNumber(nTotalNum)
-    
-    ' ２組目人数算出
-    Dim nSecondHeatNumber As Integer
-    nSecondHeatNumber = GetSecondHeatNumber(nTotalNum)
-    
     ' １組目の場合
-    If nOrder <= nFirstHeatNumber Then
+    If nOrder <= nHeatNumber(0) Then
         GetOrderHeat = 1
     ' ２組目の場合
-    ElseIf nOrder <= nFirstHeatNumber + nSecondHeatNumber Then
+    ElseIf nOrder <= nHeatNumber(0) + nHeatNumber(1) Then
         GetOrderHeat = 2
     ' ３組目以降の場合
     Else
-        GetOrderHeat = GetHeats(nOrder - (nFirstHeatNumber + nSecondHeatNumber)) + 2
+        GetOrderHeat = GetHeats(nOrder - (nHeatNumber(0) + nHeatNumber(1))) + 2
     End If
 
 End Function
@@ -219,6 +374,48 @@ Function GetSecondHeatNumber(nTotalNum As Integer)
     End If
 
 End Function
+
+'
+' センターレーン算出
+'
+' nCount        IN      人数
+' nStart        IN      開始位置
+'
+Function GetCenterLane(nCount As Integer, nStart As Integer)
+     GetCenterLane = nStart + Application.WorksheetFunction.RoundDown((nCount - 1) / 2, 0)
+End Function
+
+'
+' 開始位置を算出
+'
+' nCount        IN      レース人数
+'
+Function GetStartLane(nCount As Integer)
+     GetStartLane = nCenterLane - Application.WorksheetFunction.RoundDown((nCount - 1) / 2, 0)
+End Function
+
+'
+' レーン決定
+'
+' レーンは競技規則の単純方式で並べる
+'
+' nCenter       IN      センター
+' nMax          IN      人数
+' nOrder        IN      順番
+' bFlag         In      True：通常／False：逆順
+'
+Function GetLane3(nCenter As Integer, nMax As Integer, nOrder As Integer, Optional bFlag As Boolean = True)
+    Dim nNum As Integer
+    nNum = nMax - nOrder + 1
+    If bFlag Then
+        GetLane3 = nCenter - Application.WorksheetFunction.Power(-1, nNum - 1) _
+                * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
+    Else
+        GetLane3 = nCenter + Application.WorksheetFunction.Power(-1, nNum - 1) _
+                * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
+    End If
+End Function
+
 
 '
 ' レーン決定（学童用）
@@ -287,7 +484,6 @@ Function GetLane2(nHeat As Integer, nTotalNum As Integer, nOrder As Integer, Opt
         GetLane2 = nCenterLane + Application.WorksheetFunction.RoundUp(nMax / 2, 0) - (nMax - nOrder) - 1
     End If
 End Function
-
 
 '
 ' レース番号修正
