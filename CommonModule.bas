@@ -1,15 +1,15 @@
 Attribute VB_Name = "CommonModule"
-Public Const sEntrySheetName As String = "エントリー一覧"
-Public Const sEntryTableName As String = "エントリーテーブル"
-Public Const sProgramSheetName As String = "プログラム"
-Public Const sProgramFormatSheetName As String = "プログラムフォーマット"
+Public Const S_ENTRY_SHEET_NAME As String = "エントリー一覧"
+Public Const S_ENTRY_TABLE_NAME As String = "エントリーテーブル"
+Public Const S_PROGRAM_SHEE_TNAME As String = "プログラム"
+Public Const S_PROGRAM_FORMAT_SHEET_NAME As String = "プログラムフォーマット"
 
-Public Const nNumberOfRace As Integer = 7      ' １レースの人数
-Public Const nMaxLaneOfRace As Integer = 9     ' レーンの最大番号
-Public Const nMinLaneOfRace As Integer = 3     ' レーンの最小番号
-'Public Const nCenterLane As Integer = 6        ' センターレーン番号
+Public Const N_NUMBER_OF_RACE As Integer = 7       ' １レースの人数
+Public Const N_MIN_NUMBER_OF_RACE As Integer = 4   ' レーンの最小人数
+Public Const N_MAX_LANE_OF_RACE As Integer = 9     ' レーンの最大番号
+Public Const N_MIN_LANE_OF_RACE As Integer = 3     ' レーンの最小番号
 
-Public Const sBlankName As String = "　　．　　．　　．"
+Public Const S_BLANK_NAME As String = "　　．　　．　　．"
 Private Const ARRAYSIZE = 10000
 
 Public Type RaceNumber
@@ -446,9 +446,9 @@ End Sub
 Function SearchCell(nProNo As Integer, sName As String, sColName As String)
 
     For Each oCell In Range(Range("$A$2"), Range("$A$2").End(xlDown))
-        If Cells(oCell.Row, Range(sEntryTableName & "[プロNo]").Column).Value = nProNo And _
-            Cells(oCell.Row, Range(sEntryTableName & "[選手名]").Column).Value = sName Then
-            SearchCell = Cells(oCell.Row, Range(sEntryTableName & "[" & sColName & "]").Column).Address
+        If Cells(oCell.Row, Range(S_ENTRY_TABLE_NAME & "[プロNo]").Column).Value = nProNo And _
+            Cells(oCell.Row, Range(S_ENTRY_TABLE_NAME & "[選手名]").Column).Value = sName Then
+            SearchCell = Cells(oCell.Row, Range(S_ENTRY_TABLE_NAME & "[" & sColName & "]").Column).Address
             Exit Function
         End If
     Next oCell

@@ -96,7 +96,7 @@ Function SearchName(nRaceNo As Integer, nLane As Integer)
             If vLaneNo.Offset(0, Range("ProgƒŒ[ƒ“").Column - vLaneNo.Column).Value = nLane Then
                 SearchName = vLaneNo.Offset(0, Range("Prog–¼").Column - vLaneNo.Column).Value
                 ' –¼‘O‚ª‹ó”’—p•¶š—ñ‚Ìê‡‚Í‹ó”’‚É‚·‚é
-                If SearchName = sBlankName Then
+                If SearchName = S_BLANK_NAME Then
                     SearchName = ""
                 End If
                 Exit Function

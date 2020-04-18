@@ -9,7 +9,7 @@ Sub 組み合わせ決定()
     Call EventChange(False)
 
     ' エクセルシートを選択
-    Call SheetActivate(sEntrySheetName)
+    Call SheetActivate(S_ENTRY_SHEET_NAME)
 
     ' 出力用ワークブック
     Dim oWorkBook As Workbook
@@ -20,13 +20,13 @@ Sub 組み合わせ決定()
     Set oWorkSheet = ActiveSheet
     
     ' ProNo、ソート区分、申込み時間でソート
-    Call SortByProNo(oWorkSheet, sEntryTableName)
+    Call SortByProNo(oWorkSheet, S_ENTRY_TABLE_NAME)
     
     ' 組み合わせ作成
-    Call SetHeatLaneOrder(oWorkSheet, sEntryTableName)
+    Call SetHeatLaneOrder(oWorkSheet, S_ENTRY_TABLE_NAME)
     
     ' レースNo, レーンでソート
-    Call SortByRace(oWorkSheet, sEntryTableName)
+    Call SortByRace(oWorkSheet, S_ENTRY_TABLE_NAME)
     
     ' イベント発生を発生
     Call EventChange(True)
@@ -99,7 +99,7 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
         ' 組毎
         For nHeat = 1 To nHeats
             ' レースNoをインクリメント
-            nRaceNo = nRaceNo + 1
+            nRaceNo = nRaceNo + 10
             
             ' 組の人数
             nNumOfHeat = nNumOfHeats(nHeat - 1)
@@ -107,7 +107,7 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
             nRemNumber = nNumOfHeat
         
             ' 組の開始位置
-            nStartLane = GetStartLane(nNumOfHeat)
+            nStartLane = GetStartLane(nNumOfHeat, GetCenterLane(N_NUMBER_OF_RACE, N_MIN_LANE_OF_RACE), bFlag)
             
             ' 組の人数が残っている間
             While nRemNumber > 0
@@ -130,8 +130,8 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
                     Cells(nRow, Range(sTableName & "[組]").Column).Value = nHeat
                 
                     ' レースNo、組、レーンを記述
-                    nCenterLane = GetCenterLane(nMax, nStartLane)
-                    Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane3(nCenterLane, nMax, nNum, bFlag)
+                    nCenterLane = GetCenterLane(nMax, nStartLane, bFlag)
+                    Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nCenterLane, nMax, nNum, bFlag)
                 
                     ' 順番をインクリメント
                     nOrder = nOrder + 1
@@ -146,54 +146,6 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
         Next nHeat
     Next nProNo
 
-End Sub
-
-'
-' プロNoをキーにデータ格納
-'
-' プロNo毎に通番を振ってその行番号を格納する
-'
-' nRow          IN      行数
-' oProNo        IN      プロNo毎のエントリー配列
-' nRaceNo       IN      レースNo
-' nHeat         IN      組番号
-' nNum          IN      順序
-' nStartLane    IN      開始位置
-'
-Sub SetHeatLaneOrderRow(nRow As Integer, oProNo As Object, _
-nRaceNo As Integer, nHeat As Integer, _
-nNum As Integer, nStartLane As Integer)
-    
-    Dim sType As String             ' 種目区分
-    
-    ' レースNo、組の書込み
-    Cells(nRow, Range(sTableName & "[レースNo]").Column).Value = nRaceNo
-    Cells(nRow, Range(sTableName & "[組]").Column).Value = nHeat
-    
-    ' 横須賀選手権水泳大会
-    If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
-        Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nHeat, oProNo.Count, nNum)
-    ' 横須賀市民体育大会
-    ElseIf GetRange("大会名").Value = "横須賀市民体育大会" Then
-        ' 種目区分
-        sType = Cells(nRow, Range(sTableName & "[種目区分]").Column).Value
-              
-        If sType = "年齢区分" Then
-            ' 年齢区分
-            Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane2(nHeat, oProNo.Count, nNum)
-        Else
-            ' 中学、高校
-            Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nHeat, oProNo.Count, nNum)
-        End If
-    Else
-        ' 横須賀マスターズ
-        If Cells(nRow, Range(sTableName & "[ソート区分]").Column).Value <> "" Then
-            Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane2(nHeat, oProNo.Count, nNum, False)
-        ' 学童
-        Else
-            Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane(nHeat, oProNo.Count, nNum, False)
-        End If
-    End If
 End Sub
 
 '
@@ -288,7 +240,7 @@ Sub GetNumberOfHeat(nTotalNum As Integer, nHeats As Integer, nNumberOfHeat() As 
         ' ３組目以降
         If nHeats > 2 Then
             For i = 2 To nHeats - 1
-                nNumberOfHeat(i) = nNumberOfRace
+                nNumberOfHeat(i) = N_NUMBER_OF_RACE
             Next
         End If
     End If
@@ -329,7 +281,7 @@ End Function
 '
 Function GetHeats(nTotalNum As Integer)
 
-    GetHeats = Application.WorksheetFunction.RoundUp(nTotalNum / nNumberOfRace, 0)
+    GetHeats = Application.WorksheetFunction.RoundUp(nTotalNum / N_NUMBER_OF_RACE, 0)
 
 End Function
 
@@ -342,14 +294,14 @@ End Function
 '
 Function GetFirstHeatNumber(nTotalNum As Integer)
 
-    If nTotalNum <= nNumberOfRace Then
+    If nTotalNum <= N_NUMBER_OF_RACE Then
         GetFirstHeatNumber = nTotalNum
-    ElseIf nTotalNum Mod nNumberOfRace = 0 Then
-        GetFirstHeatNumber = nNumberOfRace
-    ElseIf nTotalNum Mod nNumberOfRace <= nMinLaneOfRace Then
-        GetFirstHeatNumber = nMinLaneOfRace
+    ElseIf nTotalNum Mod N_NUMBER_OF_RACE = 0 Then
+        GetFirstHeatNumber = N_NUMBER_OF_RACE
+    ElseIf nTotalNum Mod N_NUMBER_OF_RACE <= N_MIN_NUMBER_OF_RACE Then
+        GetFirstHeatNumber = N_MIN_NUMBER_OF_RACE
     Else
-        GetFirstHeatNumber = nTotalNum Mod nNumberOfRace
+        GetFirstHeatNumber = nTotalNum Mod N_NUMBER_OF_RACE
     End If
 
 End Function
@@ -363,14 +315,14 @@ End Function
 '
 Function GetSecondHeatNumber(nTotalNum As Integer)
 
-    If nTotalNum <= nNumberOfRace Then
+    If nTotalNum <= N_NUMBER_OF_RACE Then
         GetSecondHeatNumber = 0
-    ElseIf nTotalNum Mod nNumberOfRace = 0 Then
-        GetSecondHeatNumber = nNumberOfRace
-    ElseIf nTotalNum Mod nNumberOfRace <= nMinLaneOfRace Then
-        GetSecondHeatNumber = nNumberOfRace + (nTotalNum Mod nNumberOfRace - nMinLaneOfRace)
+    ElseIf nTotalNum Mod N_NUMBER_OF_RACE = 0 Then
+        GetSecondHeatNumber = N_NUMBER_OF_RACE
+    ElseIf nTotalNum Mod N_NUMBER_OF_RACE <= N_MIN_NUMBER_OF_RACE Then
+        GetSecondHeatNumber = N_NUMBER_OF_RACE + (nTotalNum Mod N_NUMBER_OF_RACE - N_MIN_NUMBER_OF_RACE)
     Else
-        GetSecondHeatNumber = nNumberOfRace
+        GetSecondHeatNumber = N_NUMBER_OF_RACE
     End If
 
 End Function
@@ -381,17 +333,26 @@ End Function
 ' nCount        IN      人数
 ' nStart        IN      開始位置
 '
-Function GetCenterLane(nCount As Integer, nStart As Integer)
-     GetCenterLane = nStart + Application.WorksheetFunction.RoundDown((nCount - 1) / 2, 0)
+Function GetCenterLane(nCount As Integer, nStart As Integer, Optional bFlag As Boolean = True)
+    If bFlag Then
+        GetCenterLane = nStart + Application.WorksheetFunction.RoundDown((nCount - 1) / 2, 0)
+    Else
+        GetCenterLane = nStart + Application.WorksheetFunction.RoundDown((nCount) / 2, 0)
+    End If
 End Function
 
 '
 ' 開始位置を算出
 '
 ' nCount        IN      レース人数
+' nCenterLane   IN      センターレーン
 '
-Function GetStartLane(nCount As Integer)
-     GetStartLane = nCenterLane - Application.WorksheetFunction.RoundDown((nCount - 1) / 2, 0)
+Function GetStartLane(nCount As Integer, nCenterLane As Integer, Optional bFlag As Boolean = True)
+    If bFlag Then
+        GetStartLane = nCenterLane - Application.WorksheetFunction.RoundDown((nCount - 1) / 2, 0)
+    Else
+        GetStartLane = nCenterLane - Application.WorksheetFunction.RoundDown((nCount) / 2, 0)
+    End If
 End Function
 
 '
@@ -404,84 +365,15 @@ End Function
 ' nOrder        IN      順番
 ' bFlag         In      True：通常／False：逆順
 '
-Function GetLane3(nCenter As Integer, nMax As Integer, nOrder As Integer, Optional bFlag As Boolean = True)
+Function GetLane(nCenter As Integer, nMax As Integer, nOrder As Integer, Optional bFlag As Boolean = True)
     Dim nNum As Integer
     nNum = nMax - nOrder + 1
     If bFlag Then
-        GetLane3 = nCenter - Application.WorksheetFunction.Power(-1, nNum - 1) _
+        GetLane = nCenter - Application.WorksheetFunction.Power(-1, nNum - 1) _
                 * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
     Else
-        GetLane3 = nCenter + Application.WorksheetFunction.Power(-1, nNum - 1) _
+        GetLane = nCenter + Application.WorksheetFunction.Power(-1, nNum - 1) _
                 * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
-    End If
-End Function
-
-
-'
-' レーン決定（学童用）
-'
-' レーンは競技規則の単純方式で並べる
-'
-' nHeat         IN      組番号
-' nTotalNum     IN      プロNoの総人数
-' nOrder        IN      順番
-' bFlag         In      True：通常／False：逆順
-'
-Function GetLane(nHeat As Integer, nTotalNum As Integer, nOrder As Integer, Optional bFlag As Boolean = True)
-
-    Dim nMax As Integer
-    Dim nNum As Integer
-    
-    If nHeat = 1 Then
-        nMax = GetFirstHeatNumber(nTotalNum)
-    ElseIf nHeat = 2 Then
-        nMax = GetSecondHeatNumber(nTotalNum)
-    Else
-        nMax = nNumberOfRace
-    End If
-    
-    nNum = nMax - nOrder + 1
-    
-    If bFlag Then
-        ' 4->5->3->6->2->7->1
-        GetLane = nCenterLane - Application.WorksheetFunction.Power(-1, nNum - 1) _
-                    * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
-    Else
-        ' 4->3->5->2->6->1->7(なぜか学童はこちらだった)
-        GetLane = nCenterLane + Application.WorksheetFunction.Power(-1, nNum - 1) _
-                    * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
-    End If
-
-End Function
-
-'
-' レーン決定（マスターズ用）
-'
-' レーンは昇順で並べる
-'
-' nHeat         IN      組番号
-' nTotalNum     IN      プロNoの総人数
-' nOrder        IN      順番
-' bFlag         In      True：通常／False：逆順
-'
-Function GetLane2(nHeat As Integer, nTotalNum As Integer, nOrder As Integer, Optional bFlag As Boolean = True)
-
-    Dim nMax As Integer
-    
-    If nHeat = 1 Then
-        nMax = GetFirstHeatNumber(nTotalNum)
-    ElseIf nHeat = 2 Then
-        nMax = GetSecondHeatNumber(nTotalNum)
-    Else
-        nMax = nNumberOfRace
-    End If
-    
-    If bFlag Then
-        ' 4->5->3->6->2->7->1
-        GetLane2 = nCenterLane + nOrder - Application.WorksheetFunction.RoundUp(nMax / 2, 0)
-    Else
-        ' 4->3->5->2->6->1->7(なぜか学童はこちらだった)
-        GetLane2 = nCenterLane + Application.WorksheetFunction.RoundUp(nMax / 2, 0) - (nMax - nOrder) - 1
     End If
 End Function
 
@@ -498,15 +390,15 @@ Sub レース番号修正()
     Set oWorkBook = ActiveWorkbook
 
     ' 出力用シート
-    Call SheetActivate(sEntrySheetName)
+    Call SheetActivate(S_ENTRY_SHEET_NAME)
     Dim oWorkSheet As Worksheet
     Set oWorkSheet = ActiveSheet
     
     ' 再ソート
-    Call SortByRace(oWorkSheet, sEntryTableName)
+    Call SortByRace(oWorkSheet, S_ENTRY_TABLE_NAME)
     
     ' レース番号修正
-    Call SetRaceNo(oWorkSheet, sEntryTableName)
+    Call SetRaceNo(oWorkSheet, S_ENTRY_TABLE_NAME)
 
     ' イベント発生を再開
     Call EventChange(True)

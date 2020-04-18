@@ -10,7 +10,7 @@ Sub エントリー読込み()
     Call EventChange(False)
 
     ' エクセルシートを選択
-    Call SheetActivate(sEntrySheetName)
+    Call SheetActivate(S_ENTRY_SHEET_NAME)
 
     ' 出力用ワークブック
     Dim oWorkBook As Workbook
@@ -28,10 +28,10 @@ Sub エントリー読込み()
     Call ReadEntryFiles(oGameList)
 
     ' エントリーシートの書き込み
-    Call WriteEntrySheet(oWorkSheet, sEntryTableName, oGameList)
+    Call WriteEntrySheet(oWorkSheet, S_ENTRY_TABLE_NAME, oGameList)
     
     ' ProNo、ソート区分、申込み時間でソート
-    Call SortByProNo(oWorkSheet, sEntryTableName)
+    Call SortByProNo(oWorkSheet, S_ENTRY_TABLE_NAME)
 
     ' シートを保存
     oWorkBook.Save
@@ -566,7 +566,11 @@ Sub WriteLine( _
             nColumn = VLookupArea(oLine.Item("種目番号"), "市民種目区分", "タイプ")
             sType = Application.WorksheetFunction.VLookup(oEntry.Item("年齢"), GetRange("市民年齢区分"), nColumn, False)
             Cells(nRow, Range(sTable & "[区分]").Column).Value = sType
-            Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = Left(sType, 2)
+            If sType = "一般" Then
+                Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = "20"
+            Else
+                Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = Left(sType, 2)
+            End If
         ' 個人中高
         Else
             Cells(nRow, Range(sTable & "[区分]").Column).Value = oEntry.Item("区分")

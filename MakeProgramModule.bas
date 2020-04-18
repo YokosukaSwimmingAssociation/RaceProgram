@@ -11,21 +11,21 @@ Sub プログラム作成()
     Set oWorkBook = ActiveWorkbook
 
     ' エントリー一覧シート
-    Call SheetActivate(sEntrySheetName)
+    Call SheetActivate(S_ENTRY_SHEET_NAME)
     Dim oEntrySheet As Worksheet
     Set oEntrySheet = ActiveSheet
     
     ' プログラムシートを作成（ヘッダ行まで）
-    Call MakeSheet(oWorkBook, sProgramSheetName)
+    Call MakeSheet(oWorkBook, S_PROGRAM_SHEE_TNAME)
     Dim oProgramSheet As Worksheet
     Set oProgramSheet = ActiveSheet
 
     ' エントリー一覧読み込み
     Dim oEntryList As Object
-    Call ReadEntrySheet(sEntryTableName, oEntryList)
+    Call ReadEntrySheet(S_ENTRY_TABLE_NAME, oEntryList)
 
     ' プログラム作成
-    Call MakeProgram(oProgramSheet, sEntryTableName, oEntryList)
+    Call MakeProgram(oProgramSheet, S_ENTRY_TABLE_NAME, oEntryList)
 
     ' プログラムの名前設定
     Call SetProgramName(oProgramSheet)
@@ -194,6 +194,7 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
         ' プログラムヘッダ作成
         Call SetNo(oWorkSheet, nCurrentRow)
         Call MakeProgramHeader(oWorkSheet, sTableName, nCurrentRow, Int(nProNo))
+        'Call CopyFormat(nCurrentRow - 1, "Prog組ヘッダフォーマット")
         
         ' 組番号毎
         For nHeat = 1 To nMaxHeat
@@ -209,6 +210,7 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
             End If
 
             ' 組ヘッダ作成
+            'Call CopyFormat(nCurrentRow, "Prog組フォーマット")
             Call SetNo(oWorkSheet, nCurrentRow)
             Call MakeHeatHeader(oWorkSheet, sTableName, nCurrentRow, Int(nHeat))
             
@@ -216,7 +218,7 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
             Call SetTitleMenu("プログラム作成中: " & Str(nProNo) & "/" & Str(nMaxProNo))
 
             ' レーン毎
-            For nLane = nMinLaneOfRace To nMaxLaneOfRace
+            For nLane = N_MIN_LANE_OF_RACE To N_MAX_LANE_OF_RACE
                 Call SetNo(oWorkSheet, nCurrentRow)
                 
                 If oHeats Is Nothing Then
@@ -255,6 +257,25 @@ Sub SetNo(oWorkSheet As Worksheet, nCurrentRow As Integer)
         .VerticalAlignment = xlCenter
     End With
 End Sub
+
+'
+' 書式コピー
+'
+' nCurrentRow   IN      現在の行数
+' sRangeName    IN      範囲の名前
+'
+Sub CopyFormat(nCurrentRow As Integer, sRangeName As String)
+
+    ' 元をコピー
+    GetRange(sRangeName).Copy
+
+    ' 書式をコピー
+    Cells(nCurrentRow, 1).PasteSpecial Paste:=xlPasteFormats, Operation:=xlNone, _
+        SkipBlanks:=False, Transpose:=False
+    Application.CutCopyMode = False
+
+End Sub
+
 
 '
 ' プログラムヘッダ作成
@@ -302,6 +323,7 @@ Sub CopyCell(oWorkSheet As Worksheet, nRow As Integer, sCellName As String, Opti
     Dim oRange As Range
     Set oRange = GetRange(sCellName)
     With oWorkSheet.Cells(nRow, oRange.Column)
+        .ShrinkToFit = oRange.ShrinkToFit
         .NumberFormatLocal = oRange.NumberFormatLocal
         .Font.Name = oRange.Font.Name
         .Font.Size = oRange.Font.Size
@@ -453,7 +475,7 @@ End Sub
 ' 「プログラム作成マクロ」からボタンで実行される
 '
 Sub プログラム名前定義()
-    Sheets(sProgramSheetName).Activate
+    Sheets(S_PROGRAM_SHEE_TNAME).Activate
     Call SetProgramName(ActiveSheet)
 End Sub
 

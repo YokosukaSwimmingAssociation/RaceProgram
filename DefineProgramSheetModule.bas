@@ -5,8 +5,8 @@ Attribute VB_Name = "DefineProgramSheetModule"
 Sub ワークブック名前定義()
     Call EventChange(False)
   
-    Call Header名前定義(sProgramFormatSheetName)
-    Call Prog名前定義(sProgramFormatSheetName)
+    Call Header名前定義(S_PROGRAM_FORMAT_SHEET_NAME)
+    Call Prog名前定義(S_PROGRAM_FORMAT_SHEET_NAME)
     Call 記録画面名前定義("記録画面")
     Call 学童マスターズ大会種目区分名前定義
     Call 学童マスターズ大会記録名前定義
@@ -88,7 +88,11 @@ Sub Prog名前定義(sSheetName As String)
     Call SetName("ProgレースNo", "$O$5")
     Call SetName("Progソート区分", "$P$5")
 
-     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, AllowFiltering:=True, UserInterfaceOnly:=True
+    ' 組ヘッダ
+    Call SetName("Prog組ヘッダフォーマット", "A$2:$P$3")
+    Call SetName("Prog組フォーマット", "A$4:$P$13")
+     
+    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, AllowFiltering:=True, UserInterfaceOnly:=True
 End Sub
 
 '
