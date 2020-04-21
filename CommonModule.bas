@@ -5,7 +5,8 @@ Public Const S_PROGRAM_SHEE_TNAME As String = "プログラム"
 Public Const S_PROGRAM_FORMAT_SHEET_NAME As String = "プログラムフォーマット"
 
 Public Const N_NUMBER_OF_RACE As Integer = 7       ' １レースの人数
-Public Const N_MIN_NUMBER_OF_RACE As Integer = 4   ' レーンの最小人数
+Public Const N_MIN_NUMBER_OF_RACE As Integer = 3   ' レーンの最小人数
+Public Const N_MIN_NUMBER_OF_RACE2 As Integer = 4   ' レーンの最小人数
 Public Const N_MAX_LANE_OF_RACE As Integer = 9     ' レーンの最大番号
 Public Const N_MIN_LANE_OF_RACE As Integer = 3     ' レーンの最小番号
 

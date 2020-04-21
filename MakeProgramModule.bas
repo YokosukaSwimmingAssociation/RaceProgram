@@ -441,19 +441,20 @@ Sub MakeHeat(oWorkSheet As Worksheet, sTableName As String, nCurrentRow As Integ
 
         ' 横須賀選手権水泳大会
         If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
+            Dim nFileNo As Integer
+            nFinalNo = VLookupArea(.ListColumns("プロNo").Range(nRow).Value, "選手権種目区分", "決勝番号")
             Call CopyCell(oWorkSheet, nCurrentRow, "Prog大会記録", _
-                    Application.WorksheetFunction.VLookup(.ListColumns("プロNo").Range(nRow).Value, _
-                    GetRange("選手権大会記録"), 7, False))
+                    VLookupArea(nFinalNo, "選手権大会記録", "記録"))
         ' 横須賀市民体育大会
         ElseIf GetRange("大会名").Value = "横須賀市民体育大会" Then
             Call CopyCell(oWorkSheet, nCurrentRow, "Prog大会記録", _
-                    Application.WorksheetFunction.VLookup(.ListColumns("プロNo").Range(nRow).Value & _
-                    .ListColumns("区分").Range(nRow).Value, GetRange("市民大会記録"), 8, False))
+                    VLookupArea(.ListColumns("プロNo").Range(nRow).Value & _
+                    .ListColumns("区分").Range(nRow).Value, "市民大会記録", "記録"))
         ' 学童マスターズ大会
         Else
-                Call CopyCell(oWorkSheet, nCurrentRow, "Prog大会記録", _
-                    Application.WorksheetFunction.VLookup(.ListColumns("プロNo").Range(nRow).Value & _
-                    .ListColumns("ソート区分").Range(nRow).Value, GetRange("学マ大会記録"), 8, False))
+            Call CopyCell(oWorkSheet, nCurrentRow, "Prog大会記録", _
+                    VLookupArea(.ListColumns("プロNo").Range(nRow).Value & _
+                    .ListColumns("ソート区分").Range(nRow).Value, "学マ大会記録", "記録"))
         End If
 
         

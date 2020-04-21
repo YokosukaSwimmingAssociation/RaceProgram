@@ -13,8 +13,10 @@ Sub ワークブック名前定義()
     Call 学童マスターズ大会優勝者名前定義
     Call 市民大会種目区分名前定義
     Call 市民大会記録名前定義
+    Call 市民大会優勝者名前定義
     Call 選手権大会種目区分名前定義
     Call 選手権大会記録名前定義
+    Call 選手権大会優勝者名前定義
     Call 賞状名前定義
     Call 大会名定義
     
@@ -271,7 +273,7 @@ Sub 選手権大会記録名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("選手権大会記録")
     
-    Call SetName("選手権大会記録", TableRangeAddress("$A$1"))
+    Call SetName("選手権大会記録", TableRangeAddress("$A$2"))
     
     ' シートのロック
     Call SheetProtect(True)

@@ -56,6 +56,15 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
         bFlag = True
     End If
     
+    ' 組の最小人数
+    Dim nMinNumberOfRace As Integer
+    If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
+        nMinNumberOfRace = N_MIN_NUMBER_OF_RACE
+    Else
+        nMinNumberOfRace = N_MIN_NUMBER_OF_RACE2
+    End If
+    
+    
     ' エントリー一覧
     Dim oEntryList As Object
     Set oEntryList = CreateObject("Scripting.Dictionary")
@@ -91,7 +100,7 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
         
         ' 組数を算出
         nHeats = GetHeats(nNumOfProNo)
-        Call GetNumberOfHeat(nNumOfProNo, nHeats, nNumOfHeats)
+        Call GetNumberOfHeat(nNumOfProNo, nHeats, nNumOfHeats, nMinNumberOfRace)
         
         ' ProNo毎の選手位置
         nOrder = 1
@@ -224,18 +233,19 @@ End Function
 '
 ' nTotalNum     IN      プロNoのエントリー数
 ' nHeat         IN      組数
-' nNumberOfHeat() OUT     組毎の人数配列
+' nNumberOfHeat() OUT   組毎の人数配列
+' nMinNumberOfRace IN   組の最小人数
 '
-Sub GetNumberOfHeat(nTotalNum As Integer, nHeats As Integer, nNumberOfHeat() As Integer)
+Sub GetNumberOfHeat(nTotalNum As Integer, nHeats As Integer, nNumberOfHeat() As Integer, nMinNumberOfRace As Integer)
     
     ReDim nNumberOfHeat(nHeats - 1) As Integer
     
     ' １組目人数算出
-    nNumberOfHeat(0) = GetFirstHeatNumber(nTotalNum)
+    nNumberOfHeat(0) = GetFirstHeatNumber(nTotalNum, nMinNumberOfRace)
     
     ' ２組目人数算出
     If nHeats >= 2 Then
-        nNumberOfHeat(1) = GetSecondHeatNumber(nTotalNum)
+        nNumberOfHeat(1) = GetSecondHeatNumber(nTotalNum, nMinNumberOfRace)
     
         ' ３組目以降
         If nHeats > 2 Then
@@ -246,32 +256,6 @@ Sub GetNumberOfHeat(nTotalNum As Integer, nHeats As Integer, nNumberOfHeat() As 
     End If
 End Sub
 
-'
-' 組番号決定
-'
-' プロNoの総人数と順番から組番号を算出する
-'
-' 組数、１組目の人数、２組目の人数を算出することで
-' 組番号が算出可能
-'
-' nOrder        IN      順番
-' nHeats        IN      組数
-' nHeatNumber() IN      組毎の人数配列
-'
-Function GetOrderHeat(nOrder As Integer, nHeats As Integer, nHeatNumber() As Integer)
-
-    ' １組目の場合
-    If nOrder <= nHeatNumber(0) Then
-        GetOrderHeat = 1
-    ' ２組目の場合
-    ElseIf nOrder <= nHeatNumber(0) + nHeatNumber(1) Then
-        GetOrderHeat = 2
-    ' ３組目以降の場合
-    Else
-        GetOrderHeat = GetHeats(nOrder - (nHeatNumber(0) + nHeatNumber(1))) + 2
-    End If
-
-End Function
 '
 ' 組数算出
 '
@@ -288,18 +272,19 @@ End Function
 '
 ' １組目人数算出
 '
-' 総人数が３名以上いる場合、最低３名は１組目に残す
+' 総人数が最小人数以上いる場合、最小人数は１組目に残す
 '
 ' nTotalNum     IN      レースの総人数
+' nMinNumberOfRace IN   組の最小人数
 '
-Function GetFirstHeatNumber(nTotalNum As Integer)
+Function GetFirstHeatNumber(nTotalNum As Integer, nMinNumberOfRace As Integer)
 
     If nTotalNum <= N_NUMBER_OF_RACE Then
         GetFirstHeatNumber = nTotalNum
     ElseIf nTotalNum Mod N_NUMBER_OF_RACE = 0 Then
         GetFirstHeatNumber = N_NUMBER_OF_RACE
-    ElseIf nTotalNum Mod N_NUMBER_OF_RACE <= N_MIN_NUMBER_OF_RACE Then
-        GetFirstHeatNumber = N_MIN_NUMBER_OF_RACE
+    ElseIf nTotalNum Mod N_NUMBER_OF_RACE <= nMinNumberOfRace Then
+        GetFirstHeatNumber = nMinNumberOfRace
     Else
         GetFirstHeatNumber = nTotalNum Mod N_NUMBER_OF_RACE
     End If
@@ -312,15 +297,16 @@ End Function
 ' １組目に回す人数によって２組目も変化する
 '
 ' nTotalNum     IN      レースの総人数
+' nMinNumberOfRace IN   組の最小人数
 '
-Function GetSecondHeatNumber(nTotalNum As Integer)
+Function GetSecondHeatNumber(nTotalNum As Integer, nMinNumberOfRace As Integer)
 
     If nTotalNum <= N_NUMBER_OF_RACE Then
         GetSecondHeatNumber = 0
     ElseIf nTotalNum Mod N_NUMBER_OF_RACE = 0 Then
         GetSecondHeatNumber = N_NUMBER_OF_RACE
-    ElseIf nTotalNum Mod N_NUMBER_OF_RACE <= N_MIN_NUMBER_OF_RACE Then
-        GetSecondHeatNumber = N_NUMBER_OF_RACE + (nTotalNum Mod N_NUMBER_OF_RACE - N_MIN_NUMBER_OF_RACE)
+    ElseIf nTotalNum Mod N_NUMBER_OF_RACE <= nMinNumberOfRace Then
+        GetSecondHeatNumber = N_NUMBER_OF_RACE + (nTotalNum Mod N_NUMBER_OF_RACE - nMinNumberOfRace)
     Else
         GetSecondHeatNumber = N_NUMBER_OF_RACE
     End If
@@ -356,7 +342,7 @@ Function GetStartLane(nCount As Integer, nCenterLane As Integer, Optional bFlag 
 End Function
 
 '
-' レーン決定
+' レーン決定（単純方式）
 '
 ' レーンは競技規則の単純方式で並べる
 '
@@ -376,6 +362,39 @@ Function GetLane(nCenter As Integer, nMax As Integer, nOrder As Integer, Optiona
                 * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
     End If
 End Function
+
+'
+' レーン決定(平均分け方式)
+'
+' レーンは競技規則の平均分け方式で並べる
+'
+' nCenter       IN      センター
+' nMax          IN      人数
+' nOrder        IN      順番
+'
+Function GetLane2(nCenter As Integer, nMax As Integer, nOrder As Integer)
+    Dim nNum As Integer
+    nNum = Application.WorksheetFunction.RoundUp((nMax - nOrder + 1) / 3, 0)
+    GetLane = nCenter - Application.WorksheetFunction.Power(-1, nNum - 1) _
+            * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
+End Function
+
+'
+' 組番号決定(平均分け方式)
+'
+' プロNoの総人数と順番から組番号を算出する
+'
+' 組数を算出する
+'
+' nOrder        IN      順番
+' nHeats        IN      組数
+'
+Function GetOrderHeat(nOrder As Integer, nHeats As Integer)
+
+    GetOrderHeat = nHeats - (nOrder - 1) Mod nHeats
+
+End Function
+
 
 '
 ' レース番号修正
