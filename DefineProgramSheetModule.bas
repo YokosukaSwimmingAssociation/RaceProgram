@@ -69,7 +69,9 @@ Sub Prog名前定義(sSheetName As String)
     ' プログラムヘッダ
     Call SetName("ProgプロNo", "$C$3")
     Call SetName("Prog種目区分", "$D$3")
-    Call SetName("Prog種目名", "$G$3")
+    Call SetName("Prog種目名", "$F$3")
+    Call SetName("Prog決勝", "$I$3")
+    Call SetName("Prog記録", "$J$3")
 
     ' 組ヘッダ
     Call SetName("Prog組", "$C$4")
@@ -89,6 +91,7 @@ Sub Prog名前定義(sSheetName As String)
     Call SetName("Prog申込み記録", "$N$5")
     Call SetName("ProgレースNo", "$O$5")
     Call SetName("Progソート区分", "$P$5")
+    Call SetName("Prog標準記録", "$Q$5")
 
     ' 組ヘッダ
     Call SetName("Prog組ヘッダフォーマット", "A$2:$P$3")
@@ -118,10 +121,35 @@ Sub 記録画面名前定義(sSheetName As String)
     Call SetName("記録画面タイム", "$C$5:$C$11")
     Call SetName("記録画面選手名", "$D$5:$D$11")
     Call SetName("記録画面チーム名", "$E$5:$E$11")
-    Call SetName("記録画面大会新", "$F$5:$F$11")
+    Call SetName("記録画面備考", "$F$5:$F$11")
+    Call SetName("記録画面違反", "$G$5:$G$11")
+
+    Call 記録画面違反定義
 
     ' シートのロック
     Call SheetProtect(True)
+End Sub
+
+'
+' 記録画面の違反
+'
+' sValue        IN      ダミー
+'
+Sub 記録画面違反定義(Optional sValue As String = "")
+    With GetRange("記録画面違反").Validation
+        .Delete
+        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
+        xlBetween, Formula1:="　,スタート失格,失格"
+        .IgnoreBlank = True
+        .InCellDropdown = True
+        .InputTitle = ""
+        .ErrorTitle = ""
+        .InputMessage = ""
+        .ErrorMessage = ""
+        .IMEMode = xlIMEModeNoControl
+        .ShowInput = True
+        .ShowError = True
+    End With
 End Sub
 
 '

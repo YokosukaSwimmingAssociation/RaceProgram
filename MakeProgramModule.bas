@@ -131,6 +131,10 @@ Sub MakeSheet(oWorkBook As Workbook, sSheetName As String)
     Call CopyHeaderCell(oWorkSheet, "HeaderレースNo")
     Call CopyHeaderCell(oWorkSheet, "Headerソート区分")
 
+    If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
+        Call CopyHeaderCell(oWorkSheet, "Header標準記録")
+    End If
+
 End Sub
 
 ' ヘッダーセルをコピー
@@ -287,21 +291,57 @@ End Sub
 '
 Sub MakeProgramHeader(oWorkSheet As Worksheet, sTableName As String, nCurrentRow As Integer, nProNo As Integer)
 
+    Dim sMaster As String
+    sMaster = GetMaster(GetRange("大会名").Value)
+
     Call CopyCell(oWorkSheet, nCurrentRow, "ProgプロNo")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog種目区分")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog種目名")
+    Call CopyCell(oWorkSheet, nCurrentRow, "Prog決勝")
+    Call CopyCell(oWorkSheet, nCurrentRow, "Prog記録")
 
     With Range(sTableName).ListObject
         Cells(nCurrentRow, GetRange("ProgプロNo").Column).Value = nProNo
         Cells(nCurrentRow, GetRange("Prog種目区分").Column).Value = _
-            Application.WorksheetFunction.VLookup(nProNo, GetRange(GetMaster(GetRange("大会名").Value)), 2, False) & _
-            Application.WorksheetFunction.VLookup(nProNo, GetRange(GetMaster(GetRange("大会名").Value)), 3, False)
+            VLookupArea(nProNo, sMaster, "区分") & _
+            VLookupArea(nProNo, sMaster, "性別")
 
         Cells(nCurrentRow, Range("Prog種目名").Column).Value = _
-            Application.WorksheetFunction.VLookup(nProNo, GetRange(GetMaster(GetRange("大会名").Value)), 4, False) & _
-            Application.WorksheetFunction.VLookup(nProNo, GetRange(GetMaster(GetRange("大会名").Value)), 5, False)
+            VLookupArea(nProNo, sMaster, "距離") & _
+            VLookupArea(nProNo, sMaster, "種目")
+    
+        ' 横須賀選手権は標準記録、大会記録を出力
+        If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
+            
+            Cells(nCurrentRow, Range("Prog決勝").Column).Value = _
+                VLookupArea(nProNo, sMaster, "予選／決勝")
+            
+            Dim nFileNo As Integer
+            nFinalNo = VLookupArea(nProNo, "選手権種目区分", "決勝番号")
+            Dim nQualify As Long
+            nQualify = VLookupArea(nProNo, sMaster, "標準記録")
+            Dim sFormat As String
+            If nQualify < 10000 Then
+                sQualifyFormat = "##"".""#"
+            Else
+                sQualifyFormat = "0"":""##"".""#"
+            End If
+            Dim nRecord As Long
+            nRecord = VLookupArea(nFinalNo, "選手権大会記録", "記録")
+            Dim sRecordFormat As String
+            If nRecord < 10000 Then
+                sRecordFormat = "##"".""##"
+            Else
+                sRecordFormat = "0"":""##"".""##"
+            End If
+            Cells(nCurrentRow, Range("Prog記録").Column).Value = _
+                "（標準記録 " & Format(nQualify / 10, sQualifyFormat) & ", " & _
+                "大会記録 " & Format(nRecord, sRecordFormat) & "）"
+        End If
+    
     End With
 
+    ' 下線を引く
     With Range(Cells(nCurrentRow, Range("Header組").Column), Cells(nCurrentRow, Range("Header大会記録").Column)).Borders(xlEdgeBottom)
         .LineStyle = xlContinuous
         .ColorIndex = xlAutomatic
@@ -466,6 +506,12 @@ Sub MakeHeat(oWorkSheet As Worksheet, sTableName As String, nCurrentRow As Integ
         Call CopyCell(oWorkSheet, nCurrentRow, "ProgレースNo", _
                             .ListColumns("レースNo").Range(nRow).Value)
 
+        ' 横須賀選手権水泳大会は標準記録も記載
+        If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
+            Call CopyCell(oWorkSheet, nCurrentRow, "Prog標準記録", _
+                    VLookupArea(.ListColumns("プロNo").Range(nRow).Value, "選手権種目区分", "標準記録"))
+        End If
+    
     End With
 
 End Sub

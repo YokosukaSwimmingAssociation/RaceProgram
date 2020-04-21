@@ -136,6 +136,26 @@ Function SearchTeam(nRaceNo As Integer, nLane As Integer)
 End Function
 
 '
+' 違反反映
+'
+Sub 違反反映()
+    Dim sViolation As String
+    
+    For Each vLane In GetRange("記録画面レーン")
+        sViolation = Cells(vLane.Row, GetRange("記録画面違反").Column).Value
+        
+        If sViolation <> "　" And sViolation <> "" Then
+            ' タイムを空にして違反を設定
+                Cells(vLane.Row, GetRange("記録画面タイム").Column).Value = ""
+                Cells(vLane.Row, GetRange("記録画面備考").Column).Value = sViolation
+        ElseIf Cells(vLane.Row, GetRange("記録画面備考").Column).Value <> "大会新" And _
+                Cells(vLane.Row, GetRange("記録画面備考").Column).Value <> "タイム失格" Then
+                Cells(vLane.Row, GetRange("記録画面備考").Column).Value = ""
+        End If
+    Next vLane
+End Sub
+
+'
 ' 大会記録判定
 '
 ' タイムが入力された場合に
@@ -146,7 +166,8 @@ Sub 大会記録判定()
     Dim nRaceNo As Integer
     Dim nLane As Integer
     Dim nTime As Long
-    Dim nRecordTime As Integer
+    Dim nRecordTime As Long
+    Dim nQualifyTime As Long
 
     nRaceNo = GetRange("記録画面レースNo").Value
    
@@ -155,16 +176,21 @@ Sub 大会記録判定()
         nTime = Cells(vLane.Row, GetRange("記録画面タイム").Column).Value
         
         If nLane > 0 And nTime > 0 Then
-            If nTime < SearchRecord(nRaceNo, nLane) Then
+            nRecordTime = SearchRecord(nRaceNo, nLane)
+            nQualifyTime = SearchQualify(nRaceNo, nLane)
+            If nQualifyTime > 0 And nTime > nQualifyTime Then
+                ' 時間が標準記録より大きい場合はタイム失格
+                Cells(vLane.Row, GetRange("記録画面備考").Column).Value = "タイム失格"
+            ElseIf nRecordTime = 0 Or nTime < nRecordTime Then
                 ' 時間が大会記録より小さい場合は大会新（同一タイムはNG）
-                Cells(vLane.Row, GetRange("記録画面大会新").Column).Value = "大会新"
+                Cells(vLane.Row, GetRange("記録画面備考").Column).Value = "大会新"
             Else
                 ' それ以外は空欄
-                Cells(vLane.Row, GetRange("記録画面大会新").Column).Value = ""
+                Cells(vLane.Row, GetRange("記録画面備考").Column).Value = ""
             End If
         Else
             ' 何も入力されていないレーンも空欄
-            Cells(vLane.Row, GetRange("記録画面大会新").Column).Value = ""
+            Cells(vLane.Row, GetRange("記録画面備考").Column).Value = ""
         End If
     Next vLane
 End Sub
@@ -187,7 +213,32 @@ Function SearchRecord(nRaceNo As Integer, nLane As Integer)
     If IsNameExists(sName) Then
         For Each vLaneNo In Range(sName)
             If vLaneNo.Offset(0, GetRange("Progレーン").Column - vLaneNo.Column).Value = nLane Then
-                SearchRecord = vLaneNo.Offset(0, GetRange("Prog大会記録").Column - vLaneNo.Column).Value
+                SearchRecord = CLng(vLaneNo.Offset(0, GetRange("Prog大会記録").Column - vLaneNo.Column).Value)
+                Exit For
+            End If
+        Next vLaneNo
+    End If
+End Function
+
+'
+' 標準記録取得
+'
+' レース番号、レーン番号から標準記録を検索する
+'
+' 名前「プログラムレースN」からレースのセルを取得して探索する
+'
+' nRaceNo           IN      レース番号
+' nLane             IN      レーン番号
+'
+Function SearchQualify(nRaceNo As Integer, nLane As Integer)
+
+    Dim sName As String
+    sName = "プログラムレース" & Trim(Str(nRaceNo))
+
+    If IsNameExists(sName) Then
+        For Each vLaneNo In Range(sName)
+            If vLaneNo.Offset(0, GetRange("Progレーン").Column - vLaneNo.Column).Value = nLane Then
+                SearchQualify = CLng(vLaneNo.Offset(0, GetRange("Prog標準記録").Column - vLaneNo.Column).Value)
                 Exit For
             End If
         Next vLaneNo
@@ -210,7 +261,8 @@ Sub 初期化()
         vLane.Offset(0, GetRange("記録画面タイム").Column - vLane.Column).Value = ""
         vLane.Offset(0, GetRange("記録画面選手名").Column - vLane.Column).Value = ""
         vLane.Offset(0, GetRange("記録画面チーム名").Column - vLane.Column).Value = ""
-        vLane.Offset(0, GetRange("記録画面大会新").Column - vLane.Column).Value = ""
+        vLane.Offset(0, GetRange("記録画面備考").Column - vLane.Column).Value = ""
+        vLane.Offset(0, GetRange("記録画面違反").Column - vLane.Column).Value = ""
     Next vLane
 
     ' イベント発生を再開
@@ -236,7 +288,7 @@ Sub 登録()
     For Each vLane In GetRange("記録画面レーン")
         nLane = Cells(vLane.Row, GetRange("記録画面レーン").Column).Value
         nTime = Cells(vLane.Row, GetRange("記録画面タイム").Column).Value
-        sAdditional = Cells(vLane.Row, GetRange("記録画面大会新").Column).Value
+        sAdditional = Cells(vLane.Row, GetRange("記録画面備考").Column).Value
         
         If nLane <> 0 Then
             Call SetRecord(nRaceNo, nLane, nTime, sAdditional)
