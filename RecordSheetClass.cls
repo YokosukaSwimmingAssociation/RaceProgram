@@ -17,6 +17,8 @@ Private Sub Worksheet_Change(ByVal Target As Range)
         Call 選手名読込み
     ElseIf Not (Intersect(Target, Range("記録画面タイム")) Is Nothing) Then
         Call 大会記録判定
+    ElseIf Not (Intersect(Target, Range("記録画面違反")) Is Nothing) Then
+        Call 違反反映
     Else
         Exit Sub
     End If
