@@ -9,6 +9,7 @@ Public Const N_MIN_NUMBER_OF_RACE As Integer = 3   ' レーンの最小人数
 Public Const N_MIN_NUMBER_OF_RACE2 As Integer = 4   ' レーンの最小人数
 Public Const N_MAX_LANE_OF_RACE As Integer = 9     ' レーンの最大番号
 Public Const N_MIN_LANE_OF_RACE As Integer = 3     ' レーンの最小番号
+Public Const N_AVERAGE_DEC_RACE As Integer = 3      ' 平均分け方式にする組数
 
 Public Const S_BLANK_NAME As String = "　　．　　．　　．"
 Private Const ARRAYSIZE = 10000
