@@ -69,7 +69,7 @@ Sub Prog名前定義(sSheetName As String)
     ' プログラムヘッダ
     Call SetName("ProgプロNo", "$C$3")
     Call SetName("Prog種目区分", "$D$3")
-    Call SetName("Prog種目名", "$F$3")
+    Call SetName("Prog種目名", "$E$3")
     Call SetName("Prog決勝", "$I$3")
     Call SetName("Prog記録", "$J$3")
 

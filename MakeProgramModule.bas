@@ -24,6 +24,11 @@ Sub プログラム作成()
     Dim oEntryList As Object
     Call ReadEntrySheet(S_ENTRY_TABLE_NAME, oEntryList)
 
+    ' 予選なし決勝の設定
+    If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
+        Call CheckFinal(oEntryList)
+    End If
+
     ' プログラム作成
     Call MakeProgram(oProgramSheet, S_ENTRY_TABLE_NAME, oEntryList)
 
@@ -89,6 +94,40 @@ Public Sub ReadEntrySheet(sTableName As String, oEntryList As Object)
         ' レーン登録
         oHeats.Add nLane, cProNo.Row
     Next
+
+End Sub
+
+'
+' 予選決勝確認
+'
+' oEntryList    OUT     エントリー一覧(Dictionary)
+'
+Sub CheckFinal(oEntryList As Object)
+
+    Dim oProNo As Object
+    Dim nFileNo As Integer
+    
+    ' プログラム番号毎
+    For Each nProNo In oEntryList.Keys()
+        ' 申込みのあるプロNo
+        Set oProNo = oEntryList.Item(Int(nProNo))
+        ' １組しかない場合
+        If oProNo.Count = 1 Then
+            ' 決勝番号を取得
+            nFinalNo = VLookupArea(nProNo, "選手権種目区分", "決勝番号")
+            ' 予選と決勝がある場合
+            If nProNo <> nFinalNo Then
+                ' 直接決勝にする
+                oEntryList.Add nFinalNo, oProNo
+                ' 予選には組番号を0にして決勝文字列を記載
+                oEntryList.Remove nProNo
+                Set oProNo = CreateObject("Scripting.Dictionary")
+                oEntryList.Add nProNo, oProNo
+                Set oHeats = CreateObject("Scripting.Dictionary")
+                oProNo.Add 0, "予選なし-->決勝へ No." & CStr(nFinalNo)
+            End If
+        End If
+    Next nProNo
 
 End Sub
 
@@ -183,6 +222,8 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
     Dim nRaceNum As Integer
     nMaxProNo = GetRange(GetMaster(GetRange("大会名").Value)).Columns(1).Rows().Count
     
+    Dim sMessage As String
+    
     ' プログラム番号毎
     For Each nProNo In GetAreaKeyData(GetMaster(GetRange("大会名").Value))
         If oEntryList.Exists(Int(nProNo)) Then
@@ -202,12 +243,16 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
         
         ' 組番号毎
         For nHeat = 1 To nMaxHeat
+            sMessage = ""
             If oProNo Is Nothing Then
                 ' 申込みのないプロNoの場合
                 Set oHeats = Nothing
             ElseIf oProNo.Exists(nHeat) Then
                 ' 組が存在する場合
                 Set oHeats = oProNo.Item(nHeat)
+            ElseIf oProNo.Exists(0) And nHeat = 1 Then
+                ' 選手権の予選なし
+                sMessage = oProNo.Item(0)
             Else
                 ' 組が存在しない場合（異常系）
                 Set oHeats = Nothing
@@ -221,21 +266,28 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
             ' タイトル修正
             Call SetTitleMenu("プログラム作成中: " & Str(nProNo) & "/" & Str(nMaxProNo))
 
-            ' レーン毎
-            For nLane = N_MIN_LANE_OF_RACE To N_MAX_LANE_OF_RACE
+            If sMessage <> "" Then
+                ' 直接決勝へ
                 Call SetNo(oWorkSheet, nCurrentRow)
-                
-                If oHeats Is Nothing Then
-                    ' 申込みのないProNoの場合はデフォルト表示
-                    Call MakeHeatDefault(oWorkSheet, nCurrentRow, Int(nProNo), Int(nHeat), Int(nLane))
-                ElseIf oHeats.Exists(nLane) Then
-                    ' 申込みのあるProNoでエントリがあるレーンの場合はデータを記述
-                    Call MakeHeat(oWorkSheet, sTableName, nCurrentRow, Int(oHeats.Item(nLane)))
-                Else
-                    ' 申込みのあるProNoでエントリがないレーンの場合はデフォルト表示
-                    Call MakeHeatDefault(oWorkSheet, nCurrentRow, Int(nProNo), Int(nHeat), Int(nLane))
-                End If
-            Next
+                Call SetNo(oWorkSheet, nCurrentRow)
+                Cells(nCurrentRow, GetRange("Header氏名").Column).Value = sMessage
+            Else
+                ' レーン毎
+                For nLane = N_MIN_LANE_OF_RACE To N_MAX_LANE_OF_RACE
+                    Call SetNo(oWorkSheet, nCurrentRow)
+                    
+                    If oHeats Is Nothing Then
+                        ' 申込みのないProNoの場合はデフォルト表示
+                        Call MakeHeatDefault(oWorkSheet, nCurrentRow, Int(nProNo), Int(nHeat), Int(nLane))
+                    ElseIf oHeats.Exists(nLane) Then
+                        ' 申込みのあるProNoでエントリがあるレーンの場合はデータを記述
+                        Call MakeHeat(oWorkSheet, sTableName, nCurrentRow, Int(oHeats.Item(nLane)), Int(nProNo), Int(nHeat))
+                    Else
+                        ' 申込みのあるProNoでエントリがないレーンの場合はデフォルト表示
+                        Call MakeHeatDefault(oWorkSheet, nCurrentRow, Int(nProNo), Int(nHeat), Int(nLane))
+                    End If
+                Next
+            End If
             Call SetNo(oWorkSheet, nCurrentRow)
             Call SetNo(oWorkSheet, nCurrentRow)
         Next
@@ -371,6 +423,7 @@ Sub CopyCell(oWorkSheet As Worksheet, nRow As Integer, sCellName As String, Opti
         .Font.Bold = oRange.Font.Bold
         .HorizontalAlignment = oRange.HorizontalAlignment
         .VerticalAlignment = oRange.VerticalAlignment
+        .IndentLevel = oRange.IndentLevel
         If IsEmpty(vOverRide) Then
             .Value = Range(sCellName).Value
         Else
@@ -442,18 +495,19 @@ End Sub
 ' sTableName    IN      テーブル名
 ' nCurrentRow   IN      カレント行番号(プログラムシート)
 ' nRow          IN      カレント行番号(テーブル)
+' nProNo        IN      プログラム番号
+' nHeat         IN      組番号
 '
-Sub MakeHeat(oWorkSheet As Worksheet, sTableName As String, nCurrentRow As Integer, nRow As Integer)
+Sub MakeHeat(oWorkSheet As Worksheet, sTableName As String, nCurrentRow As Integer, _
+nRow As Integer, nProNo As Integer, nHeat As Integer)
 
     oWorkSheet.Activate
 
     With Range(sTableName).ListObject
         
-        Call CopyCell(oWorkSheet, nCurrentRow, "HeaderプロNo", _
-                            .ListColumns("プロNo").Range(nRow).Value)
+        Call CopyCell(oWorkSheet, nCurrentRow, "HeaderプロNo", nProNo)
         Call CopyCell(oWorkSheet, nCurrentRow, "Prog組番", _
-                             Format(.ListColumns("プロNo").Range(nRow).Value, "0#") & "-" & _
-                            .ListColumns("組").Range(nRow).Value)
+                             Format(nProNo, "0#") & "-" & CStr(nHeat))
         Call CopyCell(oWorkSheet, nCurrentRow, "Progレーン", _
                             .ListColumns("レーン").Range(nRow).Value)
         
@@ -871,8 +925,18 @@ Sub SetPrintArea(oWorkSheet As Worksheet)
     ' 印刷エリアの設定
     Dim nBottom As Integer
     nBottom = Range("$A$1").End(xlDown).Row
-    ActiveSheet.PageSetup.PrintArea = _
-        Range(Cells(3, GetRange("Header組").Column), Cells(nBottom, GetRange("Header大会記録").Column)).Address
+    
+    ' 選手権大会の場合は大会記録を印刷しない
+    If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
+        ActiveSheet.PageSetup.PrintArea = _
+            Range(Cells(GetRange("Header組").Row, GetRange("Header組").Column), _
+            Cells(nBottom, GetRange("Header備考").Column)).Address
+        Cells(1, GetRange("Header氏名").Column).ColumnWidth = 40
+        Cells(1, GetRange("Header備考").Column).ColumnWidth = 20
+    Else
+        ActiveSheet.PageSetup.PrintArea = _
+            Range(Cells(3, GetRange("Header組").Column), Cells(nBottom, GetRange("Header大会記録").Column)).Address
+    End If
 
     ' 印刷エリアの設定（横１ページ）
     Application.PrintCommunication = False
