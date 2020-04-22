@@ -213,7 +213,11 @@ Function SearchRecord(nRaceNo As Integer, nLane As Integer)
     If IsNameExists(sName) Then
         For Each vLaneNo In Range(sName)
             If vLaneNo.Offset(0, GetRange("Progレーン").Column - vLaneNo.Column).Value = nLane Then
-                SearchRecord = CLng(vLaneNo.Offset(0, GetRange("Prog大会記録").Column - vLaneNo.Column).Value)
+                If IsNumeric(vLaneNo.Offset(0, GetRange("Prog大会記録").Column - vLaneNo.Column).Value) Then
+                    SearchRecord = CLng(vLaneNo.Offset(0, GetRange("Prog大会記録").Column - vLaneNo.Column).Value)
+                Else
+                    SearchRecord = 0
+                End If
                 Exit For
             End If
         Next vLaneNo
@@ -238,7 +242,11 @@ Function SearchQualify(nRaceNo As Integer, nLane As Integer)
     If IsNameExists(sName) Then
         For Each vLaneNo In Range(sName)
             If vLaneNo.Offset(0, GetRange("Progレーン").Column - vLaneNo.Column).Value = nLane Then
-                SearchQualify = CLng(vLaneNo.Offset(0, GetRange("Prog標準記録").Column - vLaneNo.Column).Value)
+                If IsNumeric(vLaneNo.Offset(0, GetRange("Prog標準記録").Column - vLaneNo.Column).Value) Then
+                    SearchQualify = CLng(vLaneNo.Offset(0, GetRange("Prog標準記録").Column - vLaneNo.Column).Value)
+                Else
+                    SearchQualify = 0
+                End If
                 Exit For
             End If
         Next vLaneNo

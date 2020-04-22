@@ -120,6 +120,7 @@ Sub WriteWinner(sGameName As String, oWinnerList As Object)
     Dim sSheetName As String
     sSheetName = GetWinnerSheetName(sGameName)
     Sheets(sSheetName).Select
+    Call SheetProtect(False)
 
     ' óDèüé“îÕàÕñº
     Dim sWinnerAreaName As String
@@ -162,7 +163,7 @@ Sub DeleteWinnerSheet(sWinnerAreaName As String)
     Dim oRange As Range
     Set oRange = TableRange(sWinnerAreaName)
     If Cells(oRange.Row + 1, oRange.Column) <> "" Then
-        oRange.Offset(1, 0).EntireRow.Delete
+        oRange.Offset(1, 0).Resize(oRange.Rows().Count - 1).EntireRow.Delete
     End If
 End Sub
 

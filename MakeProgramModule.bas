@@ -158,6 +158,7 @@ Sub MakeSheet(oWorkBook As Workbook, sSheetName As String)
     Call CopyHeaderCell(oWorkSheet, "Header組")
     Call CopyHeaderCell(oWorkSheet, "Headerレーン")
     Call CopyHeaderCell(oWorkSheet, "Header氏名")
+    Call CopyHeaderCell(oWorkSheet, "Header種目")
     Call CopyHeaderCell(oWorkSheet, "Header所属前")
     Call CopyHeaderCell(oWorkSheet, "Header所属")
     Call CopyHeaderCell(oWorkSheet, "Header所属後")
@@ -349,8 +350,6 @@ Sub MakeProgramHeader(oWorkSheet As Worksheet, sTableName As String, nCurrentRow
     Call CopyCell(oWorkSheet, nCurrentRow, "ProgプロNo")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog種目区分")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog種目名")
-    Call CopyCell(oWorkSheet, nCurrentRow, "Prog決勝")
-    Call CopyCell(oWorkSheet, nCurrentRow, "Prog記録")
 
     With Range(sTableName).ListObject
         Cells(nCurrentRow, GetRange("ProgプロNo").Column).Value = nProNo
@@ -365,9 +364,12 @@ Sub MakeProgramHeader(oWorkSheet As Worksheet, sTableName As String, nCurrentRow
         ' 横須賀選手権は標準記録、大会記録を出力
         If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
             
+            Call CopyCell(oWorkSheet, nCurrentRow, "Prog決勝")
             Cells(nCurrentRow, Range("Prog決勝").Column).Value = _
                 VLookupArea(nProNo, sMaster, "予選／決勝")
             
+            
+            Call CopyCell(oWorkSheet, nCurrentRow, "Prog記録")
             Dim nFileNo As Integer
             nFinalNo = VLookupArea(nProNo, "選手権種目区分", "決勝番号")
             Dim nQualify As Long
@@ -476,6 +478,8 @@ Sub MakeHeatDefault(oWorkSheet As Worksheet, nCurrentRow As Integer, nProNo As I
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog組番", Format(nProNo, "0#") & "-" & Format(nHeat, "#"))
     Call CopyCell(oWorkSheet, nCurrentRow, "Progレーン", nLane)
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog氏名")
+    Range(Cells(nCurrentRow, GetRange("Prog氏名").Column), _
+        Cells(nCurrentRow, GetRange("Prog種目").Column)).Merge
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog所属前")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog所属")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog所属後")
@@ -517,6 +521,8 @@ nRow As Integer, nProNo As Integer, nHeat As Integer)
         Else
             Call CopyCell(oWorkSheet, nCurrentRow, "Prog氏名")
         End If
+        Range(Cells(nCurrentRow, GetRange("Prog氏名").Column), _
+            Cells(nCurrentRow, GetRange("Prog種目").Column)).Merge
         
         Call CopyCell(oWorkSheet, nCurrentRow, "Prog所属前")
         If Trim(.ListColumns("学校名").Range(nRow).Value) <> "" Then
@@ -931,7 +937,8 @@ Sub SetPrintArea(oWorkSheet As Worksheet)
         ActiveSheet.PageSetup.PrintArea = _
             Range(Cells(GetRange("Header組").Row, GetRange("Header組").Column), _
             Cells(nBottom, GetRange("Header備考").Column)).Address
-        Cells(1, GetRange("Header氏名").Column).ColumnWidth = 40
+        Cells(1, GetRange("Header氏名").Column).ColumnWidth = 20
+        Cells(1, GetRange("Header種目").Column).ColumnWidth = 20
         Cells(1, GetRange("Header備考").Column).ColumnWidth = 20
     Else
         ActiveSheet.PageSetup.PrintArea = _
