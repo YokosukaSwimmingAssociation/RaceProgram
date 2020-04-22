@@ -82,12 +82,15 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
     Dim nNumOfHeat As Integer       ' 組の人数
     Dim nNumOfHeats() As Integer    ' 組毎の人数
     Dim nNumOfSortType As Integer   ' ソート区分毎の残り人数
+    Dim nRemNumber As Integer       ' 組の残り人数
     
     Dim nOrder As Integer           ' ProNo毎の順序（逆順）
     Dim nStartLane As Integer       ' 組の開始位置
     Dim nCenterLane As Integer      ' センターレーン
     Dim nMax As Integer             ' 組の中でLane決定する人数
     Dim nNum As Integer             ' Lene決定する人数の中の順位
+    Dim bAverage As Boolean         ' 平均分け方式の利用有無
+    Dim nMaxNum As Integer          ' 平均分け方式の総人数
     
     nRaceNo = 0
     
@@ -102,6 +105,14 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
         nHeats = GetHeats(nNumOfProNo)
         Call GetNumberOfHeat(nNumOfProNo, nHeats, nNumOfHeats, nMinNumberOfRace)
         
+        ' 平均分け方式を利用するケース
+        bAverage = False
+        If GetRange("大会名").Value = "横須賀選手権水泳大会" And nHeats >= N_AVERAGE_DEC_RACE Then
+            If VLookupArea(nProNo, "選手権種目区分", "予選／決勝") = "予選" Then
+                bAverage = True
+            End If
+        End If
+        
         ' ProNo毎の選手位置
         nOrder = 1
         
@@ -114,6 +125,16 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
             nNumOfHeat = nNumOfHeats(nHeat - 1)
             ' 組の残り人数
             nRemNumber = nNumOfHeat
+            
+            ' 平均分け方式
+            If bAverage And nHeat = (nHeats - N_AVERAGE_DEC_RACE) + 1 Then
+                nMaxNum = 0
+                For i = nHeat To nHeat + N_AVERAGE_DEC_RACE - 1
+                    nMaxNum = nMaxNum + nNumOfHeats(i - 1)
+                Next i
+                Call AverageMethod(nRaceNo, CInt(nHeat), nMaxNum, nOrder, oProNo, sTableName)
+                Exit For
+            End If
         
             ' 組の開始位置
             nStartLane = GetStartLane(nNumOfHeat, GetCenterLane(N_NUMBER_OF_RACE, N_MIN_LANE_OF_RACE), bFlag)
@@ -153,6 +174,7 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
                 nRemNumber = nRemNumber - nMax
             Wend
         Next nHeat
+    
     Next nProNo
 
 End Sub
@@ -374,8 +396,8 @@ End Function
 '
 Function GetLane2(nCenter As Integer, nMax As Integer, nOrder As Integer)
     Dim nNum As Integer
-    nNum = Application.WorksheetFunction.RoundUp((nMax - nOrder + 1) / 3, 0)
-    GetLane = nCenter - Application.WorksheetFunction.Power(-1, nNum - 1) _
+    nNum = Application.WorksheetFunction.RoundUp((nMax - nOrder + 1) / N_AVERAGE_DEC_RACE, 0)
+    GetLane2 = nCenter - Application.WorksheetFunction.Power(-1, nNum - 1) _
             * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
 End Function
 
@@ -386,14 +408,66 @@ End Function
 '
 ' 組数を算出する
 '
-' nOrder        IN      順番
 ' nHeats        IN      組数
+' nMax          IN      人数
+' nOrder        IN      順番
 '
-Function GetOrderHeat(nOrder As Integer, nHeats As Integer)
-
-    GetOrderHeat = nHeats - (nOrder - 1) Mod nHeats
-
+Function GetOrderHeat(nHeats As Integer, nMax As Integer, nOrder As Integer)
+    Dim nNum As Integer
+    nNum = nMax - nOrder + 1
+    GetOrderHeat = nHeats - (nNum - 1) Mod nHeats
 End Function
+
+'
+' レーン決定(平均分け方式)
+'
+' レーンは競技規則の平均分け方式で並べる
+'
+' nStartRaceNo  IN/OUT  開始のRaceNo
+' nStartHeat    IN      開始の組番号
+' nMaxNum       IN      人数
+' nOrder        IN      順番
+' oProNo        IN      順番
+' sTableName    IN      テーブル名
+'
+Sub AverageMethod(nStartRaceNo As Integer, nStartHeat As Integer, nMaxNum As Integer, _
+nOrder As Integer, oProNo As Object, sTableName As String)
+    
+    Dim nCenterLane As Integer
+    Dim nRow As Integer
+    Dim nRaceNo As Integer
+    Dim nHeat As Integer
+    
+    Dim nNum As Integer
+
+    ' 組のセンター
+    nCenterLane = GetCenterLane(N_NUMBER_OF_RACE, N_MIN_LANE_OF_RACE)
+    
+    ' 組の人数が残っている間
+    For nNum = 1 To nMaxNum
+        
+        ' カレント行番号
+        nRow = GetProNoRow(nOrder, oProNo)
+        
+        ' レースNo
+        nRaceNo = (GetOrderHeat(N_AVERAGE_DEC_RACE, nMaxNum, nNum) + (nStartRaceNo / 10 - 1)) * 10
+        ' 組番号
+        nHeat = GetOrderHeat(N_AVERAGE_DEC_RACE, nMaxNum, nNum) + (nStartHeat - 1)
+    
+        ' レースNo、組の書込み
+        Cells(nRow, Range(sTableName & "[レースNo]").Column).Value = nRaceNo
+        Cells(nRow, Range(sTableName & "[組]").Column).Value = nHeat
+    
+        ' レースNo、組、レーンを記述
+        Cells(nRow, Range(sTableName & "[レーン]").Column).Value = GetLane2(nCenterLane, nMaxNum, nNum)
+    
+        ' 順番をインクリメント
+        nOrder = nOrder + 1
+    Next
+
+    nStartRaceNo = (nStartRaceNo / 10 - 1 + N_AVERAGE_DEC_RACE) * 10
+
+End Sub
 
 
 '
