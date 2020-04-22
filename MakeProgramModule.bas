@@ -423,6 +423,7 @@ Sub CopyCell(oWorkSheet As Worksheet, nRow As Integer, sCellName As String, Opti
         .Font.Bold = oRange.Font.Bold
         .HorizontalAlignment = oRange.HorizontalAlignment
         .VerticalAlignment = oRange.VerticalAlignment
+        .IndentLevel = oRange.IndentLevel
         If IsEmpty(vOverRide) Then
             .Value = Range(sCellName).Value
         Else
@@ -924,8 +925,18 @@ Sub SetPrintArea(oWorkSheet As Worksheet)
     ' 印刷エリアの設定
     Dim nBottom As Integer
     nBottom = Range("$A$1").End(xlDown).Row
-    ActiveSheet.PageSetup.PrintArea = _
-        Range(Cells(3, GetRange("Header組").Column), Cells(nBottom, GetRange("Header大会記録").Column)).Address
+    
+    ' 選手権大会の場合は大会記録を印刷しない
+    If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
+        ActiveSheet.PageSetup.PrintArea = _
+            Range(Cells(GetRange("Header組").Row, GetRange("Header組").Column), _
+            Cells(nBottom, GetRange("Header備考").Column)).Address
+        Cells(1, GetRange("Header氏名").Column).ColumnWidth = 40
+        Cells(1, GetRange("Header備考").Column).ColumnWidth = 20
+    Else
+        ActiveSheet.PageSetup.PrintArea = _
+            Range(Cells(3, GetRange("Header組").Column), Cells(nBottom, GetRange("Header大会記録").Column)).Address
+    End If
 
     ' 印刷エリアの設定（横１ページ）
     Application.PrintCommunication = False
