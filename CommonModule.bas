@@ -46,6 +46,18 @@ Public Function STrim(sStr)
 End Function
 
 '
+' 空白置換
+'
+' 全角空白、半角空白をなくす
+'
+' sStr          IN      文字列
+'
+Public Function STrimAll(sStr)
+    STrimAll = Replace(Replace(sStr, "　", ""), " ", "")
+End Function
+
+
+'
 ' シートの存在チェック付きアクティベート
 '
 ' sSheetName    IN      シート名
@@ -482,6 +494,61 @@ End Sub
 
 
 '
+' 範囲の最左列番号を返す
+'
+' sName      IN      範囲名
+'
+Function GetAreaLeftColumn(sName As String)
+    Dim oRange As Range
+    Set oRange = Range(sName)
+    GetAreaLeftColumn = oRange.Column
+End Function
+
+'
+' 範囲の最右列番号を返す
+'
+' sName      IN      範囲名
+'
+Function GetAreaRightColumn(sName As String)
+    Dim oRange As Range
+    Set oRange = Range(sName)
+    GetAreaRightColumn = oRange.Column + oRange.Columns.Count - 1
+End Function
+
+'
+' 範囲の最上行番号を返す
+'
+' sName      IN      範囲名
+'
+Function GetAreaTopRow(sName As String)
+    Dim oRange As Range
+    Set oRange = Range(sName)
+    GetAreaTopRow = oRange.Row
+End Function
+
+'
+' 範囲の最下行番号を返す
+'
+' sName      IN      範囲名
+'
+Function GetAreaBottomRow(sName As String)
+    Dim oRange As Range
+    Set oRange = Range(sName)
+    GetAreaBottomRow = oRange.Row + oRange.Rows.Count - 1
+End Function
+
+
+'
+' 基準セルからオフセット位置の値セルを返す
+'
+' oCell         IN      基準セル
+' nColumn       IN      列番号
+'
+Function GetOffset(oCell As Variant, nColumn As Integer)
+    Set GetOffset = oCell.Offset(0, nColumn - oCell.Column)
+End Function
+
+'
 ' 範囲のヘッダ行から指定した列番号を返す
 '
 ' sName      IN      範囲名
@@ -504,8 +571,6 @@ End Function
 ' 範囲のヘッダ行を除くキー列を取得する
 '
 ' sName      IN      範囲名
-' sColName   IN      カラム名
-'            OUT     列の番号
 '
 Function GetAreaKeyData(sName As String)
     Dim oRange As Range
@@ -513,6 +578,16 @@ Function GetAreaKeyData(sName As String)
     Set GetAreaKeyData = oRange.Offset(1, 0).Resize(oRange.Rows.Count - 1, 1).Rows()
 End Function
 
+'
+' 範囲のキー列名を返す
+'
+' sName      IN      範囲名
+'
+Function GetAreaKeyName(sName As String)
+    Dim oRange As Range
+    Set oRange = GetRange(sName)
+    GetAreaKeyName = oRange.Cells(1, 1).Value
+End Function
 
 '
 ' 範囲から指定した値に対応するカラム値を返す

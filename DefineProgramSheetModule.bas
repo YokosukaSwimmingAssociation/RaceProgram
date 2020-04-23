@@ -40,7 +40,7 @@ Sub Header名前定義(sSheetName As String)
     Dim sName As String
     For nColumn = 1 To ActiveCell.SpecialCells(xlCellTypeLastCell).Column
         Set oCell = Cells(1, nColumn)
-        sName = Trim(Replace(oCell.Value, "　", ""))
+        sName = STrimAll(oCell.Value)
         If sName <> "" Then
             Call SetName("Header" & sName, oCell.Address(ReferenceStyle:=xlA1))
             If sName = "所属" Then
@@ -265,7 +265,7 @@ Sub 市民大会優勝者名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("市民大会優勝者")
     
-    Call SetName("市民大会優勝者", TableRangeAddress("$A$1"))
+    Call SetName("市民大会優勝者", ColumnRangeAddress("$A$1"))
     
     ' シートのロック
     Call SheetProtect(True)
@@ -302,7 +302,7 @@ Sub 選手権大会記録名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("選手権大会記録")
     
-    Call SetName("選手権大会記録", TableRangeAddress("$A$2"))
+    Call SetName("選手権大会記録", ColumnRangeAddress("$A$2"))
     
     ' シートのロック
     Call SheetProtect(True)
