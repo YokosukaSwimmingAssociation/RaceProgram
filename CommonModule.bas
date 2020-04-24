@@ -483,13 +483,17 @@ End Sub
 '
 ' プログラム入力用：記録画面のタイム入力
 '
-' nIndex     IN      順位
-' nLean      IN      レーン
-' sTime      IN      時間
+' nIndex        IN      順位
+' nLean         IN      レーン
+' sTime         IN      時間
+' sAdditional   IN      備考
 '
-Sub SetLean(nIndex As Integer, nLean As Integer, sTime As String)
+Sub SetLean(nIndex As Integer, nLean As Integer, sTime As String, Optional sAdditional As String = "")
     GetRange("記録画面レーン").Rows(nIndex).Value = nLean
     GetRange("記録画面タイム").Rows(nIndex).Value = sTime
+    If sAdditional <> "" Then
+        GetRange("記録画面備考").Rows(nIndex).Value = sAdditional
+    End If
 End Sub
 
 

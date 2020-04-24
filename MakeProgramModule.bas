@@ -105,7 +105,7 @@ End Sub
 Sub CheckFinal(oEntryList As Object)
 
     Dim oProNo As Object
-    Dim nFileNo As Integer
+    Dim nFinalNo As Integer
     
     ' プログラム番号毎
     For Each nProNo In oEntryList.Keys()
@@ -271,6 +271,7 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
                 ' 直接決勝へ
                 Call SetNo(oWorkSheet, nCurrentRow)
                 Call SetNo(oWorkSheet, nCurrentRow)
+                Call CopyCell(oWorkSheet, nCurrentRow, "HeaderプロNo", nProNo)
                 Cells(nCurrentRow, GetRange("Header氏名").Column).Value = sMessage
             Else
                 ' レーン毎
@@ -370,7 +371,7 @@ Sub MakeProgramHeader(oWorkSheet As Worksheet, sTableName As String, nCurrentRow
             
             
             Call CopyCell(oWorkSheet, nCurrentRow, "Prog記録")
-            Dim nFileNo As Integer
+            Dim nFinalNo As Integer
             nFinalNo = VLookupArea(nProNo, "選手権種目区分", "決勝番号")
             Dim nQualify As Long
             nQualify = VLookupArea(nProNo, sMaster, "標準記録")
@@ -541,7 +542,7 @@ nRow As Integer, nProNo As Integer, nHeat As Integer)
 
         ' 横須賀選手権水泳大会
         If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
-            Dim nFileNo As Integer
+            Dim nFinalNo As Integer
             nFinalNo = VLookupArea(.ListColumns("プロNo").Range(nRow).Value, "選手権種目区分", "決勝番号")
             Call CopyCell(oWorkSheet, nCurrentRow, "Prog大会記録", _
                     VLookupArea(nFinalNo, "選手権大会記録", "記録"))

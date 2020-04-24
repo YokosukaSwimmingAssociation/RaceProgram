@@ -56,7 +56,9 @@ End Sub
 ' 記録画面でレーンが入力された場合に選手名を読込み表示する
 ' レース番号が空欄の場合は何もしない
 '
-Sub 選手名読込み()
+' oLaneCell     IN  変更のあったレーンのセル
+'
+Sub 選手名読込み(oLaneCell As Range)
     Dim nRaceNo As Integer
     nRaceNo = Range("記録画面レースNo").Value
     If nRaceNo = 0 Then
@@ -64,13 +66,11 @@ Sub 選手名読込み()
     End If
     
     Dim nLane As Integer
-    For Each vLane In Range("記録画面レーン")
-        nLane = Cells(vLane.Row, Range("記録画面レーン").Column).Value
-        ' 選手名
-        Cells(vLane.Row, Range("記録画面選手名").Column).Value = SearchName(nRaceNo, nLane)
-        ' チーム名
-        Cells(vLane.Row, Range("記録画面チーム名").Column).Value = SearchTeam(nRaceNo, nLane)
-    Next vLane
+    nLane = oLaneCell.Value
+    ' 選手名
+    Cells(oLaneCell.Row, Range("記録画面選手名").Column).Value = SearchName(nRaceNo, nLane)
+    ' チーム名
+    Cells(oLaneCell.Row, Range("記録画面チーム名").Column).Value = SearchTeam(nRaceNo, nLane)
 End Sub
 
 '
@@ -138,21 +138,31 @@ End Function
 '
 ' 違反反映
 '
-Sub 違反反映()
-    Dim sViolation As String
+' oDqCell       IN  変更のあった違反セル
+'
+Sub 違反反映(oDqCell As Range)
+    Application.EnableEvents = False
     
-    For Each vLane In GetRange("記録画面レーン")
-        sViolation = Cells(vLane.Row, GetRange("記録画面違反").Column).Value
-        
-        If sViolation <> "　" And sViolation <> "" Then
-            ' タイムを空にして違反を設定
-                Cells(vLane.Row, GetRange("記録画面タイム").Column).Value = ""
-                Cells(vLane.Row, GetRange("記録画面備考").Column).Value = sViolation
-        ElseIf Cells(vLane.Row, GetRange("記録画面備考").Column).Value <> "大会新" And _
-                Cells(vLane.Row, GetRange("記録画面備考").Column).Value <> "タイム失格" Then
-                Cells(vLane.Row, GetRange("記録画面備考").Column).Value = ""
-        End If
-    Next vLane
+    Dim sDq As String
+    sDq = STrimAll(oDqCell.Value)
+    
+    ' OPを設定されている場合
+    If sDq = "OP" Then
+        ' タイムを残してOPを設定
+        Cells(oDqCell.Row, GetRange("記録画面備考").Column).Value = sDq
+    
+    ' 失格を設定されている場合
+    ElseIf sDq <> "" Then
+        ' タイムを空にして違反を設定
+        Cells(oDqCell.Row, GetRange("記録画面タイム").Column).Value = ""
+        Cells(oDqCell.Row, GetRange("記録画面備考").Column).Value = sDq
+    
+    ' 空白に戻した場合
+    Else
+        Call 大会記録判定(Cells(oDqCell.Row, GetRange("記録画面タイム").Column))
+    End If
+
+    Application.EnableEvents = True
 End Sub
 
 '
@@ -162,7 +172,10 @@ End Sub
 '
 ' 名前「プログラムレースN」からレースのセルを取得して探索する
 '
-Sub 大会記録判定()
+' oTimeCell       IN  変更のあったタイムセル
+'
+Sub 大会記録判定(oTimeCell As Range)
+    Application.EnableEvents = False
     Dim nRaceNo As Integer
     Dim nLane As Integer
     Dim nTime As Long
@@ -171,28 +184,30 @@ Sub 大会記録判定()
 
     nRaceNo = GetRange("記録画面レースNo").Value
    
-    For Each vLane In GetRange("記録画面レーン")
-        nLane = Cells(vLane.Row, GetRange("記録画面レーン").Column).Value
-        nTime = Cells(vLane.Row, GetRange("記録画面タイム").Column).Value
-        
-        If nLane > 0 And nTime > 0 Then
-            nRecordTime = SearchRecord(nRaceNo, nLane)
-            nQualifyTime = SearchQualify(nRaceNo, nLane)
-            If nQualifyTime > 0 And nTime > nQualifyTime Then
-                ' 時間が標準記録より大きい場合はタイム失格
-                Cells(vLane.Row, GetRange("記録画面備考").Column).Value = "タイム失格"
-            ElseIf nRecordTime = 0 Or nTime < nRecordTime Then
-                ' 時間が大会記録より小さい場合は大会新（同一タイムはNG）
-                Cells(vLane.Row, GetRange("記録画面備考").Column).Value = "大会新"
-            Else
-                ' それ以外は空欄
-                Cells(vLane.Row, GetRange("記録画面備考").Column).Value = ""
-            End If
+    nLane = Cells(oTimeCell.Row, GetRange("記録画面レーン").Column).Value
+    nTime = Cells(oTimeCell.Row, GetRange("記録画面タイム").Column).Value
+    
+    ' レーン、タイムに値が設定されている場合
+    If nLane > 0 And nTime > 0 Then
+        nRecordTime = SearchRecord(nRaceNo, nLane)
+        nQualifyTime = SearchQualify(nRaceNo, nLane)
+        If nQualifyTime > 0 And nTime > nQualifyTime Then
+            ' 時間が標準記録より大きい場合はタイム失格
+            Cells(oTimeCell.Row, GetRange("記録画面備考").Column).Value = "タイム失格"
+        ElseIf nRecordTime = 0 Or nTime < nRecordTime Then
+            ' 時間が大会記録より小さい場合は大会新（同一タイムはNG）
+            Cells(oTimeCell.Row, GetRange("記録画面備考").Column).Value = "大会新"
         Else
-            ' 何も入力されていないレーンも空欄
-            Cells(vLane.Row, GetRange("記録画面備考").Column).Value = ""
+            ' それ以外は空欄
+            Cells(oTimeCell.Row, GetRange("記録画面備考").Column).Value = ""
         End If
-    Next vLane
+    Else
+        ' 何も入力されていないレーンも空欄
+        Cells(oTimeCell.Row, GetRange("記録画面備考").Column).Value = ""
+    End If
+    Cells(oTimeCell.Row, GetRange("記録画面違反").Column).Value = ""
+
+    Application.EnableEvents = True
 End Sub
 
 '
@@ -323,9 +338,14 @@ Function SetRecord(nRaceNo As Integer, nLane As Integer, nTime As Long, sAdditio
     For Each vLaneNo In GetRange(sName)
         If vLaneNo.Offset(0, GetRange("Progレーン").Column - vLaneNo.Column).Value = nLane Then
             If nTime = 0 Then
-                ' タイムが入力されていない場合は棄権
-                vLaneNo.Offset(0, GetRange("Prog備考").Column - vLaneNo.Column).Value = sAdditional
-                vLaneNo.Offset(0, GetRange("Prog備考").Column - vLaneNo.Column).Value = "棄権"
+                ' タイムが入力されていない場合
+                If sAdditional <> "" Then
+                    ' 備考の値を設定
+                    vLaneNo.Offset(0, GetRange("Prog備考").Column - vLaneNo.Column).Value = sAdditional
+                Else
+                    ' 備考が空欄なら棄権
+                    vLaneNo.Offset(0, GetRange("Prog備考").Column - vLaneNo.Column).Value = "棄権"
+                End If
             Else
                 ' タイムが入力されている場合は時間と備考を設定
                 vLaneNo.Offset(0, GetRange("Prog時間").Column - vLaneNo.Column).Value = nTime
@@ -388,13 +408,17 @@ Sub SetOrder(nProNo As Integer)
     ' 読込み
     Call ReadOrder(nProNo, sName, oProNo)
 
-    ' ソート
+    ' ソートして順番を設定
     Call SortDictOrder(nProNo, sName, oProNo)
 
 End Sub
 
 '
-' 順番を読み込む
+' 順番を付けるレーン読み込む
+'
+' 記録がない場合は読み込まない
+' タイム失格の場合は読み込まない
+' OPの場合は読み込まない
 '
 ' nProNo            IN      種目番号
 ' sName             IN      種目番号の名前
@@ -407,8 +431,10 @@ Sub ReadOrder(nProNo As Integer, sName As String, oProNo As Object)
     If IsNameExists(sName) Then
         ' レースNo毎に実施
         For Each vLane In Range(sName)
-            ' 時間が入力されている場合が対象
-            If IsNumeric(vLane.Offset(0, GetRange("Prog時間").Column - vLane.Column).Value) Then
+            ' 記録があり、タイム失格、OPでない合が対象
+            If IsNumeric(vLane.Offset(0, GetRange("Prog時間").Column - vLane.Column).Value) And _
+                vLane.Offset(0, GetRange("Prog備考").Column - vLane.Column).Value <> "タイム失格" And _
+                vLane.Offset(0, GetRange("Prog備考").Column - vLane.Column).Value <> "OP" Then
                 ' ソート区分（年齢区分）毎に順位をつける
                 sSubClass = vLane.Offset(0, GetRange("Headerソート区分").Column - vLane.Column).Value
                 If sSubClass = "" Then
@@ -431,7 +457,7 @@ Sub ReadOrder(nProNo As Integer, sName As String, oProNo As Object)
 End Sub
 
 '
-' 順番を読み込む
+' ソートして順番を設定
 '
 ' nProNo            IN      種目番号
 ' sName             IN      種目番号の名前
@@ -464,3 +490,108 @@ Sub SortDictOrder(nProNo As Integer, sName As String, oProNo As Object)
         Next vRow
     Next vProNo
 End Sub
+
+'
+' 予選の場合に決勝を作成
+'
+Sub 決勝登録()
+    ' イベント発生を抑制
+    Call EventChange(False)
+
+    ' 選手権以外は無効
+    If GetRange("大会名").Value <> "横須賀選手権水泳大会" Then
+        Exit Sub
+    End If
+
+    Dim nProNo As Integer
+    nProNo = GetRange("記録画面種目番号").Value
+
+    Dim nFinalNo As Integer
+    nFinalNo = VLookupArea(nProNo, "選手権種目区分", "決勝番号")
+
+    ' 決勝がない場合も無効
+    If nProNo = nFileNo Then
+        Exit Sub
+    End If
+
+    ' 決勝進出者を読み込む
+    Dim oFinalist As Object
+    Call ReadFinalist(nProNo, oFinalist)
+
+    ' 決勝進出者を出力
+    Call WriteFinalist(nFinalNo, oFinalist)
+
+    ' イベント発生を再開
+    Call EventChange(True)
+End Sub
+
+'
+' 決勝進出者を読み込む
+'
+' nProNo            IN      種目番号
+' oFinalist         OUT     決勝進出者の行番号配列
+'
+Sub ReadFinalist(nProNo As Integer, oFinalist As Object)
+    Dim sName As String
+    sName = "プログラム番号" & Trim(Str(nProNo))
+
+    Set oFinalist = CreateObject("Scripting.Dictionary")
+
+    If IsNameExists(sName) Then
+        For Each vProNo In GetRange(sName)
+            nOrder = GetOffset(vProNo, GetRange("Header順位").Column).Value
+            ' 決勝人数まで保存
+            If nOrder <= N_NUMBER_OF_RACE Then
+                oFinalist.Add nOrder, vProNo
+            End If
+        Next vProNo
+    End If
+End Sub
+
+'
+' 決勝進出者を読み込む
+'
+' nProNo            IN      種目番号
+' oFinalist         OUT     決勝進出者の行番号配列
+'
+Sub WriteFinalist(nProNo As Integer, oFinalist As Object)
+    Dim sName As String
+    sName = "プログラム番号" & Trim(Str(nProNo))
+
+    Dim nLane As Integer
+    Dim nOrder As Integer
+    Dim nRow As Integer
+
+    If IsNameExists(sName) Then
+        For Each vProNo In GetRange(sName)
+            ' レーン毎
+            nLane = GetOffset(vProNo, GetRange("Headerレーン").Column).Value
+            ' レーンから順位を取得
+            nOrder = GetOrderByLane(GetCenterLane(N_NUMBER_OF_RACE, N_MIN_LANE_OF_RACE), nLane)
+            ' 予選の行を取得
+            Set vCell = oFinalist.Item(nOrder)
+            
+            GetOffset(vProNo, Range("Prog氏名").Column).Value = GetOffset(vCell, Range("Prog氏名").Column).Value
+            GetOffset(vProNo, Range("Prog所属").Column).Value = GetOffset(vCell, Range("Prog所属").Column).Value
+            GetOffset(vProNo, Range("Prog区分").Column).Value = GetOffset(vCell, Range("Prog区分").Column).Value
+            GetOffset(vProNo, Range("Prog申込み記録").Column).Value = GetOffset(vCell, Range("Prog時間").Column).Value
+            
+        Next vProNo
+    End If
+End Sub
+
+'
+' レーンから順位を算出
+'
+' nCenterLane       IN      センターレーン
+' nLane             IN      レーン番号
+'
+Function GetOrderByLane(nCenterLane As Integer, nLane As Integer)
+    Dim nNum As Integer
+    nNum = nLane - nCenterLane
+    If nNum <= 0 Then
+        GetOrderByLane = 2 * (1 - nNum) - 1
+    Else
+        GetOrderByLane = 2 * nNum
+    End If
+End Function

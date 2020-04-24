@@ -1,4 +1,4 @@
-Attribute VB_Name = "FileBatchReplaceMoudle"
+Attribute VB_Name = "BatchFileReplaceModule"
 '
 ' エントリーファイル一覧の読み込み
 '

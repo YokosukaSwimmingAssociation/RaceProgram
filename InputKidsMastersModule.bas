@@ -1,8 +1,8 @@
-Attribute VB_Name = "KidsMastersCorrectionModule"
+Attribute VB_Name = "InputKidsMastersModule"
 '
 ' 学童マスターズのプログラム補正
 '
-Sub 学マプログラム補正()
+Sub 入力学マ補正()
 
     Call EventChange(False)
 
@@ -263,7 +263,7 @@ End Sub
 '
 ' 令和元年度のプログラムの記録を入れる
 '
-Sub 学マ記録入力()
+Sub 入力学マ記録()
     Sheets("記録画面").Select
     Call SetRace(1, 1)
     Call SetLean(1, 3, "34709")

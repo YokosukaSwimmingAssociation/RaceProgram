@@ -143,7 +143,8 @@ Sub 賞状名前定義(Optional sValue As String = "")
 End Sub
 
 Sub 学マ賞状名前定義(Optional sValue As String = "")
-    Sheets("学マ賞状").Select
+    Sheets("学童マスターズ賞状").Visible = True
+    Sheets("学童マスターズ賞状").Select
     Call SheetProtect(False)
 
     ' 名前をすべて削除
@@ -160,6 +161,7 @@ Sub 学マ賞状名前定義(Optional sValue As String = "")
  
     ' シートを保護
     Call SheetProtect(True)
+    ActiveSheet.Visible = False
  
 End Sub
 

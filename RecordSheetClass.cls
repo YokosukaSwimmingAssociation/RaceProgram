@@ -14,11 +14,11 @@ Private Sub Worksheet_Change(ByVal Target As Range)
     ElseIf Not (Intersect(Target, Range("記録画面組")) Is Nothing) Then
         Call レース番号読込み
     ElseIf Not (Intersect(Target, Range("記録画面レーン")) Is Nothing) Then
-        Call 選手名読込み
+        Call 選手名読込み(Target)
     ElseIf Not (Intersect(Target, Range("記録画面タイム")) Is Nothing) Then
-        Call 大会記録判定
+        Call 大会記録判定(Target)
     ElseIf Not (Intersect(Target, Range("記録画面違反")) Is Nothing) Then
-        Call 違反反映
+        Call 違反反映(Target)
     Else
         Exit Sub
     End If

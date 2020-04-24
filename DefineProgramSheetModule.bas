@@ -18,9 +18,12 @@ Sub ワークブック名前定義()
     Call 選手権大会記録名前定義
     Call 選手権大会優勝者名前定義
     Call 賞状名前定義
-    Call 大会名定義
+    Call マクロページ定義
+    Call シート非表示
     
     Call EventChange(True)
+    Sheets("プログラム作成マクロ").Select
+    Range("A1").Select
 End Sub
 
 '
@@ -29,6 +32,7 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub Header名前定義(sSheetName As String)
+    Sheets(sSheetName).Visible = True
     Sheets(sSheetName).Select
     Call SheetProtect(False)
     Range("$A$1").Select
@@ -50,7 +54,9 @@ Sub Header名前定義(sSheetName As String)
         End If
     Next
 
-     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, AllowFiltering:=True
+    ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, AllowFiltering:=True
+    ActiveSheet.Visible = True
+
 End Sub
 
 '
@@ -59,6 +65,7 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub Prog名前定義(sSheetName As String)
+    Sheets(sSheetName).Visible = True
     Sheets(sSheetName).Select
     Call SheetProtect(False)
     Range("$A$1").Select
@@ -99,6 +106,7 @@ Sub Prog名前定義(sSheetName As String)
     Call SetName("Prog組フォーマット", "A$4:$R$13")
      
     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, AllowFiltering:=True, UserInterfaceOnly:=True
+    ActiveSheet.Visible = True
 End Sub
 
 '
@@ -107,7 +115,7 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub 記録画面名前定義(sSheetName As String)
-
+    Sheets(sSheetName).Visible = True
     Sheets(sSheetName).Select
     Call SheetProtect(False)
 
@@ -129,6 +137,7 @@ Sub 記録画面名前定義(sSheetName As String)
 
     ' シートのロック
     Call SheetProtect(True)
+    ActiveSheet.Visible = True
 End Sub
 
 '
@@ -140,7 +149,7 @@ Sub 記録画面違反定義(Optional sValue As String = "")
     With GetRange("記録画面違反").Validation
         .Delete
         .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
-        xlBetween, Formula1:="　,スタート失格,失格"
+        xlBetween, Formula1:="　,スタート失格,失格,OP"
         .IgnoreBlank = True
         .InCellDropdown = True
         .InputTitle = ""
@@ -160,6 +169,7 @@ End Sub
 '
 Sub 学童マスターズ大会種目区分名前定義(Optional sValue As String = "")
 
+    Sheets("学童マスターズ種目区分").Visible = True
     Sheets("学童マスターズ種目区分").Select
     Call SheetProtect(False)
 
@@ -174,6 +184,7 @@ Sub 学童マスターズ大会種目区分名前定義(Optional sValue As String = "")
     
     ' シートのロック
     Call SheetProtect(True)
+    ActiveSheet.Visible = False
 End Sub
 
 '
@@ -182,6 +193,7 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub 学童マスターズ大会記録名前定義(Optional sValue As String = "")
+    Sheets("学童マスターズ大会記録").Visible = True
     Sheets("学童マスターズ大会記録").Select
     Call SheetProtect(False)
 
@@ -192,6 +204,7 @@ Sub 学童マスターズ大会記録名前定義(Optional sValue As String = "")
     
     ' シートのロック
     Call SheetProtect(True)
+    ActiveSheet.Visible = False
 End Sub
 
 '
@@ -200,6 +213,7 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub 学童マスターズ大会優勝者名前定義(Optional sValue As String = "")
+    Sheets("学童マスターズ優勝者").Visible = True
     Sheets("学童マスターズ優勝者").Select
     Call SheetProtect(False)
 
@@ -210,6 +224,7 @@ Sub 学童マスターズ大会優勝者名前定義(Optional sValue As String = "")
     
     ' シートのロック
     Call SheetProtect(True)
+    ActiveSheet.Visible = False
 End Sub
 
 '
@@ -218,7 +233,7 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub 市民大会種目区分名前定義(Optional sValue As String = "")
-
+    Sheets("市民大会種目区分").Visible = True
     Sheets("市民大会種目区分").Select
     Call SheetProtect(False)
 
@@ -233,6 +248,7 @@ Sub 市民大会種目区分名前定義(Optional sValue As String = "")
     
     ' シートのロック
     Call SheetProtect(True)
+    ActiveSheet.Visible = False
 End Sub
 
 '
@@ -241,6 +257,7 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub 市民大会記録名前定義(Optional sValue As String = "")
+    Sheets("市民大会記録").Visible = True
     Sheets("市民大会記録").Select
     Call SheetProtect(False)
 
@@ -251,6 +268,7 @@ Sub 市民大会記録名前定義(Optional sValue As String = "")
     
     ' シートのロック
     Call SheetProtect(True)
+    ActiveSheet.Visible = False
 End Sub
 
 '
@@ -259,6 +277,7 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub 市民大会優勝者名前定義(Optional sValue As String = "")
+    Sheets("市民大会優勝者").Visible = True
     Sheets("市民大会優勝者").Select
     Call SheetProtect(False)
 
@@ -269,6 +288,7 @@ Sub 市民大会優勝者名前定義(Optional sValue As String = "")
     
     ' シートのロック
     Call SheetProtect(True)
+    ActiveSheet.Visible = False
 End Sub
 
 '
@@ -277,7 +297,7 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub 選手権大会種目区分名前定義(Optional sValue As String = "")
-
+    Sheets("選手権大会種目区分").Visible = True
     Sheets("選手権大会種目区分").Select
     Call SheetProtect(False)
 
@@ -288,6 +308,7 @@ Sub 選手権大会種目区分名前定義(Optional sValue As String = "")
    
     ' シートのロック
     Call SheetProtect(True)
+    ActiveSheet.Visible = False
 End Sub
 
 '
@@ -296,16 +317,18 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub 選手権大会記録名前定義(Optional sValue As String = "")
+    Sheets("選手権大会記録").Visible = True
     Sheets("選手権大会記録").Select
     Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("選手権大会記録")
     
-    Call SetName("選手権大会記録", ColumnRangeAddress("$A$2"))
+    Call SetName("選手権大会記録", TableRangeAddress("$A$2"))
     
     ' シートのロック
     Call SheetProtect(True)
+    ActiveSheet.Visible = False
 End Sub
 
 '
@@ -314,29 +337,49 @@ End Sub
 ' sValue        IN      ダミー
 '
 Sub 選手権大会優勝者名前定義(Optional sValue As String = "")
+    Sheets("選手権大会優勝者").Visible = True
     Sheets("選手権大会優勝者").Select
     Call SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("選手権大会優勝者")
     
-    Call SetName("選手権大会優勝者", TableRangeAddress("$A$1"))
+    Call SetName("選手権大会優勝者", ColumnRangeAddress("$A$1"))
     
+    ' シートのロック
+    Call SheetProtect(True)
+    ActiveSheet.Visible = False
+End Sub
+
+
+'
+' マクロページの定義
+'
+' sValue        IN      ダミー
+'
+Sub マクロページ定義(Optional sValue As String = "")
+
+    Sheets("プログラム作成マクロ").Select
+    Call SheetProtect(False)
+
+    Call 大会名定義
+    Call 大会年定義
+    Call 組合せ方式定義
+    Call 組最少人数定義
+
     ' シートのロック
     Call SheetProtect(True)
 End Sub
 
 '
-' 大会名、年を定義
+' 大会名を定義
 '
 ' sValue        IN      ダミー
 '
 Sub 大会名定義(Optional sValue As String = "")
-    '
-    Sheets("プログラム作成マクロ").Select
-    Call SheetProtect(False)
     
-    With Range("$B$1").Validation
+    Call SetName("大会名", "$B$1")
+    With Range("大会名").Validation
         .Delete
         .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
         xlBetween, Formula1:="学童マスターズ大会,横須賀市民体育大会,横須賀選手権水泳大会"
@@ -350,11 +393,139 @@ Sub 大会名定義(Optional sValue As String = "")
         .ShowInput = True
         .ShowError = True
     End With
-    Call SetName("大会名", "$B$1")
-    Call SetName("大会年", "$B$2")
     
-    ' シートのロック
-    Call SheetProtect(True)
+End Sub
+
+'
+' 大会年を定義
+'
+' sValue        IN      ダミー
+'
+Sub 大会年定義(Optional sValue As String = "")
+    
+    Call SetName("大会年", "$E$7")
+    With Range("大会年").Validation
+        .Delete
+        .Add Type:=xlValidateWholeNumber, AlertStyle:=xlValidAlertStop, _
+            Operator:=xlBetween, Formula1:="2000", Formula2:="2050"
+        .IgnoreBlank = True
+        .InCellDropdown = True
+        .InputTitle = "開催年は数字だけで入力してください。"
+        .ErrorTitle = "入力エラー"
+        .InputMessage = ""
+        .ErrorMessage = "2000～2050までの数字を入力してください。"
+        .IMEMode = xlIMEModeAlpha
+        .ShowInput = True
+        .ShowError = True
+    End With
+    Range("大会年").Value = Year(Now)
+
+End Sub
+
+'
+'組合せ方式定義
+'
+' sValue        IN      ダミー
+'
+Sub 組合せ方式定義(Optional sValue As String = "")
+    
+    Call SetName("組合せ方式", "$E$3")
+    With Range("組合せ方式").Validation
+        .Delete
+        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
+        xlBetween, Formula1:="単純方式,混合分け方式"
+        .IgnoreBlank = True
+        .InCellDropdown = True
+        .InputTitle = ""
+        .ErrorTitle = ""
+        .InputMessage = ""
+        .ErrorMessage = ""
+        .IMEMode = xlIMEModeNoControl
+        .ShowInput = True
+        .ShowError = True
+    End With
+    Range("組合せ方式").Value = "単純方式"
+    
+End Sub
+
+'
+' 組最小人数定
+'
+' sValue        IN      ダミー
+'
+Sub 組最少人数定義(Optional sValue As String = "")
+
+    Call SetName("組最少人数", "$E$2")
+    With Range("組最少人数").Validation
+        .Delete
+        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
+        xlBetween, Formula1:="3,4"
+        .IgnoreBlank = True
+        .InCellDropdown = True
+        .InputTitle = ""
+        .ErrorTitle = ""
+        .InputMessage = ""
+        .ErrorMessage = ""
+        .IMEMode = xlIMEModeNoControl
+        .ShowInput = True
+        .ShowError = True
+    End With
+    Range("組最少人数").Value = 4
+
+End Sub
+
+Sub シート非表示(Optional sValue As String = "")
+
+    If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
+        Call 学マ大会シート非表示(False)
+        Call 市民大会シート非表示(False)
+        Call 選手権大会シート非表示(True)
+    ElseIf GetRange("大会名").Value = "横須賀市民体育大会" Then
+        Call 学マ大会シート非表示(False)
+        Call 市民大会シート非表示(True)
+        Call 選手権大会シート非表示(False)
+    Else
+        Call 学マ大会シート非表示(True)
+        Call 市民大会シート非表示(False)
+        Call 選手権大会シート非表示(False)
+    End If
+
+End Sub
+
+'
+' 学童マスターズシート非表示
+'
+' bFlag     IN  True:表示／False:非表示
+'
+Sub 学マ大会シート非表示(bFlag As Boolean)
+    Sheets("学童マスターズ種目区分").Visible = bFlag
+    Sheets("学童マスターズ大会記録").Visible = bFlag
+    Sheets("学童マスターズ優勝者").Visible = bFlag
+    Sheets("学童マスターズ賞状").Visible = bFlag
+End Sub
+
+'
+' 学童マスターズシート非表示
+'
+' bFlag     IN  True:表示／False:非表示
+'
+Sub 市民大会シート非表示(bFlag As Boolean)
+    Sheets("市民大会種目区分").Visible = bFlag
+    Sheets("市民大会記録").Visible = bFlag
+    Sheets("市民大会優勝者").Visible = bFlag
+    'Sheets("市民大会賞状").Visible = bFlag
+End Sub
+
+'
+' 学童マスターズシート非表示
+'
+' bFlag     IN  True:表示／False:非表示
+'
+Sub 選手権大会シート非表示(bFlag As Boolean)
+    Sheets("選手権大会種目区分").Visible = bFlag
+    Sheets("選手権大会記録").Visible = bFlag
+    Sheets("選手権大会優勝者").Visible = bFlag
+    'Sheets("選手権大会賞状").Visible = bFlag
 End Sub
 
 '

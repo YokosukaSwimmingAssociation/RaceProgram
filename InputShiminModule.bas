@@ -1,8 +1,8 @@
-Attribute VB_Name = "ShiminCorrectionModule"
+Attribute VB_Name = "InputShiminModule"
 '
 ' 市民大会のプログラム補正
 '
-Sub 市民プログラム補正()
+Sub 入力市民補正()
 
     Call EventChange(False)
 
@@ -268,7 +268,7 @@ End Sub
 '
 ' 令和元年度のプログラムの記録を入れる
 '
-Sub 市民記録入力()
+Sub 入力市民記録()
     Sheets("記録画面").Select
     Call SetRace(1, 1)
     Call SetLean(2, 4, "")
