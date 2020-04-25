@@ -168,8 +168,22 @@ Private Sub ReadEntryFile(ByRef oGameList As Object)
         oTeamList.Add sTeamName, oEntryList
     End If
 
-    Dim nIdx As Integer
+    ' 個人用エントリーの読込み
+    Call ReadPersonEntry(nNum, sTeamName, oEntryList)
 
+    ' リレー用エントリーの読込み
+    Call ReadRelayEntry(nNum, oEntryList)
+
+End Sub
+
+'
+' 個人用エントリーの読込み
+'
+' nNum          IN      個人エントリー行(1,2)
+' sTeam         IN      所属
+' oEntryList    OUT     種目行
+'
+Private Sub ReadPersonEntry(nNum As Integer, sTeamName As String, ByRef oEntryList As Object)
     ' 個人番号範囲をすべて読み込む
     For Each vCell In GetRange("選手番号")
         
@@ -190,25 +204,21 @@ Private Sub ReadEntryFile(ByRef oGameList As Object)
                 End If
 
                 ' 選手情報を登録
-                Call ReadEntrySwimmer(nNum, vCell, oEntry, nIdx)
+                Call ReadEntrySwimmer(nNum, vCell, oEntry)
                 
                 ' １行目
                 Call ReadEntryLine(1, vCell.Row, oEntry)
-                Call CheckEntry(vCell.Row, oEntry, 1)
+                Call CheckEntry(1, vCell.Row, oEntry)
     
                 ' ２行目
-                Call ReadEntryLine(2, vCell.Row + nIdx, oEntry)
-                Call CheckEntry(vCell.Row + nIdx, oEntry, 2)
+                Call ReadEntryLine(2, vCell.Row, oEntry)
+                Call CheckEntry(2, vCell.Row, oEntry)
                 If oEntry.Item("選手名") <> "" Then
                     oEntryList.Add nNum, oEntry
                 End If
             End If
         End If
     Next vCell
-
-    ' リレー用エントリーの読込み
-    Call ReadRelayEntry(nNum, oEntryList)
-
 End Sub
 
 '
@@ -219,9 +229,8 @@ End Sub
 ' nNum          IN      個人エントリー行(1,2)
 ' nRow          IN      行数
 ' oEntry        OUT     種目行
-' nIdx          OUT     行間
 '
-Private Sub ReadEntrySwimmer(nNum As Integer, vCell As Variant, ByRef oEntry As Object, ByRef nIdx As Integer)
+Private Sub ReadEntrySwimmer(nNum As Integer, vCell As Variant, ByRef oEntry As Object)
 
     oEntry.Add "性別", GetOffset(vCell, GetRange("選手性別").Column).Value + "子"
     oEntry.Add "フリガナ", ReplaceName(GetOffset(vCell, GetRange("選手フリガナ").Column).Value)
@@ -230,31 +239,26 @@ Private Sub ReadEntrySwimmer(nNum As Integer, vCell As Variant, ByRef oEntry As 
         
         oEntry.Add "選手名", ReplaceName(GetOffset(vCell, GetRange("選手名").Column).Offset(1).Value)
         oEntry.Add "区分", GetOffset(vCell, GetRange("選手区分").Column).Offset(1).Value
-        nIdx = 1
     
     ElseIf Range("大会名").Value = 市民大会 Then
-        
-        oEntry.Add "選手名", ReplaceName(GetOffset(vCell, GetRange("選手名").Column).Offset(2).Value)
-        oEntry.Add "学校名", Trim(GetOffset(vCell, GetRange("選手学校名").Column).Offset(4).Value)
+        oEntry.Add "選手名", ReplaceName(GetOffset(vCell, GetRange("選手名").Column).Offset(1).Value)
+        oEntry.Add "学校名", Trim(GetOffset(vCell, GetRange("選手学校名").Column).Offset(2).Value)
         If GetOffset(vCell, GetRange("選手区分").Column).Value <> "" Then
             oEntry.Add "区分", GetOffset(vCell, GetRange("選手区分").Column).Value
         Else
             oEntry.Add "区分", "年齢区分"
         End If
-        oEntry.Add "年齢", GetOffset(vCell, GetRange("選手年齢").Column).Offset(3).Value
-        nIdx = 3
+        oEntry.Add "年齢", GetOffset(vCell, GetRange("選手年齢").Column).Offset(1).Value
     
     ElseIf Range("大会名").Value = マスターズ大会 Then
     
         oEntry.Add "選手名", ReplaceName(GetOffset(vCell, GetRange("選手名").Column).Offset(1).Value)
         oEntry.Add "年齢", GetOffset(vCell, GetRange("選手年齢").Column).Value
-        nIdx = 1
     
     Else
     
         oEntry.Add "選手名", ReplaceName(GetOffset(vCell, GetRange("選手名").Column).Offset(1).Value)
         oEntry.Add "区分", GetOffset(vCell, GetRange("選手学年").Column).Value
-        nIdx = 1
     
     End If
 
@@ -285,7 +289,7 @@ Private Sub ReadEntryLine(nNum As Integer, nRow As Integer, oEntry As Object)
             sStyle = vCell.Value
         End If
         ' 種目選択が空以外の場合は選択されたものとする
-        Set oProNo = GetRowOffset(vCell, nRow)
+        Set oProNo = GetRowOffset(vCell, nRow).Offset(nNum - 1)
         If Trim(oProNo.Value) <> "" Then
             Set oLines = CreateObject("Scripting.Dictionary")
             oEntry.Add nNum, oLines
@@ -306,11 +310,11 @@ End Sub
 '
 ' エントリーの種目番号が正しいかを確認
 '
+' nNum          IN      個人エントリー行(1,2)
 ' nRow          IN      行番号
 ' oEntry        IN      種目行
-' nNum          IN      個人エントリー行(1,2)
 '
-Private Sub CheckEntry(nRow As Integer, oEntry As Object, nNum As Integer)
+Private Sub CheckEntry(nNum As Integer, nRow As Integer, oEntry As Object)
     
     If IsEmpty(oEntry.Item(nNum)) Then
         Exit Sub
@@ -582,7 +586,6 @@ Private Sub WriteLine( _
         Cells(nRow, Range(sTable & "[申込み時間]").Column).NumberFormatLocal = """ :""##"".""##"
     End If
     
-    Dim nColumn As Integer
     If sGame = 選手権大会 Then
     
         Cells(nRow, Range(sTable & "[種目区分]").Column).Value = ""
