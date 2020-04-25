@@ -6,10 +6,12 @@ Public Const 学マ大会 As String = "学童マスターズ大会"
 Public Const 市民大会 As String = "横須賀市民体育大会"
 Public Const 選手権大会 As String = "横須賀選手権水泳大会"
 
+Public Const トップページシート As String = "トップページ"
 Public Const エントリーシート As String = "エントリー一覧"
 Public Const エントリーテーブル As String = "エントリーテーブル"
 Public Const プログラムシート As String = "プログラム"
 Public Const フォーマットシート As String = "プログラムフォーマット"
+Public Const 記録画面シート As String = "記録画面"
 
 Public Const レース定員 As Integer = 7       ' １レースの人数
 Public Const 最大レーン番号 As Integer = 9     ' レーンの最大番号
