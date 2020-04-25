@@ -59,7 +59,7 @@ Private Sub 記入票名前定義()
     Call DefineName("選手区分列", "$F$10")
     
     If Range("大会名").Value = 選手権大会 Then
-        Call DefineName("種目名", "$G$10:$S$10")
+        Call DefineName("種目一覧", "$G$10:$S$10")
         Call DefineName("種目距離", "$G$11:$S$11")
    
         Call DefineName("自由形50M列", "$G$11")
@@ -90,7 +90,7 @@ Private Sub 記入票名前定義()
         Call DefineName("リレーミリ秒列", "$P$34")
     
     ElseIf Range("大会名").Value = 市民大会 Then
-        Call DefineName("種目名", "$G$10:$P$10")
+        Call DefineName("種目一覧", "$G$10:$P$10")
         Call DefineName("種目距離", "$G$11:$P$11")
         
         Call DefineName("自由形50M列", "$G$11")
@@ -121,7 +121,7 @@ Private Sub 記入票名前定義()
     
     Else
         ' 学童マスターズ大会
-        Call DefineName("種目名", "$G$10:$O$10")
+        Call DefineName("種目一覧", "$G$10:$O$10")
         Call DefineName("種目距離", "$G$11:$O$11")
     
         Call DefineName("自由形50M列", "$G$11")

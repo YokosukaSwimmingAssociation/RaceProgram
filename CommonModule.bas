@@ -17,6 +17,8 @@ Public Const レース定員 As Integer = 7       ' １レースの人数
 Public Const 最大レーン番号 As Integer = 9     ' レーンの最大番号
 Public Const 最小レーン番号 As Integer = 3     ' レーンの最小番号
 Public Const 平均分け組数 As Integer = 3 ' 平均分け方式にする組数
+Public Const 個人最大行数 As Integer = 2 ' 個人の申込み行数
+Public Const リレー最大行数 As Integer = 24 ' リレーの最大申込み行数
 
 Public Const 選手名ブランク As String = "　　．　　．　　．"
 Private Const ARRAYSIZE = 10000
@@ -462,8 +464,18 @@ End Function
 ' vCell         IN      基準セル
 ' nColumn       IN      列番号
 '
-Public Function GetOffset(vCell As Variant, nColumn As Integer) As Range
-    Set GetOffset = vCell.Offset(0, nColumn - vCell.Column)
+Public Function GetOffset(vCell As Variant, nColumn As Integer, Optional nRow As Integer = 0) As Range
+    Set GetOffset = vCell.Offset(nRow, nColumn - vCell.Column)
+End Function
+
+'
+' 基準セルから列のオフセット位置の値セルを返す
+'
+' vCell         IN      基準セル
+' nColumn       IN      列番号
+'
+Public Function GetRowOffset(vCell As Variant, nRow As Integer, Optional nColumn As Integer = 0) As Range
+    Set GetRowOffset = vCell.Offset(nRow - vCell.Row, nColumn)
 End Function
 
 '
@@ -519,7 +531,7 @@ End Function
 ' bFlag      IN      VLookuUp関数の検索の型（False:完全一致／True:一番近いデータ）
 '            OUT     一致した値
 '
-Public Function VLookupArea(vValue As Variant, sName As String, sColName As String, Optional bFlag As Boolean = False) As Range
+Public Function VLookupArea(vValue As Variant, sName As String, sColName As String, Optional bFlag As Boolean = False) As Variant
     VLookupArea = Application.WorksheetFunction.VLookup(vValue, GetRange(sName), GetAreaColumnIndex(sName, sColName), bFlag)
 End Function
 
