@@ -1,4 +1,11 @@
 Attribute VB_Name = "CommonModule"
+' 大会名
+Public Const 学童大会 As String = "横須賀学童水泳競技大会"
+Public Const マスターズ大会 As String = "横須賀マスターズ大会"
+Public Const 学マ大会 As String = "学童マスターズ大会"
+Public Const 市民大会 As String = "横須賀市民体育大会"
+Public Const 選手権大会 As String = "横須賀選手権水泳大会"
+
 Public Const S_ENTRY_SHEET_NAME As String = "エントリー一覧"
 Public Const S_ENTRY_TABLE_NAME As String = "エントリーテーブル"
 Public Const S_PROGRAM_SHEE_TNAME As String = "プログラム"
@@ -123,7 +130,7 @@ End Function
 ' sName             IN      名前
 ' sRange            IN      レンジ範囲(A1形式)
 '
-Public Sub SetName(sName As String, sRange As String)
+Public Sub DefineName(sName As String, sRange As String)
     If IsNameExists(sName) Then
         ActiveWorkbook.Names(sName).Delete
     End If

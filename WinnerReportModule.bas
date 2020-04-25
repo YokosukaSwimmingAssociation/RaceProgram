@@ -61,42 +61,56 @@ Sub ReadWinner(sGameName As String, oWinnerList As Object)
     Dim sTeam As String
     Dim nTime As Long
     Dim nRecord As Variant
+    Dim bFlag As Boolean
     
     ' プログラム番号毎
     For Each nProNo In GetAreaKeyData(sMasterName)
+        ' 選手権の予選は飛ばす
+        If sGameName = "横須賀選手権水泳大会" Then
+             If VLookupArea(nProNo, "選手権種目区分", "予選／決勝") = "予選" Then
+                bFlag = False
+             Else
+                bFlag = True
+             End If
+        Else
+            bFlag = True
+        End If
         
-        ' プログラム番号内から１位を探す
-        For Each oCell In GetRange("プログラム番号" & CStr(nProNo))
-            ' １位の場合
-            If oCell.Offset(0, Range("Header順位").Column - Range("HeaderプロNo").Column).Value = 1 Then
-                
-                Set oWinner = CreateObject("Scripting.Dictionary")
-                
-                sName = oCell.Offset(0, Range("Header氏名").Column - Range("HeaderプロNo").Column).Value
-                sTeam = oCell.Offset(0, Range("Header所属").Column - Range("HeaderプロNo").Column).Value
-                nTime = oCell.Offset(0, Range("Header時間").Column - Range("HeaderプロNo").Column).Value
-                nRecord = oCell.Offset(0, Range("Header大会記録").Column - Range("HeaderプロNo").Column).Value
-                sKey = GetWinnerKey(sGameName, sMasterName, CInt(nProNo), _
-                    oCell.Offset(0, Range("Header区分").Column - Range("HeaderプロNo").Column).Value)
-
-                oWinner.Add "氏名", sName
-                oWinner.Add "所属", sTeam
-                oWinner.Add "記録", nTime
-                If Not IsNumeric(nRecord) Or nTime <= nRecord Then
-                    oWinner.Add "大会新", "大会新"
+        ' 決勝（タイム決勝）の場合
+        If bFlag Then
+            ' プログラム番号内から１位を探す
+            For Each oCell In GetRange("プログラム番号" & CStr(nProNo))
+                ' １位の場合
+                If oCell.Offset(0, Range("Header順位").Column - Range("HeaderプロNo").Column).Value = 1 Then
+                    
+                    Set oWinner = CreateObject("Scripting.Dictionary")
+                    
+                    sName = oCell.Offset(0, Range("Header氏名").Column - Range("HeaderプロNo").Column).Value
+                    sTeam = oCell.Offset(0, Range("Header所属").Column - Range("HeaderプロNo").Column).Value
+                    nTime = oCell.Offset(0, Range("Header時間").Column - Range("HeaderプロNo").Column).Value
+                    nRecord = oCell.Offset(0, Range("Header大会記録").Column - Range("HeaderプロNo").Column).Value
+                    sKey = GetWinnerKey(sGameName, sMasterName, CInt(nProNo), _
+                        oCell.Offset(0, Range("Header区分").Column - Range("HeaderプロNo").Column).Value)
+    
+                    oWinner.Add "氏名", sName
+                    oWinner.Add "所属", sTeam
+                    oWinner.Add "記録", nTime
+                    If Not IsNumeric(nRecord) Or nTime <= nRecord Then
+                        oWinner.Add "大会新", "大会新"
+                    End If
+                    
+                    ' プロNo＋区分の１位が未登録の場合
+                    If Not (oWinnerList.Exists(sKey)) Then
+                        Set oWinners = CreateObject("Scripting.Dictionary")
+                        oWinners.Add oWinners.Count + 1, oWinner
+                        oWinnerList.Add sKey, oWinners
+                    Else
+                        Set oWinners = oWinnerList.Item(sKey)
+                        oWinners.Add oWinners.Count + 1, oWinner
+                    End If
                 End If
-                
-                ' プロNo＋区分の１位が未登録の場合
-                If Not (oWinnerList.Exists(sKey)) Then
-                    Set oWinners = CreateObject("Scripting.Dictionary")
-                    oWinners.Add oWinners.Count + 1, oWinner
-                    oWinnerList.Add sKey, oWinners
-                Else
-                    Set oWinners = oWinnerList.Item(sKey)
-                    oWinners.Add oWinners.Count + 1, oWinner
-                End If
-            End If
-        Next oCell
+            Next oCell
+        End If
     Next nProNo
 End Sub
 
@@ -158,11 +172,11 @@ Sub WriteWinner(sGameName As String, oWinnerList As Object)
         
     ' 大会記録毎
     For Each vKey In GetAreaKeyData(sRecordAreaName)
-        If oWinnerList.Exists(vKey.Value) Then
-            Set oWinners = oWinnerList.Item(vKey.Value)
+        If oWinnerList.Exists(CStr(vKey.Value)) Then
+            Set oWinners = oWinnerList.Item(CStr(vKey.Value))
             For Each vIdx In oWinners
                 Set oWinner = oWinners.Item(vIdx)
-                Call WriteWinnerLine(sWinnerAreaName, nRow, vKey, oWinner)
+                Call WriteWinnerLine(sWinnerAreaName, sRecordAreaName, nRow, vKey, oWinner)
                 nRow = nRow + 1
             Next vIdx
         End If
@@ -187,42 +201,24 @@ End Sub
 '
 ' 優勝者シート記入
 '
-' sGameName     IN  大会名
-' nRow          IN  行数
-' vKey          IN  参照元の基準セル
-' oWinner       IN  優勝者情報
+' sWinnerAreaName   IN  優勝者範囲名
+' sRecordAreaName   IN  大会記録範囲名
+' nRow              IN  優勝者の行数
+' vKey              IN  大会記録の参照元の基準セル
+' oWinner           IN  優勝者情報
 '
-Sub WriteWinnerLine(sAreaName As String, nRow As Integer, vKey As Variant, oWinner As Object)
-
-    Dim nProNoCol As Integer
-    nProNoCol = GetAreaColumnIndex(sAreaName, "プロNo.")
-    Dim nGender As Integer
-    nGender = GetAreaColumnIndex(sAreaName, "性別")
-    Dim nDistance As Integer
-    nDistance = GetAreaColumnIndex(sAreaName, "距離")
-    Dim nStyle As Integer
-    nStyle = GetAreaColumnIndex(sAreaName, "種目")
-    Dim nTypeCol As Integer
-    nTypeCol = GetAreaColumnIndex(sAreaName, "区分")
-    Dim nNameCol As Integer
-    nNameCol = GetAreaColumnIndex(sAreaName, "氏名")
-    Dim nTeamCol As Integer
-    nTeamCol = GetAreaColumnIndex(sAreaName, "所属")
-    Dim nTimeCol As Integer
-    nTimeCol = GetAreaColumnIndex(sAreaName, "記録")
-    Dim nRecordCol As Integer
-    nRecordCol = GetAreaColumnIndex(sAreaName, "大会新")
+Sub WriteWinnerLine(sWinnerAreaName As String, sRecordAreaName As String, nRow As Integer, vKey As Variant, oWinner As Object)
     
-    Cells(nRow, nProNoCol) = vKey.Offset(0, nProNoCol)
-    Cells(nRow, nGender) = vKey.Offset(0, nGender)
-    Cells(nRow, nDistance) = vKey.Offset(0, nDistance)
-    Cells(nRow, nStyle) = vKey.Offset(0, nStyle)
-    Cells(nRow, nTypeCol) = vKey.Offset(0, nTypeCol)
+    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "プロNo.")) = GetOffset(vKey, GetAreaColumnIndex(sRecordAreaName, "プロNo."))
+    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "性別")) = GetOffset(vKey, GetAreaColumnIndex(sRecordAreaName, "性別"))
+    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "距離")) = GetOffset(vKey, GetAreaColumnIndex(sRecordAreaName, "距離"))
+    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "種目")) = GetOffset(vKey, GetAreaColumnIndex(sRecordAreaName, "種目"))
+    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "区分")) = GetOffset(vKey, GetAreaColumnIndex(sRecordAreaName, "区分"))
     
-    Cells(nRow, nNameCol) = oWinner.Item("氏名")
-    Cells(nRow, nTeamCol) = oWinner.Item("所属")
-    Cells(nRow, nTimeCol) = oWinner.Item("記録")
-    Cells(nRow, nRecordCol) = oWinner.Item("大会新")
+    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "氏名")) = oWinner.Item("氏名")
+    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "所属")) = oWinner.Item("所属")
+    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "記録")) = oWinner.Item("記録")
+    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "大会新")) = oWinner.Item("大会新")
 
 End Sub
 

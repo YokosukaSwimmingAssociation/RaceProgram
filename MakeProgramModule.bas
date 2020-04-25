@@ -651,7 +651,7 @@ Sub SetNoName(oWorkSheet As Worksheet)
     oWorkSheet.Activate
     Cells(2, GetRange("Header通番").Column).Select
     Range(Selection, Selection.End(xlDown)).Select
-    Call SetName("プログラム通番", Selection.Address(ReferenceStyle:=xlA1))
+    Call DefineName("プログラム通番", Selection.Address(ReferenceStyle:=xlA1))
     Range("$A$1").Select
 End Sub
 
@@ -690,7 +690,7 @@ Sub SetProNoName(oWorkSheet As Worksheet)
         End If
     Next vNo
 
-    Call SetName("プログラム種目番号", sAddress)
+    Call DefineName("プログラム種目番号", sAddress)
 
 End Sub
 
@@ -723,7 +723,7 @@ Sub SetProNoListName(oWorkSheet As Worksheet)
         If oCell.Value > nProNo Then
             ' アドレスが空でなければ名前を登録する
             If Not (oRange Is Nothing) Then
-                Call SetName("プログラム番号" & Trim(Str(nProNo)), oRange.Address)
+                Call DefineName("プログラム番号" & Trim(Str(nProNo)), oRange.Address)
                 Set oRange = Nothing
                 ' プロNoをインクリメント
                 nProNo = nProNo + 1
@@ -741,7 +741,7 @@ Sub SetProNoListName(oWorkSheet As Worksheet)
 
     ' アドレスが空でなければ名前を登録する
     If Not (oRange Is Nothing) Then
-        Call SetName("プログラム番号" & Trim(Str(nProNo)), oRange.Address)
+        Call DefineName("プログラム番号" & Trim(Str(nProNo)), oRange.Address)
     End If
 End Sub
 
@@ -799,7 +799,7 @@ Sub SetHeatName(oWorkSheet As Worksheet)
         ' 空行で名前範囲がある場合
         If oCell.Value = "" And Not (oRange Is Nothing) Then
             ' 名前を定義する
-            Call SetName("プログラム組" & Replace(sHeatName, "-", "_"), oRange.Address)
+            Call DefineName("プログラム組" & Replace(sHeatName, "-", "_"), oRange.Address)
 
             ' 名前範囲と組番号を初期化
             Set oRange = Nothing
@@ -837,7 +837,7 @@ Sub SetRaceName(oWorkSheet As Worksheet)
             If oCell.Value > nRaceNo Then
                 ' アドレスが空でなければ名前を登録する
                 If Not (oRange Is Nothing) Then
-                    Call SetName("プログラムレース" & Trim(Str(nRaceNo)), oRange.Address)
+                    Call DefineName("プログラムレース" & Trim(Str(nRaceNo)), oRange.Address)
                     Set oRange = Nothing
                 End If
                 nRaceNo = oCell.Value
@@ -855,7 +855,7 @@ Sub SetRaceName(oWorkSheet As Worksheet)
 
     ' アドレスが空でなければ名前を登録する
     If Not (oRange Is Nothing) Then
-        Call SetName("プログラムレース" & Trim(Str(nRaceNo)), oRange.Address)
+        Call DefineName("プログラムレース" & Trim(Str(nRaceNo)), oRange.Address)
     End If
 
 End Sub

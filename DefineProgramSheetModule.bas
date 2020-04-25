@@ -46,10 +46,10 @@ Sub Header名前定義(sSheetName As String)
         Set oCell = Cells(1, nColumn)
         sName = STrimAll(oCell.Value)
         If sName <> "" Then
-            Call SetName("Header" & sName, oCell.Address(ReferenceStyle:=xlA1))
+            Call DefineName("Header" & sName, oCell.Address(ReferenceStyle:=xlA1))
             If sName = "所属" Then
-                Call SetName("Header" & sName & "前", oCell.Offset(0, -1).Address(ReferenceStyle:=xlA1))
-                Call SetName("Header" & sName & "後", oCell.Offset(0, 1).Address(ReferenceStyle:=xlA1))
+                Call DefineName("Header" & sName & "前", oCell.Offset(0, -1).Address(ReferenceStyle:=xlA1))
+                Call DefineName("Header" & sName & "後", oCell.Offset(0, 1).Address(ReferenceStyle:=xlA1))
             End If
         End If
     Next
@@ -74,36 +74,36 @@ Sub Prog名前定義(sSheetName As String)
     Call DeleteName("Prog*")
 
     ' プログラムヘッダ
-    Call SetName("ProgプロNo", "$C$3")
-    Call SetName("Prog種目区分", "$D$3")
-    Call SetName("Prog種目名", "$F$3")
-    Call SetName("Prog決勝", "$I$3")
-    Call SetName("Prog記録", "$K$3")
+    Call DefineName("ProgプロNo", "$C$3")
+    Call DefineName("Prog種目区分", "$D$3")
+    Call DefineName("Prog種目名", "$F$3")
+    Call DefineName("Prog決勝", "$I$3")
+    Call DefineName("Prog記録", "$K$3")
 
     ' 組ヘッダ
-    Call SetName("Prog組", "$C$4")
+    Call DefineName("Prog組", "$C$4")
    
     ' レーンデータ
-    Call SetName("Prog組番", "$C$5")
-    Call SetName("Progレーン", "$D$5")
-    Call SetName("Prog氏名", "$E$5")
-    Call SetName("Prog種目", "$F$5")
-    Call SetName("Prog所属前", "$G$5")
-    Call SetName("Prog所属", "$H$5")
-    Call SetName("Prog所属後", "$I$5")
-    Call SetName("Prog区分", "$J$5")
-    Call SetName("Prog時間", "$K$5")
-    Call SetName("Prog順位", "$L$5")
-    Call SetName("Prog備考", "$M$5")
-    Call SetName("Prog大会記録", "$N$5")
-    Call SetName("Prog申込み記録", "$O$5")
-    Call SetName("ProgレースNo", "$P$5")
-    Call SetName("Progソート区分", "$Q$5")
-    Call SetName("Prog標準記録", "$R$5")
+    Call DefineName("Prog組番", "$C$5")
+    Call DefineName("Progレーン", "$D$5")
+    Call DefineName("Prog氏名", "$E$5")
+    Call DefineName("Prog種目", "$F$5")
+    Call DefineName("Prog所属前", "$G$5")
+    Call DefineName("Prog所属", "$H$5")
+    Call DefineName("Prog所属後", "$I$5")
+    Call DefineName("Prog区分", "$J$5")
+    Call DefineName("Prog時間", "$K$5")
+    Call DefineName("Prog順位", "$L$5")
+    Call DefineName("Prog備考", "$M$5")
+    Call DefineName("Prog大会記録", "$N$5")
+    Call DefineName("Prog申込み記録", "$O$5")
+    Call DefineName("ProgレースNo", "$P$5")
+    Call DefineName("Progソート区分", "$Q$5")
+    Call DefineName("Prog標準記録", "$R$5")
 
     ' 組ヘッダ
-    Call SetName("Prog組ヘッダフォーマット", "A$2:$R$3")
-    Call SetName("Prog組フォーマット", "A$4:$R$13")
+    Call DefineName("Prog組ヘッダフォーマット", "A$2:$R$3")
+    Call DefineName("Prog組フォーマット", "A$4:$R$13")
      
     ActiveSheet.Protect DrawingObjects:=True, Contents:=True, Scenarios:=True, AllowFiltering:=True, UserInterfaceOnly:=True
     ActiveSheet.Visible = True
@@ -122,16 +122,16 @@ Sub 記録画面名前定義(sSheetName As String)
     ' 名前をすべて削除
     Call DeleteName("記録画面*")
 
-    Call SetName("記録画面種目番号", "$B$1")
-    Call SetName("記録画面種目名", "$C$1")
-    Call SetName("記録画面組", "$B$2")
-    Call SetName("記録画面レースNo", "$B$3")
-    Call SetName("記録画面レーン", "$B$5:$B$11")
-    Call SetName("記録画面タイム", "$C$5:$C$11")
-    Call SetName("記録画面選手名", "$D$5:$D$11")
-    Call SetName("記録画面チーム名", "$E$5:$E$11")
-    Call SetName("記録画面備考", "$F$5:$F$11")
-    Call SetName("記録画面違反", "$G$5:$G$11")
+    Call DefineName("記録画面種目番号", "$B$1")
+    Call DefineName("記録画面種目名", "$C$1")
+    Call DefineName("記録画面組", "$B$2")
+    Call DefineName("記録画面レースNo", "$B$3")
+    Call DefineName("記録画面レーン", "$B$5:$B$11")
+    Call DefineName("記録画面タイム", "$C$5:$C$11")
+    Call DefineName("記録画面選手名", "$D$5:$D$11")
+    Call DefineName("記録画面チーム名", "$E$5:$E$11")
+    Call DefineName("記録画面備考", "$F$5:$F$11")
+    Call DefineName("記録画面違反", "$G$5:$G$11")
 
     Call 記録画面違反定義
 
@@ -176,11 +176,11 @@ Sub 学童マスターズ大会種目区分名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("学マ*")
     
-    Call SetName("学マ種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
+    Call DefineName("学マ種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
     
-    Call SetName("学マ年齢区分", TableRangeAddress("$H$1"))
-    Call SetName("学マ学童区分", TableRangeAddress("$K$1"))
-    Call SetName("学マ学年表示", TableRangeAddress("$N$1"))
+    Call DefineName("学マ年齢区分", TableRangeAddress("$H$1"))
+    Call DefineName("学マ学童区分", TableRangeAddress("$K$1"))
+    Call DefineName("学マ学年表示", TableRangeAddress("$N$1"))
     
     ' シートのロック
     Call SheetProtect(True)
@@ -200,7 +200,7 @@ Sub 学童マスターズ大会記録名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("学マ大会記録")
     
-    Call SetName("学マ大会記録", TableRangeAddress("$A$1"))
+    Call DefineName("学マ大会記録", TableRangeAddress("$A$1"))
     
     ' シートのロック
     Call SheetProtect(True)
@@ -220,7 +220,7 @@ Sub 学童マスターズ大会優勝者名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("学マ大会優勝者")
     
-    Call SetName("学マ大会優勝者", ColumnRangeAddress("$A$1"))
+    Call DefineName("学マ大会優勝者", ColumnRangeAddress("$A$1"))
     
     ' シートのロック
     Call SheetProtect(True)
@@ -240,11 +240,11 @@ Sub 市民大会種目区分名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("市民*")
     
-    Call SetName("市民種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
+    Call DefineName("市民種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
     
-    Call SetName("市民選手年齢区分", RowRangeAddress("$H$1"))
-    Call SetName("市民リレー年齢区分", RowRangeAddress("$IJ$1"))
-    Call SetName("市民年齢区分", TableRangeAddress("$K$1"))
+    Call DefineName("市民選手年齢区分", RowRangeAddress("$H$1"))
+    Call DefineName("市民リレー年齢区分", RowRangeAddress("$IJ$1"))
+    Call DefineName("市民年齢区分", TableRangeAddress("$K$1"))
     
     ' シートのロック
     Call SheetProtect(True)
@@ -264,7 +264,7 @@ Sub 市民大会記録名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("市民大会記録")
     
-    Call SetName("市民大会記録", TableRangeAddress("$A$1"))
+    Call DefineName("市民大会記録", TableRangeAddress("$A$1"))
     
     ' シートのロック
     Call SheetProtect(True)
@@ -284,7 +284,7 @@ Sub 市民大会優勝者名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("市民大会優勝者")
     
-    Call SetName("市民大会優勝者", ColumnRangeAddress("$A$1"))
+    Call DefineName("市民大会優勝者", ColumnRangeAddress("$A$1"))
     
     ' シートのロック
     Call SheetProtect(True)
@@ -304,7 +304,7 @@ Sub 選手権大会種目区分名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("選手権*")
     
-    Call SetName("選手権種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
+    Call DefineName("選手権種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
    
     ' シートのロック
     Call SheetProtect(True)
@@ -324,7 +324,7 @@ Sub 選手権大会記録名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("選手権大会記録")
     
-    Call SetName("選手権大会記録", TableRangeAddress("$A$2"))
+    Call DefineName("選手権大会記録", TableRangeAddress("$A$2"))
     
     ' シートのロック
     Call SheetProtect(True)
@@ -344,7 +344,7 @@ Sub 選手権大会優勝者名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("選手権大会優勝者")
     
-    Call SetName("選手権大会優勝者", ColumnRangeAddress("$A$1"))
+    Call DefineName("選手権大会優勝者", ColumnRangeAddress("$A$1"))
     
     ' シートのロック
     Call SheetProtect(True)
@@ -378,7 +378,7 @@ End Sub
 '
 Sub 大会名定義(Optional sValue As String = "")
     
-    Call SetName("大会名", "$B$1")
+    Call DefineName("大会名", "$B$1")
     With Range("大会名").Validation
         .Delete
         .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
@@ -403,7 +403,7 @@ End Sub
 '
 Sub 大会年定義(Optional sValue As String = "")
     
-    Call SetName("大会年", "$E$7")
+    Call DefineName("大会年", "$E$7")
     With Range("大会年").Validation
         .Delete
         .Add Type:=xlValidateWholeNumber, AlertStyle:=xlValidAlertStop, _
@@ -429,7 +429,7 @@ End Sub
 '
 Sub 組合せ方式定義(Optional sValue As String = "")
     
-    Call SetName("組合せ方式", "$E$3")
+    Call DefineName("組合せ方式", "$E$3")
     With Range("組合せ方式").Validation
         .Delete
         .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
@@ -455,7 +455,7 @@ End Sub
 '
 Sub 組最少人数定義(Optional sValue As String = "")
 
-    Call SetName("組最少人数", "$E$2")
+    Call DefineName("組最少人数", "$E$2")
     With Range("組最少人数").Validation
         .Delete
         .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _

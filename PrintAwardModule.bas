@@ -150,14 +150,14 @@ Sub 学マ賞状名前定義(Optional sValue As String = "")
     ' 名前をすべて削除
     Call DeleteName("賞状*")
 
-    Call SetName("賞状種目区分", "$C$9")
-    Call SetName("賞状距離", "$G$9")
-    Call SetName("賞状種目", "$L$9")
-    Call SetName("賞状順位", "$A$13")
-    Call SetName("賞状タイム", "$L$14")
-    Call SetName("賞状大会新", "$S$14")
-    Call SetName("賞状氏名", "$C$20")
-    Call SetName("賞状所属", "$C$24")
+    Call DefineName("賞状種目区分", "$C$9")
+    Call DefineName("賞状距離", "$G$9")
+    Call DefineName("賞状種目", "$L$9")
+    Call DefineName("賞状順位", "$A$13")
+    Call DefineName("賞状タイム", "$L$14")
+    Call DefineName("賞状大会新", "$S$14")
+    Call DefineName("賞状氏名", "$C$20")
+    Call DefineName("賞状所属", "$C$24")
  
     ' シートを保護
     Call SheetProtect(True)
