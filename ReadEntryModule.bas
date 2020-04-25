@@ -10,7 +10,7 @@ Sub エントリー読込み()
     Call EventChange(False)
 
     ' エクセルシートを選択
-    Call SheetActivate(S_ENTRY_SHEET_NAME)
+    Call SheetActivate(エントリーシート)
 
     ' 出力用ワークブック
     Dim oWorkBook As Workbook
@@ -28,10 +28,10 @@ Sub エントリー読込み()
     Call ReadEntryFiles(oGameList)
 
     ' エントリーシートの書き込み
-    Call WriteEntrySheet(oWorkSheet, S_ENTRY_TABLE_NAME, oGameList)
+    Call WriteEntrySheet(oWorkSheet, エントリーテーブル, oGameList)
     
     ' ProNo、ソート区分、申込み時間でソート
-    Call SortByProNo(oWorkSheet, S_ENTRY_TABLE_NAME)
+    Call SortByProNo(oWorkSheet, エントリーテーブル)
 
     ' シートを保存
     oWorkBook.Save

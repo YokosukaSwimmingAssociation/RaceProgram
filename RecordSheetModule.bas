@@ -96,7 +96,7 @@ Function SearchName(nRaceNo As Integer, nLane As Integer)
             If vLaneNo.Offset(0, Range("Progレーン").Column - vLaneNo.Column).Value = nLane Then
                 SearchName = vLaneNo.Offset(0, Range("Prog氏名").Column - vLaneNo.Column).Value
                 ' 名前が空白用文字列の場合は空白にする
-                If SearchName = S_BLANK_NAME Then
+                If SearchName = 選手名ブランク Then
                     SearchName = ""
                 End If
                 Exit Function
@@ -547,7 +547,7 @@ Sub ReadFinalist(nProNo As Integer, oFinalist As Object)
         For Each vProNo In GetRange(sName)
             nOrder = GetOffset(vProNo, GetRange("Header順位").Column).Value
             ' 決勝人数まで保存
-            If nOrder <= N_NUMBER_OF_RACE Then
+            If nOrder <= レース定員 Then
                 oFinalist.Add nOrder, vProNo
             End If
         Next vProNo
@@ -575,7 +575,7 @@ Sub WriteFinalist(nProNo As Integer, oFinalist As Object, nRecord As Long, nQual
             ' レーン毎
             nLane = GetOffset(vProNo, GetRange("Headerレーン").Column).Value
             ' レーンから順位を取得
-            nOrder = GetOrderByLane(GetCenterLane(N_NUMBER_OF_RACE, N_MIN_LANE_OF_RACE), nLane)
+            nOrder = GetOrderByLane(GetCenterLane(レース定員, 最小レーン番号), nLane)
             ' 予選の行を取得
             Set vCell = oFinalist.Item(nOrder)
             

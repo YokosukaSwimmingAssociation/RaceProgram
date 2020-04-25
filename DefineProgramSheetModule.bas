@@ -5,8 +5,8 @@ Attribute VB_Name = "DefineProgramSheetModule"
 Sub ワークブック名前定義()
     Call EventChange(False)
   
-    Call Header名前定義(S_PROGRAM_FORMAT_SHEET_NAME)
-    Call Prog名前定義(S_PROGRAM_FORMAT_SHEET_NAME)
+    Call Header名前定義(フォーマットシート)
+    Call Prog名前定義(フォーマットシート)
     Call 記録画面名前定義("記録画面")
     Call 学童マスターズ大会種目区分名前定義
     Call 学童マスターズ大会記録名前定義

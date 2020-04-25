@@ -9,7 +9,7 @@ Sub 組み合わせ決定()
     Call EventChange(False)
 
     ' エクセルシートを選択
-    Call SheetActivate(S_ENTRY_SHEET_NAME)
+    Call SheetActivate(エントリーシート)
 
     ' 出力用ワークブック
     Dim oWorkBook As Workbook
@@ -20,13 +20,13 @@ Sub 組み合わせ決定()
     Set oWorkSheet = ActiveSheet
     
     ' ProNo、ソート区分、申込み時間でソート
-    Call SortByProNo(oWorkSheet, S_ENTRY_TABLE_NAME)
+    Call SortByProNo(oWorkSheet, エントリーテーブル)
     
     ' 組み合わせ作成
-    Call SetHeatLaneOrder(oWorkSheet, S_ENTRY_TABLE_NAME)
+    Call SetHeatLaneOrder(oWorkSheet, エントリーテーブル)
     
     ' レースNo, レーンでソート
-    Call SortByRace(oWorkSheet, S_ENTRY_TABLE_NAME)
+    Call SortByRace(oWorkSheet, エントリーテーブル)
     
     ' イベント発生を発生
     Call EventChange(True)
@@ -102,7 +102,7 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
         
         ' 平均分け方式を利用するケース
         bAverage = False
-        If GetRange("大会名").Value = "横須賀選手権水泳大会" And nHeats >= N_AVERAGE_DEC_RACE Then
+        If GetRange("大会名").Value = "横須賀選手権水泳大会" And nHeats >= 平均分け組数 Then
             If GetRange("組合せ方式").Value = "混合分け方式" And _
                 VLookupArea(nProNo, "選手権種目区分", "予選／決勝") = "予選" Then
                 bAverage = True
@@ -123,9 +123,9 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
             nRemNumber = nNumOfHeat
             
             ' 平均分け方式
-            If bAverage And nHeat = (nHeats - N_AVERAGE_DEC_RACE) + 1 Then
+            If bAverage And nHeat = (nHeats - 平均分け組数) + 1 Then
                 nMaxNum = 0
-                For i = nHeat To nHeat + N_AVERAGE_DEC_RACE - 1
+                For i = nHeat To nHeat + 平均分け組数 - 1
                     nMaxNum = nMaxNum + nNumOfHeats(i - 1)
                 Next i
                 Call AverageMethod(nRaceNo, CInt(nHeat), nMaxNum, nOrder, oProNo, sTableName)
@@ -133,7 +133,7 @@ Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
             End If
         
             ' 組の開始位置
-            nStartLane = GetStartLane(nNumOfHeat, GetCenterLane(N_NUMBER_OF_RACE, N_MIN_LANE_OF_RACE), bFlag)
+            nStartLane = GetStartLane(nNumOfHeat, GetCenterLane(レース定員, 最小レーン番号), bFlag)
             
             ' 組の人数が残っている間
             While nRemNumber > 0
@@ -268,7 +268,7 @@ Sub GetNumberOfHeat(nTotalNum As Integer, nHeats As Integer, nNumberOfHeat() As 
         ' ３組目以降
         If nHeats > 2 Then
             For i = 2 To nHeats - 1
-                nNumberOfHeat(i) = N_NUMBER_OF_RACE
+                nNumberOfHeat(i) = レース定員
             Next
         End If
     End If
@@ -283,7 +283,7 @@ End Sub
 '
 Function GetHeats(nTotalNum As Integer)
 
-    GetHeats = Application.WorksheetFunction.RoundUp(nTotalNum / N_NUMBER_OF_RACE, 0)
+    GetHeats = Application.WorksheetFunction.RoundUp(nTotalNum / レース定員, 0)
 
 End Function
 
@@ -297,14 +297,14 @@ End Function
 '
 Function GetFirstHeatNumber(nTotalNum As Integer, nMinNumberOfRace As Integer)
 
-    If nTotalNum <= N_NUMBER_OF_RACE Then
+    If nTotalNum <= レース定員 Then
         GetFirstHeatNumber = nTotalNum
-    ElseIf nTotalNum Mod N_NUMBER_OF_RACE = 0 Then
-        GetFirstHeatNumber = N_NUMBER_OF_RACE
-    ElseIf nTotalNum Mod N_NUMBER_OF_RACE <= nMinNumberOfRace Then
+    ElseIf nTotalNum Mod レース定員 = 0 Then
+        GetFirstHeatNumber = レース定員
+    ElseIf nTotalNum Mod レース定員 <= nMinNumberOfRace Then
         GetFirstHeatNumber = nMinNumberOfRace
     Else
-        GetFirstHeatNumber = nTotalNum Mod N_NUMBER_OF_RACE
+        GetFirstHeatNumber = nTotalNum Mod レース定員
     End If
 
 End Function
@@ -319,14 +319,14 @@ End Function
 '
 Function GetSecondHeatNumber(nTotalNum As Integer, nMinNumberOfRace As Integer)
 
-    If nTotalNum <= N_NUMBER_OF_RACE Then
+    If nTotalNum <= レース定員 Then
         GetSecondHeatNumber = 0
-    ElseIf nTotalNum Mod N_NUMBER_OF_RACE = 0 Then
-        GetSecondHeatNumber = N_NUMBER_OF_RACE
-    ElseIf nTotalNum Mod N_NUMBER_OF_RACE <= nMinNumberOfRace Then
-        GetSecondHeatNumber = N_NUMBER_OF_RACE + (nTotalNum Mod N_NUMBER_OF_RACE - nMinNumberOfRace)
+    ElseIf nTotalNum Mod レース定員 = 0 Then
+        GetSecondHeatNumber = レース定員
+    ElseIf nTotalNum Mod レース定員 <= nMinNumberOfRace Then
+        GetSecondHeatNumber = レース定員 + (nTotalNum Mod レース定員 - nMinNumberOfRace)
     Else
-        GetSecondHeatNumber = N_NUMBER_OF_RACE
+        GetSecondHeatNumber = レース定員
     End If
 
 End Function
@@ -392,7 +392,7 @@ End Function
 '
 Function GetLane2(nCenter As Integer, nMax As Integer, nOrder As Integer)
     Dim nNum As Integer
-    nNum = Application.WorksheetFunction.RoundUp((nMax - nOrder + 1) / N_AVERAGE_DEC_RACE, 0)
+    nNum = Application.WorksheetFunction.RoundUp((nMax - nOrder + 1) / 平均分け組数, 0)
     GetLane2 = nCenter - Application.WorksheetFunction.Power(-1, nNum - 1) _
             * Application.WorksheetFunction.RoundUp((nNum - 1) / 2, 0)
 End Function
@@ -437,7 +437,7 @@ nOrder As Integer, oProNo As Object, sTableName As String)
     Dim nNum As Integer
 
     ' 組のセンター
-    nCenterLane = GetCenterLane(N_NUMBER_OF_RACE, N_MIN_LANE_OF_RACE)
+    nCenterLane = GetCenterLane(レース定員, 最小レーン番号)
     
     ' 組の人数が残っている間
     For nNum = 1 To nMaxNum
@@ -446,9 +446,9 @@ nOrder As Integer, oProNo As Object, sTableName As String)
         nRow = GetProNoRow(nOrder, oProNo)
         
         ' レースNo
-        nRaceNo = (GetOrderHeat(N_AVERAGE_DEC_RACE, nMaxNum, nNum) + (nStartRaceNo / 10 - 1)) * 10
+        nRaceNo = (GetOrderHeat(平均分け組数, nMaxNum, nNum) + (nStartRaceNo / 10 - 1)) * 10
         ' 組番号
-        nHeat = GetOrderHeat(N_AVERAGE_DEC_RACE, nMaxNum, nNum) + (nStartHeat - 1)
+        nHeat = GetOrderHeat(平均分け組数, nMaxNum, nNum) + (nStartHeat - 1)
     
         ' レースNo、組の書込み
         Cells(nRow, Range(sTableName & "[レースNo]").Column).Value = nRaceNo
@@ -461,7 +461,7 @@ nOrder As Integer, oProNo As Object, sTableName As String)
         nOrder = nOrder + 1
     Next
 
-    nStartRaceNo = (nStartRaceNo / 10 - 1 + N_AVERAGE_DEC_RACE) * 10
+    nStartRaceNo = (nStartRaceNo / 10 - 1 + 平均分け組数) * 10
 
 End Sub
 
@@ -479,22 +479,22 @@ Sub レース番号修正()
     Set oWorkBook = ActiveWorkbook
 
     ' 出力用シート
-    Call SheetActivate(S_ENTRY_SHEET_NAME)
+    Call SheetActivate(エントリーシート)
     Dim oWorkSheet As Worksheet
     Set oWorkSheet = ActiveSheet
     
     ' 再ソート
-    Call SortByRace(oWorkSheet, S_ENTRY_TABLE_NAME)
+    Call SortByRace(oWorkSheet, エントリーテーブル)
     
     ' ProNo、組の重複チェック
     Dim oEntryList As Object
-    Call ReadEntrySheet(S_ENTRY_TABLE_NAME, oEntryList)
+    Call ReadEntrySheet(エントリーテーブル, oEntryList)
     
     ' レース番号修正
     If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
-        Call ModifyRaceNoForSenshuken(oWorkSheet, S_ENTRY_TABLE_NAME)
+        Call ModifyRaceNoForSenshuken(oWorkSheet, エントリーテーブル)
     Else
-        Call ModifyRaceNo(oWorkSheet, S_ENTRY_TABLE_NAME)
+        Call ModifyRaceNo(oWorkSheet, エントリーテーブル)
     End If
 
     ' イベント発生を再開

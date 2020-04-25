@@ -6,19 +6,17 @@ Public Const 学マ大会 As String = "学童マスターズ大会"
 Public Const 市民大会 As String = "横須賀市民体育大会"
 Public Const 選手権大会 As String = "横須賀選手権水泳大会"
 
-Public Const S_ENTRY_SHEET_NAME As String = "エントリー一覧"
-Public Const S_ENTRY_TABLE_NAME As String = "エントリーテーブル"
-Public Const S_PROGRAM_SHEE_TNAME As String = "プログラム"
-Public Const S_PROGRAM_FORMAT_SHEET_NAME As String = "プログラムフォーマット"
+Public Const エントリーシート As String = "エントリー一覧"
+Public Const エントリーテーブル As String = "エントリーテーブル"
+Public Const プログラムシート As String = "プログラム"
+Public Const フォーマットシート As String = "プログラムフォーマット"
 
-Public Const N_NUMBER_OF_RACE As Integer = 7       ' １レースの人数
-Public Const N_MIN_NUMBER_OF_RACE As Integer = 3   ' レーンの最小人数
-Public Const N_MIN_NUMBER_OF_RACE2 As Integer = 4   ' レーンの最小人数
-Public Const N_MAX_LANE_OF_RACE As Integer = 9     ' レーンの最大番号
-Public Const N_MIN_LANE_OF_RACE As Integer = 3     ' レーンの最小番号
-Public Const N_AVERAGE_DEC_RACE As Integer = 3      ' 平均分け方式にする組数
+Public Const レース定員 As Integer = 7       ' １レースの人数
+Public Const 最大レーン番号 As Integer = 9     ' レーンの最大番号
+Public Const 最小レーン番号 As Integer = 3     ' レーンの最小番号
+Public Const 平均分け組数 As Integer = 3 ' 平均分け方式にする組数
 
-Public Const S_BLANK_NAME As String = "　　．　　．　　．"
+Public Const 選手名ブランク As String = "　　．　　．　　．"
 Private Const ARRAYSIZE = 10000
 
 Public Type RaceNumber
@@ -27,13 +25,83 @@ Public Type RaceNumber
 End Type
 
 '
+' イベントの発生、画面描画のOn/Off
+'
+' bFlag     IN      True：再開／False：抑制
+'
+Public Sub EventChange(bFlag As Boolean)
+    With Application
+        If bFlag Then
+            .EnableEvents = True                    ' イベントの発生を再開する
+            .ScreenUpdating = True                  ' 描画の更新を行う
+            .Calculation = xlCalculationAutomatic   ' セル値の自動計算
+        Else
+            .EnableEvents = False                   ' イベント抑制する
+            .ScreenUpdating = False                 ' 描画の更新を抑制する
+            .Calculation = xlCalculationManual      ' セル値の手動計算
+        End If
+    End With
+End Sub
+
+'
+' シートの保護
+'
+' bFlag         IN      True：保護／False：解除
+'
+Public Sub SheetProtect(bFlag As Boolean)
+
+    If bFlag Then
+        ActiveSheet.Protect DrawingObjects:=True, Contents:=True, _
+            Scenarios:=True, UserInterfaceOnly:=True, AllowFiltering:=True
+    Else
+        ActiveSheet.Unprotect
+    End If
+
+End Sub
+
+'
+' タイトルバーの変更
+'
+' sTitle    IN      タイトルバー文字列
+'
+Public Sub SetTitleMenu(sTitle As String)
+    Dim bFlag As Boolean
+    bFlag = Application.EnableEvents
+    If bFlag = False Then
+        Call EventChange(True)
+    End If
+    Application.Caption = sTitle
+    DoEvents
+    If bFlag = False Then
+        Call EventChange(False)
+    End If
+End Sub
+
+'
+' 大会名から種目区分を返す
+'
+Public Function GetMaster(sGameName As String)
+    ' 横須賀選手権水泳大会
+    If sGameName = 選手権大会 Then
+        GetMaster = "選手権種目区分"
+    ' 横須賀市民体育大会
+    ElseIf sGameName = 市民大会 Then
+        GetMaster = "市民種目区分"
+    Else
+        ' 学マ大会
+        GetMaster = "学マ種目区分"
+    End If
+
+End Function
+
+'
 ' 空白置換
 '
 ' 全角空白、連続した空白を半角空白１つに変換
 '
 ' sStr          IN      文字列
 '
-Public Function STrim(sStr)
+Public Function STrim(sStr) As String
     Dim sTemp As String
     sTemp = sStr
     sTemp = Replace(sTemp, "　", " ")
@@ -59,7 +127,7 @@ End Function
 '
 ' sStr          IN      文字列
 '
-Public Function STrimAll(sStr)
+Public Function STrimAll(sStr As String) As String
     STrimAll = Replace(Replace(sStr, "　", ""), " ", "")
 End Function
 
@@ -69,7 +137,7 @@ End Function
 '
 ' sSheetName    IN      シート名
 '
-Sub SheetActivate(sSheetName As String)
+Public Sub SheetActivate(sSheetName As String)
     If IsSheetExists(sSheetName) Then
         Worksheets(sSheetName).Activate
     Else
@@ -84,7 +152,7 @@ End Sub
 '
 ' sSheetName        IN      シート名
 '
-Public Function IsSheetExists(sSheetName As String)
+Public Function IsSheetExists(sSheetName As String) As Boolean
     IsSheetExists = False
     Dim ws As Worksheet
     For Each ws In Worksheets
@@ -93,93 +161,6 @@ Public Function IsSheetExists(sSheetName As String)
         End If
     Next ws
 End Function
-
-'
-' 名前チェック付きRangeオブジェクト取得
-'
-' sName             IN      名前
-'
-Public Function GetRange(sName As String) As Range
-    If IsNameExists(sName) Then
-        Set GetRange = Range(sName)
-    Else
-        MsgBox "名前「" & sName & "」が定義されていません。" & vbCrLf & _
-                "正しいファイルをお使いください。", vbOKOnly
-        End
-    End If
-End Function
-
-'
-' 名前の存在確認
-'
-' sName             IN      名前
-'
-Public Function IsNameExists(sName As String)
-    IsNameExists = False
-    For Each Nm In ActiveWorkbook.Names
-        If Nm.Name = sName Then
-            IsNameExists = True
-            Exit For
-        End If
-    Next
-End Function
-
-'
-' 名前の定義
-'
-' sName             IN      名前
-' sRange            IN      レンジ範囲(A1形式)
-'
-Public Sub DefineName(sName As String, sRange As String)
-    If IsNameExists(sName) Then
-        ActiveWorkbook.Names(sName).Delete
-    End If
-    ActiveWorkbook.Names.Add Name:=sName, RefersTo:="=" & sRange
-    ActiveWorkbook.Names(sName).Comment = ""
-End Sub
-
-'
-' 名前削除
-'
-' sRegStr           IN      削除する名前の文字列
-'
-Public Sub DeleteName(sRegStr As String)
-    For Each vNm In ActiveWorkbook.Names
-        If vNm.Name Like sRegStr Then
-            vNm.Delete
-        End If
-    Next
-End Sub
-
-'
-' テーブルの存在確認
-'
-' oWorkSheet        IN      ワークシート
-' sTableName        IN      名前
-'
-Public Function IsTableExists(oWorkSheet As Worksheet, sTableName As String)
-    IsTableExists = False
-    For Each lst In oWorkSheet.ListObjects
-        If lst.Name = sTableName Then
-            IsTableExists = True
-            Exit For
-        End If
-    Next
-End Function
-
-'
-' テーブルの定義
-'
-' oWorkSheet        IN      ワークシート
-' sTableName        IN      名前
-' sRange            IN      レンジ範囲
-'
-Public Sub SetTable(oWorkSheet As Worksheet, sTableName As String, sRange As String)
-    If IsTableExists(oWorkSheet, sTableName) Then
-        oWorkSheet.ListObjects(sTableName).Unlist
-    End If
-    oWorkSheet.ListObjects.Add(xlSrcRange, Range(sRange), , xlYes).Name = sTableName
-End Sub
 
 '' Dictionaryを参照引数にし、これをソートする破壊的プロシージャ。
 '' Variantの二次元配列のまま扱いたかったが、引数にできないようなので配列を使用している
@@ -282,51 +263,72 @@ Private Function med3(ByVal x As Long, ByVal y As Long, ByVal z As Long)
 End Function
 
 '
-' イベントの発生、画面描画のOn/Off
+' 名前チェック付きRangeオブジェクト取得
 '
-' bFlag     IN      True：再開／False：抑制
+' sName             IN      名前
 '
-Sub EventChange(bFlag As Boolean)
-    With Application
-        If bFlag Then
-            .EnableEvents = True                    ' イベントの発生を再開する
-            .ScreenUpdating = True                  ' 描画の更新を行う
-            .Calculation = xlCalculationAutomatic   ' セル値の自動計算
-        Else
-            .EnableEvents = False                   ' イベント抑制する
-            .ScreenUpdating = False                 ' 描画の更新を抑制する
-            .Calculation = xlCalculationManual      ' セル値の手動計算
+Public Function GetRange(sName As String) As Range
+    If IsNameExists(sName) Then
+        Set GetRange = Range(sName)
+    Else
+        MsgBox "名前「" & sName & "」が定義されていません。" & vbCrLf & _
+                "正しいファイルをお使いください。", vbOKOnly
+        End
+    End If
+End Function
+
+'
+' 名前の存在確認
+'
+' sName             IN      名前
+'
+Public Function IsNameExists(sName As String) As Boolean
+    IsNameExists = False
+    For Each Nm In ActiveWorkbook.Names
+        If Nm.Name = sName Then
+            IsNameExists = True
+            Exit For
         End If
-    End With
+    Next
+End Function
+
+'
+' 名前の定義
+'
+' sName             IN      名前
+' sRange            IN      レンジ範囲(A1形式)
+'
+Public Sub DefineName(sName As String, sRange As String)
+    If IsNameExists(sName) Then
+        ActiveWorkbook.Names(sName).Delete
+    End If
+    ActiveWorkbook.Names.Add Name:=sName, RefersTo:="=" & sRange
+    ActiveWorkbook.Names(sName).Comment = ""
 End Sub
 
 '
-' タイトルバーの変更
+' 名前削除
 '
-' sTitle    IN      タイトルバー文字列
+' sRegStr           IN      削除する名前の文字列
 '
-Sub SetTitleMenu(sTitle As String)
-    Dim bFlag As Boolean
-    bFlag = Application.EnableEvents
-    If bFlag = False Then
-        Call EventChange(True)
-    End If
-    Application.Caption = sTitle
-    DoEvents
-    If bFlag = False Then
-        Call EventChange(False)
-    End If
+Public Sub DeleteName(sRegStr As String)
+    For Each vNm In ActiveWorkbook.Names
+        If vNm.Name Like sRegStr Then
+            vNm.Delete
+        End If
+    Next
 End Sub
-
 
 '
 ' 同一行の範囲取得
 '
 ' 指定したセルから最右の範囲のアドレスを返す
 '
+' 例： $A$1 -> $A$1:$F$1
+'
 ' sTopAddres IN      先頭のセルアドレス
 '
-Function ColumnRange(sTopAddress As String)
+Public Function ColumnRange(sTopAddress As String) As Range
 
     Set ColumnRange = Range(Range(sTopAddress), _
                     Range(sTopAddress).End(xlToRight))
@@ -338,9 +340,11 @@ End Function
 '
 ' 指定したセルから最右の範囲のアドレスを返す
 '
+' 例： $A$1 -> $A$1:$F$1
+'
 ' sTopAddres IN      先頭のセルアドレス
 '
-Function ColumnRangeAddress(sTopAddress As String)
+Public Function ColumnRangeAddress(sTopAddress As String) As String
 
     ColumnRangeAddress = ColumnRange(sTopAddress).Address
 
@@ -351,11 +355,12 @@ End Function
 '
 ' 指定したセルから最下層の範囲のアドレスを返す
 '
+' 例： $A$1 -> $A$1:$A$50
+'
 ' sTopAddres IN      先頭のセルアドレス
 '
-Function RowRange(sTopAddress As String)
-    Set RowRange = Range(Range(sTopAddress), _
-                    Range(sTopAddress).End(xlDown))
+Public Function RowRange(sTopAddress As String) As Range
+    Set RowRange = Range(Range(sTopAddress), Range(sTopAddress).End(xlDown))
 End Function
 
 '
@@ -363,9 +368,11 @@ End Function
 '
 ' 指定したセルから最下層の範囲のアドレスを返す
 '
+' 例： $A$1 -> $A$1:$A$50
+'
 ' sTopAddres IN      先頭のセルアドレス
 '
-Function RowRangeAddress(sTopAddress As String)
+Public Function RowRangeAddress(sTopAddress As String) As String
 
     RowRangeAddress = RowRange(sTopAddress).Address
 
@@ -376,9 +383,11 @@ End Function
 '
 ' 指定したセルから最下層、際右端範囲のアドレスを返す
 '
+' 例： $A$1 -> $A1$1:$F$50
+'
 ' sTopAddres IN      先頭のセルアドレス
 '
-Function TableRange(sTopAddress As String)
+Public Function TableRange(sTopAddress As String) As Range
 
     Dim oRng As Range
     Set oRng = Range(Range(sTopAddress), Range(sTopAddress).End(xlDown))
@@ -391,125 +400,22 @@ End Function
 '
 ' 指定したセルから最下層、際右端範囲のアドレスを返す
 '
+' 例： $A$1 -> $A1$1:$F$50
+'
 ' sTopAddres IN      先頭のセルアドレス
 '
-Function TableRangeAddress(sTopAddress As String)
+Public Function TableRangeAddress(sTopAddress As String) As String
 
     TableRangeAddress = TableRange(sTopAddress).Address
 
 End Function
 
 '
-' 大会名から種目区分を返す
-'
-Function GetMaster(sGameName As String)
-    ' 横須賀選手権水泳大会
-    If sGameName = "横須賀選手権水泳大会" Then
-        GetMaster = "選手権種目区分"
-    ' 横須賀市民体育大会
-    ElseIf sGameName = "横須賀市民体育大会" Then
-        GetMaster = "市民種目区分"
-    Else
-        GetMaster = "学マ種目区分"
-    End If
-
-End Function
-
-'
-' プログラム補正用：セルの修正
-'
-' sRange     IN      セルのアドレス
-' sValue     IN      変更する値
-'
-Sub ModCell(sRange As String, sValue As String)
-
-    Range(sRange).Select
-    Range(sRange).Value = sValue
-    Selection.Borders(xlDiagonalDown).LineStyle = xlNone
-    Selection.Borders(xlDiagonalUp).LineStyle = xlNone
-    With Selection.Borders(xlEdgeLeft)
-        .LineStyle = xlContinuous
-        .Color = -16776961
-        .TintAndShade = 0
-        .Weight = xlThin
-    End With
-    With Selection.Borders(xlEdgeTop)
-        .LineStyle = xlContinuous
-        .Color = -16776961
-        .TintAndShade = 0
-        .Weight = xlThin
-    End With
-    With Selection.Borders(xlEdgeBottom)
-        .LineStyle = xlContinuous
-        .Color = -16776961
-        .TintAndShade = 0
-        .Weight = xlThin
-    End With
-    With Selection.Borders(xlEdgeRight)
-        .LineStyle = xlContinuous
-        .Color = -16776961
-        .TintAndShade = 0
-        .Weight = xlThin
-    End With
-    Selection.Borders(xlInsideVertical).LineStyle = xlNone
-    Selection.Borders(xlInsideHorizontal).LineStyle = xlNone
-
-End Sub
-
-'
-' プログラム補正用：プログラム番号のアドレスを探す
-'
-' nProNo     IN      プログラム番号
-' sName      IN      選手名
-' sColName   IN      カラム名（レースNo、組、レーン）
-'            OUT     アドレス文字列
-'
-Function SearchCell(nProNo As Integer, sName As String, sColName As String)
-
-    For Each oCell In Range(Range("$A$2"), Range("$A$2").End(xlDown))
-        If Cells(oCell.Row, Range(S_ENTRY_TABLE_NAME & "[プロNo]").Column).Value = nProNo And _
-            Cells(oCell.Row, Range(S_ENTRY_TABLE_NAME & "[選手名]").Column).Value = sName Then
-            SearchCell = Cells(oCell.Row, Range(S_ENTRY_TABLE_NAME & "[" & sColName & "]").Column).Address
-            Exit Function
-        End If
-    Next oCell
-
-End Function
-
-'
-' プログラム入力用：記録画面の種目選択
-'
-' nProNo     IN      プログラム番号
-' nHeat      IN      組
-'
-Sub SetRace(nProNo As Integer, nHeat As Integer)
-    GetRange("記録画面種目番号").Value = nProNo
-    GetRange("記録画面組").Value = nHeat
-End Sub
-
-'
-' プログラム入力用：記録画面のタイム入力
-'
-' nIndex        IN      順位
-' nLean         IN      レーン
-' sTime         IN      時間
-' sAdditional   IN      備考
-'
-Sub SetLean(nIndex As Integer, nLean As Integer, sTime As String, Optional sAdditional As String = "")
-    GetRange("記録画面レーン").Rows(nIndex).Value = nLean
-    GetRange("記録画面タイム").Rows(nIndex).Value = sTime
-    If sAdditional <> "" Then
-        GetRange("記録画面備考").Rows(nIndex).Value = sAdditional
-    End If
-End Sub
-
-
-'
 ' 範囲の最左列番号を返す
 '
 ' sName      IN      範囲名
 '
-Function GetAreaLeftColumn(sName As String)
+Public Function GetAreaLeftColumn(sName As String) As Integer
     Dim oRange As Range
     Set oRange = Range(sName)
     GetAreaLeftColumn = oRange.Column
@@ -520,7 +426,7 @@ End Function
 '
 ' sName      IN      範囲名
 '
-Function GetAreaRightColumn(sName As String)
+Public Function GetAreaRightColumn(sName As String) As Integer
     Dim oRange As Range
     Set oRange = Range(sName)
     GetAreaRightColumn = oRange.Column + oRange.Columns.Count - 1
@@ -531,7 +437,7 @@ End Function
 '
 ' sName      IN      範囲名
 '
-Function GetAreaTopRow(sName As String)
+Public Function GetAreaTopRow(sName As String) As Integer
     Dim oRange As Range
     Set oRange = Range(sName)
     GetAreaTopRow = oRange.Row
@@ -542,61 +448,63 @@ End Function
 '
 ' sName      IN      範囲名
 '
-Function GetAreaBottomRow(sName As String)
+Public Function GetAreaBottomRow(sName As String) As Integer
     Dim oRange As Range
     Set oRange = Range(sName)
     GetAreaBottomRow = oRange.Row + oRange.Rows.Count - 1
 End Function
 
-
 '
 ' 基準セルからオフセット位置の値セルを返す
 '
-' oCell         IN      基準セル
+' vCell         IN      基準セル
 ' nColumn       IN      列番号
 '
-Function GetOffset(oCell As Variant, nColumn As Integer)
-    Set GetOffset = oCell.Offset(0, nColumn - oCell.Column)
+Public Function GetOffset(vCell As Variant, nColumn As Integer) As Range
+    Set GetOffset = vCell.Offset(0, nColumn - vCell.Column)
 End Function
 
 '
-' 範囲のヘッダ行から指定した列番号を返す
+' 範囲から指定した名前の列番号を返す
 '
 ' sName      IN      範囲名
 ' sColName   IN      カラム名
-'            OUT     列の番号
 '
-Function GetAreaColumnIndex(sName As String, sColName As String)
+Public Function GetAreaColumnIndex(sName As String, sColName As String) As Integer
     Dim nIndex As Integer
     nIndex = 1
-    For Each oCell In GetRange(sName).Rows(1).Columns
-        If Replace(Replace(oCell.Value, "　", ""), " ", "") = sColName Then
+    For Each vCell In GetRange(sName).Rows(1).Columns
+        If STrimAll(vCell.Value) = sColName Then
             GetAreaColumnIndex = nIndex
             Exit Function
         End If
         nIndex = nIndex + 1
-    Next
+    Next vCell
 End Function
 
 '
 ' 範囲のヘッダ行を除くキー列を取得する
 '
+' 範囲の１列目のヘッダ行を除く列を返す
+'
 ' sName      IN      範囲名
 '
-Function GetAreaKeyData(sName As String)
+Public Function GetAreaKeyData(sName As String) As Range
     Dim oRange As Range
-    Set oRange = GetRange(sName)
+    Set oRange = Range(sName)
     Set GetAreaKeyData = oRange.Offset(1, 0).Resize(oRange.Rows.Count - 1, 1).Rows()
 End Function
 
 '
 ' 範囲のキー列名を返す
 '
+' 範囲の１列目の名前を返す
+'
 ' sName      IN      範囲名
 '
-Function GetAreaKeyName(sName As String)
+Public Function GetAreaKeyName(sName As String) As Variant
     Dim oRange As Range
-    Set oRange = GetRange(sName)
+    Set oRange = Range(sName)
     GetAreaKeyName = oRange.Cells(1, 1).Value
 End Function
 
@@ -609,7 +517,7 @@ End Function
 ' bFlag      IN      VLookuUp関数の検索の型（False:完全一致／True:一番近いデータ）
 '            OUT     一致した値
 '
-Function VLookupArea(vValue As Variant, sName As String, sColName As String, Optional bFlag As Boolean = False)
+Public Function VLookupArea(vValue As Variant, sName As String, sColName As String, Optional bFlag As Boolean = False) As Range
     VLookupArea = Application.WorksheetFunction.VLookup(vValue, GetRange(sName), GetAreaColumnIndex(sName, sColName), bFlag)
 End Function
 
@@ -619,7 +527,7 @@ End Function
 ' oWorkBook  IN      WorkBook
 ' sPath      IN      フォルダパス
 '
-Sub ImportAll(oWorkBook As Workbook, sPath As String)
+Public Sub ImportAll(oWorkBook As Workbook, sPath As String)
     On Error Resume Next
     
     Dim oFso        As Object
@@ -663,7 +571,7 @@ End Sub
 ' oWorkBook  IN      WorkBook
 ' sPath      IN      フォルダパス
 '
-Sub ExportAll(oWorkBook As Workbook, sPath As String)
+Public Sub ExportAll(oWorkBook As Workbook, sPath As String)
     On Error Resume Next
     
     Dim sFileName As String
@@ -689,7 +597,7 @@ End Sub
 '
 ' SelectDir     OUT     フォルダ名フルパス
 '
-Function SelectDir()
+Public Function SelectDir()
     ' 新しいファイルを開く
     Dim sPathName As String
     Set FileSysObj = CreateObject("Scripting.FileSystemObject")
@@ -715,7 +623,7 @@ End Function
 ' sExt          IN      拡張子の指定
 ' cFileList     OUT     ファイルリスト
 '
-Function GetFiles(sPathName As String, sExt As String)
+Public Function GetFiles(sPathName As String, sExt As String) As Collection
     Dim sFile As String
     Dim cFileList As Collection
     Set cFileList = New Collection
@@ -727,19 +635,93 @@ Function GetFiles(sPathName As String, sExt As String)
     Set GetFiles = cFileList
 End Function
 
+'
+' プログラム補正用：セルの修正
+'
+' sRange     IN      セルのアドレス
+' sValue     IN      変更する値
+'
+Public Sub ModCell(sRange As String, sValue As String)
 
-'
-' シートの保護
-'
-' bFlag         IN      True：保護／False：解除
-'
-Sub SheetProtect(bFlag As Boolean)
-
-    If bFlag Then
-        ActiveSheet.Protect DrawingObjects:=True, Contents:=True, _
-            Scenarios:=True, UserInterfaceOnly:=True, AllowFiltering:=True
-    Else
-        ActiveSheet.Unprotect
-    End If
+    With Range(sRange)
+        .Value = sValue
+        .Borders(xlDiagonalDown).LineStyle = xlNone
+        .Borders(xlDiagonalUp).LineStyle = xlNone
+        With .Borders(xlEdgeLeft)
+            .LineStyle = xlContinuous
+            .Color = -16776961
+            .TintAndShade = 0
+            .Weight = xlThin
+        End With
+        With .Borders(xlEdgeTop)
+            .LineStyle = xlContinuous
+            .Color = -16776961
+            .TintAndShade = 0
+            .Weight = xlThin
+        End With
+        With .Borders(xlEdgeBottom)
+            .LineStyle = xlContinuous
+            .Color = -16776961
+            .TintAndShade = 0
+            .Weight = xlThin
+        End With
+        With .Borders(xlEdgeRight)
+            .LineStyle = xlContinuous
+            .Color = -16776961
+            .TintAndShade = 0
+            .Weight = xlThin
+        End With
+        .Borders(xlInsideVertical).LineStyle = xlNone
+        .Borders(xlInsideHorizontal).LineStyle = xlNone
+    End With
 
 End Sub
+
+'
+' プログラム補正用：プログラム番号のアドレスを探す
+'
+' nProNo     IN      プログラム番号
+' sName      IN      選手名
+' sColName   IN      カラム名（レースNo、組、レーン）
+'            OUT     アドレス文字列
+'
+Public Function SearchCell(nProNo As Integer, sName As String, sColName As String) As String
+
+    For Each vCell In GetAreaKeyData(エントリーテーブル & "[プロNo]")
+        If GetOffset(vCell, Range(エントリーテーブル & "[プロNo]").Column).Value = nProNo And _
+            GetOffset(vCell, Range(エントリーテーブル & "[選手名]").Column).Value = sName Then
+            SearchCell = GetOffset(vCell, Range(エントリーテーブル & "[" & sColName & "]").Column).Address
+            Exit Function
+        End If
+    Next vCell
+
+End Function
+
+'
+' プログラム入力用：記録画面の種目選択
+'
+' nProNo     IN      プログラム番号
+' nHeat      IN      組
+'
+Public Sub SetRace(nProNo As Integer, nHeat As Integer)
+    GetRange("記録画面種目番号").Value = nProNo
+    GetRange("記録画面組").Value = nHeat
+End Sub
+
+'
+' プログラム入力用：記録画面のタイム入力
+'
+' nIndex        IN      順位
+' nLean         IN      レーン
+' sTime         IN      時間
+' sAdditional   IN      備考
+'
+Public Sub SetLean(nIndex As Integer, nLean As Integer, sTime As String, Optional sAdditional As String = "")
+    GetRange("記録画面レーン").Rows(nIndex).Value = nLean
+    GetRange("記録画面タイム").Rows(nIndex).Value = sTime
+    If sAdditional <> "" Then
+        GetRange("記録画面備考").Rows(nIndex).Value = sAdditional
+    End If
+End Sub
+
+

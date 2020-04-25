@@ -66,7 +66,7 @@ Sub ReadWinner(sGameName As String, oWinnerList As Object)
     ' ƒvƒƒOƒ‰ƒ€”Ô†–ˆ
     For Each nProNo In GetAreaKeyData(sMasterName)
         ' ‘IèŒ ‚Ì—\‘I‚Í”ò‚Î‚·
-        If sGameName = "‰¡{‰ê‘IèŒ …‰j‘å‰ï" Then
+        If sGameName = ‘IèŒ ‘å‰ï Then
              If VLookupArea(nProNo, "‘IèŒ í–Ú‹æ•ª", "—\‘I^ŒˆŸ") = "—\‘I" Then
                 bFlag = False
              Else
@@ -124,9 +124,9 @@ End Sub
 '
 Function GetWinnerKey(sGameName As String, sMasterName As String, nProNo As Integer, sType As String)
 
-    If sGameName = "‰¡{‰ê‘IèŒ …‰j‘å‰ï" Then
+    If sGameName = ‘IèŒ ‘å‰ï Then
         GetWinnerKey = CStr(nProNo)
-    ElseIf sGameName = "‰¡{‰ês–¯‘Ìˆç‘å‰ï" Then
+    ElseIf sGameName = s–¯‘å‰ï Then
         GetWinnerKey = CStr(nProNo) & sType
     Else
         ' ‹æ•ª‚ğæ“¾

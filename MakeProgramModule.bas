@@ -11,18 +11,18 @@ Sub プログラム作成()
     Set oWorkBook = ActiveWorkbook
 
     ' エントリー一覧シート
-    Call SheetActivate(S_ENTRY_SHEET_NAME)
+    Call SheetActivate(エントリーシート)
     Dim oEntrySheet As Worksheet
     Set oEntrySheet = ActiveSheet
     
     ' プログラムシートを作成（ヘッダ行まで）
-    Call MakeSheet(oWorkBook, S_PROGRAM_SHEE_TNAME)
+    Call MakeSheet(oWorkBook, プログラムシート)
     Dim oProgramSheet As Worksheet
     Set oProgramSheet = ActiveSheet
 
     ' エントリー一覧読み込み
     Dim oEntryList As Object
-    Call ReadEntrySheet(S_ENTRY_TABLE_NAME, oEntryList)
+    Call ReadEntrySheet(エントリーテーブル, oEntryList)
 
     ' 予選なし決勝の設定
     If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
@@ -30,7 +30,7 @@ Sub プログラム作成()
     End If
 
     ' プログラム作成
-    Call MakeProgram(oProgramSheet, S_ENTRY_TABLE_NAME, oEntryList)
+    Call MakeProgram(oProgramSheet, エントリーテーブル, oEntryList)
 
     ' プログラムの名前設定
     Call SetProgramName(oProgramSheet)
@@ -298,7 +298,7 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
                 Cells(nCurrentRow, GetRange("Header氏名").Column).Value = sMessage
             Else
                 ' レーン毎
-                For nLane = N_MIN_LANE_OF_RACE To N_MAX_LANE_OF_RACE
+                For nLane = 最小レーン番号 To 最大レーン番号
                     Call SetNo(oWorkSheet, nCurrentRow)
                     
                     If oHeats Is Nothing Then
@@ -619,7 +619,7 @@ End Sub
 ' 「プログラム作成マクロ」からボタンで実行される
 '
 Sub プログラム名前定義()
-    Sheets(S_PROGRAM_SHEE_TNAME).Activate
+    Sheets(プログラムシート).Activate
     Call SetProgramName(ActiveSheet)
 End Sub
 
