@@ -285,7 +285,7 @@ Sub ReadEntryLine(nNum As Integer, nRow As Integer, oEntry As Object)
             oEntry.Add nNum, oLines
             
             oLines.Add "í–Ú”Ô†", VLookupArea(Cells(nRow, oCell.Column).Value, "í–Ú”Ô†‹æ•ª", "í–Ú”Ô†")
-            oLines.Add "í–Ú‹æ•ª", VLookupArea(Cells(nRow, oCell.Column).Value, "í–Ú”Ô†‹æ•ª", "‹æ•ª")
+            oLines.Add "í–Ú‹æ•ª", VLookupArea(Cells(nRow, oCell.Column).Value, "í–Ú”Ô†‹æ•ª", "í–Ú‹æ•ª")
             oLines.Add "í–Ú–¼", ReplaceStyle(sStyle)
             oLines.Add "‹——£", ReplaceDistance(Cells(GetRange("í–Ú‹——£").Row, oCell.Column).Value)
             nMin = Cells(nRow, GetRange("‘Iè•ª").Column).Value
@@ -629,7 +629,7 @@ Sub WriteRelayLine( _
     sMasterName = GetMaster(CStr(sGame))
     
     Cells(nRow, Range(sTable & "[í–Ú‹æ•ª]").Column).Value = _
-        VLookupArea(oLine.Item("í–Ú”Ô†"), sMasterName, "‹æ•ª")
+        VLookupArea(oLine.Item("í–Ú”Ô†"), sMasterName, "í–Ú‹æ•ª")
     
     Cells(nRow, Range(sTable & "[«•Ê]").Column).Value = _
         VLookupArea(oLine.Item("í–Ú”Ô†"), sMasterName, "«•Ê")

@@ -11,7 +11,7 @@ Sub エントリーファイル一括変換()
     Dim sPathName As String
     sPathName = SelectDir()
     Dim FileList As Collection
-    Set FileList = GetFiles(sPathName)
+    Set FileList = GetFiles(sPathName, "\*.xlsx")
 
     Dim nMax As Integer
     nMax = FileList.Count
@@ -34,7 +34,8 @@ Sub エントリーファイル一括変換()
         Worksheets("記入票").Activate
 
         ' エントリー一覧の読込み
-        Call エントリーシート全部定義
+        Call エントリーファイル変換1
+        Call エントリーシート定義
     
         ' 警告なしでファイルを閉じる（保存しない）
         Application.DisplayAlerts = False
@@ -45,6 +46,12 @@ Sub エントリーファイル一括変換()
     Call SetTitleMenu("")
     
     
+End Sub
+
+Private Sub エントリーファイル変換1()
+    Sheets("種目番号区分").Select
+    ActiveSheet.Unprotect
+    Range("B1").Value = "種目区分"
 End Sub
 
 
