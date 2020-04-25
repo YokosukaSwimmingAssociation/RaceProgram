@@ -98,7 +98,9 @@ Public Sub ReadEntrySheet(sTableName As String, oEntryList As Object)
 End Sub
 
 '
-' 予選決勝確認
+' 予選決勝確認（選手権用）
+'
+' 予選が１組しかない場合は
 '
 ' oEntryList    OUT     エントリー一覧(Dictionary)
 '
@@ -106,28 +108,43 @@ Sub CheckFinal(oEntryList As Object)
 
     Dim oProNo As Object
     Dim nFinalNo As Integer
+    Dim oHeats As Object
     
     ' プログラム番号毎
-    For Each nProNo In oEntryList.Keys()
+    For Each vProNo In GetAreaKeyData("選手権種目区分")
         ' 申込みのあるプロNo
-        Set oProNo = oEntryList.Item(Int(nProNo))
-        ' １組しかない場合
-        If oProNo.Count = 1 Then
+        If oEntryList.Exists(vProNo.Value) Then
+            Set oProNo = oEntryList.Item(vProNo.Value)
+            
             ' 決勝番号を取得
-            nFinalNo = VLookupArea(nProNo, "選手権種目区分", "決勝番号")
-            ' 予選と決勝がある場合
-            If nProNo <> nFinalNo Then
-                ' 直接決勝にする
-                oEntryList.Add nFinalNo, oProNo
-                ' 予選には組番号を0にして決勝文字列を記載
-                oEntryList.Remove nProNo
-                Set oProNo = CreateObject("Scripting.Dictionary")
-                oEntryList.Add nProNo, oProNo
-                Set oHeats = CreateObject("Scripting.Dictionary")
-                oProNo.Add 0, "予選なし-->決勝へ No." & CStr(nFinalNo)
+            nFinalNo = VLookupArea(vProNo.Value, "選手権種目区分", "決勝番号")
+            
+            ' 予選の場合
+            If vProNo.Value <> nFinalNo Then
+            
+                ' １組しかない場合
+                If oProNo.Count = 1 Then
+                    ' 直接決勝にする
+                    oEntryList.Add nFinalNo, oProNo
+                    ' 予選には予選キーに決勝文字列を記載
+                    oEntryList.Remove vProNo.Value
+                    Set oProNo = CreateObject("Scripting.Dictionary")
+                    oEntryList.Add vProNo.Value, oProNo
+                    oProNo.Add "予選", "予選なし-->決勝へ No." & CStr(nFinalNo)
+                ' 予選がある場合
+                Else
+                    ' 決勝キーに大会記録、標準記録を登録
+                    Set oProNo = CreateObject("Scripting.Dictionary")
+                    oEntryList.Add nFinalNo, oProNo
+                    
+                    ' 決勝キーに空の組を入れておく
+                    Set oHeats = CreateObject("Scripting.Dictionary")
+                    oHeats.Add "決勝", vProNo.Value
+                    oProNo.Add "決勝", oHeats
+                End If
             End If
         End If
-    Next nProNo
+    Next vProNo
 
 End Sub
 
@@ -220,7 +237,7 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
     
     Dim nMaxProNo As Integer
     Dim nMaxHeat As Integer
-    Dim nRaceNum As Integer
+    Dim nRaceNo As Integer
     nMaxProNo = GetRange(GetMaster(GetRange("大会名").Value)).Columns(1).Rows().Count
     
     Dim sMessage As String
@@ -246,14 +263,20 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
         For nHeat = 1 To nMaxHeat
             sMessage = ""
             If oProNo Is Nothing Then
-                ' 申込みのないプロNoの場合
+                ' 申込みのないプロNoの場合は空の１組目を出力
                 Set oHeats = Nothing
             ElseIf oProNo.Exists(nHeat) Then
-                ' 組が存在する場合
+                ' 組が存在する場合は組の値を出力
                 Set oHeats = oProNo.Item(nHeat)
-            ElseIf oProNo.Exists(0) And nHeat = 1 Then
-                ' 選手権の予選なし
-                sMessage = oProNo.Item(0)
+            ElseIf nHeat = 1 Then
+                If oProNo.Exists("予選") Then
+                ' 選手権の予選なしの場合は決勝へのメッセージを出力
+                    sMessage = oProNo.Item("予選")
+                ' 選手権の予選のある決勝の場合は大会記録、レース番号を入れる
+                ElseIf oProNo.Exists("決勝") Then
+                    Set oHeats = oProNo.Item("決勝")
+                    nRaceNo = nRaceNo + 1
+                End If
             Else
                 ' 組が存在しない場合（異常系）
                 Set oHeats = Nothing
@@ -281,6 +304,9 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
                     If oHeats Is Nothing Then
                         ' 申込みのないProNoの場合はデフォルト表示
                         Call MakeHeatDefault(oWorkSheet, nCurrentRow, Int(nProNo), Int(nHeat), Int(nLane))
+                    ElseIf oHeats.Exists("決勝") Then
+                        ' 選手権の決勝の場合は大会記録、標準記録、レース番号を追加
+                        Call MakeHeatDefault(oWorkSheet, nCurrentRow, Int(nProNo), Int(nHeat), Int(nLane), CStr(nRaceNo))
                     ElseIf oHeats.Exists(nLane) Then
                         ' 申込みのあるProNoでエントリがあるレーンの場合はデータを記述
                         Call MakeHeat(oWorkSheet, sTableName, nCurrentRow, Int(oHeats.Item(nLane)), Int(nProNo), Int(nHeat))
@@ -288,8 +314,14 @@ Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Obj
                         ' 申込みのあるProNoでエントリがないレーンの場合はデフォルト表示
                         Call MakeHeatDefault(oWorkSheet, nCurrentRow, Int(nProNo), Int(nHeat), Int(nLane))
                     End If
+                
+                    ' レース番号を記録しておく
+                    If Cells(nCurrentRow, GetRange("HeaderレースNo").Column).Value <> "" Then
+                        nRaceNo = Cells(nCurrentRow, GetRange("HeaderレースNo").Column).Value
+                    End If
                 Next
             End If
+            ' 空行を２行入れる
             Call SetNo(oWorkSheet, nCurrentRow)
             Call SetNo(oWorkSheet, nCurrentRow)
         Next
@@ -473,7 +505,9 @@ End Sub
 ' nHeat         IN      組番号
 ' nLane         IN      レーン番号
 '
-Sub MakeHeatDefault(oWorkSheet As Worksheet, nCurrentRow As Integer, nProNo As Integer, nHeat As Integer, nLane As Integer)
+Sub MakeHeatDefault(oWorkSheet As Worksheet, nCurrentRow As Integer, _
+nProNo As Integer, nHeat As Integer, nLane As Integer, _
+Optional sRaceNo As String = Empty)
     
     Call CopyCell(oWorkSheet, nCurrentRow, "HeaderプロNo", nProNo)
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog組番", Format(nProNo, "0#") & "-" & Format(nHeat, "#"))
@@ -490,6 +524,8 @@ Sub MakeHeatDefault(oWorkSheet As Worksheet, nCurrentRow As Integer, nProNo As I
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog備考")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog大会記録")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog申込み記録")
+    Call CopyCell(oWorkSheet, nCurrentRow, "ProgレースNo", sRaceNo)
+    Call CopyCell(oWorkSheet, nCurrentRow, "Prog標準記録")
 
 End Sub
 

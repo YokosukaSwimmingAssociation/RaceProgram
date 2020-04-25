@@ -518,8 +518,14 @@ Sub 決勝登録()
     Dim oFinalist As Object
     Call ReadFinalist(nProNo, oFinalist)
 
+    ' 大会記録と標準記録
+    Dim nRecord As Long
+    nRecord = VLookupArea(nFinalNo, "選手権大会記録", "記録")
+    Dim nQualify As Long
+    nQualify = VLookupArea(nProNo, "選手権種目区分", "標準記録")
+
     ' 決勝進出者を出力
-    Call WriteFinalist(nFinalNo, oFinalist)
+    Call WriteFinalist(nFinalNo, oFinalist, nRecord, nQualify)
 
     ' イベント発生を再開
     Call EventChange(True)
@@ -549,12 +555,14 @@ Sub ReadFinalist(nProNo As Integer, oFinalist As Object)
 End Sub
 
 '
-' 決勝進出者を読み込む
+' 決勝進出者を出力する
 '
 ' nProNo            IN      種目番号
-' oFinalist         OUT     決勝進出者の行番号配列
+' oFinalist         IN      決勝進出者の行番号配列
+' nRecord           IN      大会記録
+' nQualify          IN      標準記録
 '
-Sub WriteFinalist(nProNo As Integer, oFinalist As Object)
+Sub WriteFinalist(nProNo As Integer, oFinalist As Object, nRecord As Long, nQualify As Long)
     Dim sName As String
     sName = "プログラム番号" & Trim(Str(nProNo))
 
@@ -575,6 +583,8 @@ Sub WriteFinalist(nProNo As Integer, oFinalist As Object)
             GetOffset(vProNo, Range("Prog所属").Column).Value = GetOffset(vCell, Range("Prog所属").Column).Value
             GetOffset(vProNo, Range("Prog区分").Column).Value = GetOffset(vCell, Range("Prog区分").Column).Value
             GetOffset(vProNo, Range("Prog申込み記録").Column).Value = GetOffset(vCell, Range("Prog時間").Column).Value
+            GetOffset(vProNo, Range("Prog大会記録").Column).Value = nRecord
+            GetOffset(vProNo, Range("Prog標準記録").Column).Value = nQualify
             
         Next vProNo
     End If

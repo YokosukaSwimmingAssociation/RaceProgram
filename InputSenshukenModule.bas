@@ -49,6 +49,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "3315")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
     
     ' 3 女子 50M バタフライ 予選
@@ -73,6 +74,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "3314")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
     
     ' 4 男子 50M バタフライ 予選
@@ -114,6 +116,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "3112")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
     
     ' 5 女子 50M 平泳ぎ 予選
@@ -134,6 +137,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "4404")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
     
     ' 6 男子 50M 平泳ぎ 予選
@@ -175,6 +179,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
     
     ' 7 女子 50M 自由形 予選
@@ -230,6 +235,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "3072")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
     
     ' 8 男子 50M 自由形 予選
@@ -354,6 +360,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "2647")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
     
     ' 10 男子 100M 背泳ぎ 予選
@@ -378,6 +385,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "11309")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
      
     ' 12 男子 100M バタフライ 予選
@@ -400,6 +408,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "10817")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
     
     ' 13 女子 100M 平泳ぎ 予選
@@ -419,6 +428,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "13994")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
 
     ' 14 男子 100M 平泳ぎ 予選
@@ -453,6 +463,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "11287")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
 
     ' 15 女子 100M 自由形 予選
@@ -494,6 +505,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "10728")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
 
     ' 16 男子 100M 自由形 予選
@@ -578,6 +590,7 @@ Sub 入力選手権予選記録()
     Call SetLean(7, 9, "")
     Call 登録
     Call 順位決定
+    Call 決勝登録
     Call 初期化
 
 End Sub
