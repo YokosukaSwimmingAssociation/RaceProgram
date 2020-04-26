@@ -6,9 +6,6 @@ Attribute VB_Name = "ReadEntryModule"
 ' すべて読み込み一覧シートに出力する。
 '
 Public Sub エントリー読込み()
-    ' イベント発生を抑制
-    Call EventChange(False)
-
     ' エクセルシートを選択
     Call SheetActivate(エントリーシート)
 
@@ -20,6 +17,11 @@ Public Sub エントリー読込み()
     Dim oWorkSheet As Worksheet
     Set oWorkSheet = ActiveSheet
 
+    oWorkSheet.Select
+    Call SetForcusTop
+
+    ' イベント発生を抑制
+    Call EventChange(False)
 
     ' エントリー一覧読込用配列
     Dim oGameList As Object
@@ -42,7 +44,6 @@ Public Sub エントリー読込み()
     
     ' シートを保存
     oWorkBook.Save
-    Call SetForcusTop
 
 End Sub
 
@@ -88,7 +89,7 @@ Private Sub ReadEntryFiles(ByRef oGameList As Object)
         ' ファイルを開く（読み取り専用）
         '
         Set SubBook = Workbooks.Open(Filename:=sPathName + "\" + vFile, ReadOnly:=True)
-        Worksheets("記入票").Activate
+        SheetActivate ("記入票")
 
         ' エントリー一覧の読込み
         Call ReadEntryFile(oGameList)

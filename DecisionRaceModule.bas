@@ -48,9 +48,51 @@ Private Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
 
     oWorkSheet.Activate
     
+    ' エントリー一覧
+    Dim oEntryList As Object
+    Set oEntryList = CreateObject("Scripting.Dictionary")
+    
+    ' データを格納
+    Call ReadProNo(sTableName, oEntryList)
+    
+    ' 組、レーンを出力
+    Call WriteHeatLaneOrder(sTableName, oEntryList)
+
+End Sub
+
+'
+' プロNoをキーにデータ格納
+'
+' プロNo毎に通番を振ってその行番号を格納する
+'
+' sTableName    IN      テーブル名
+' oEntryList    OUT     エントリー番号
+'　└プロNo：
+'　　└通番：ProNo行のセルオブジェクト
+'
+Private Sub ReadProNo(sTableName As String, oEntryList As Object)
+    ' データを格納
+    Dim oProNo As Object
+    For Each vProNo In Range(sTableName & "[プロNo]")
+        If Not oEntryList.Exists(vProNo.Value) Then
+            Set oProNo = CreateObject("Scripting.Dictionary")
+            oEntryList.Add vProNo.Value, oProNo
+        End If
+        oProNo.Add oProNo.Count + 1, vProNo
+    Next
+End Sub
+
+'
+' 組、レーンを出力する
+'
+' sTableName    IN      テーブル名
+' oEntryList    IN      エントリー番号
+'
+Private Sub WriteHeatLaneOrder(sTableName As String, oEntryList As Object)
+
     ' 組み合わせが学マだけ逆な対応（検証用の暫定）
     Dim bFlag As Boolean
-    If GetRange("大会名").Value = "学童マスターズ大会" Then
+    If GetRange("大会名").Value = 学マ大会 Then
         bFlag = False
     Else
         bFlag = True
@@ -59,15 +101,8 @@ Private Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
     ' 組の最小人数
     Dim nMinNumberOfRace As Integer
     nMinNumberOfRace = GetRange("組最少人数").Value
-    
-    ' エントリー一覧
-    Dim oEntryList As Object
-    Set oEntryList = CreateObject("Scripting.Dictionary")
-    Dim oProNo As Object
-    
-    ' データを格納
-    Call ReadProNo(sTableName, oEntryList)
 
+    Dim oProNo As Object
     Dim nRow As Integer             ' カレントの行番号
     
     Dim nNumOfProNo As Integer      ' プログラムNo毎の人数
@@ -76,7 +111,7 @@ Private Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
     Dim nHeats As Integer           ' 組数
     Dim nNumOfHeat As Integer       ' 組の人数
     Dim nNumOfHeats() As Integer    ' 組毎の人数
-    Dim nNumOfSortType As Integer   ' ソート区分毎の残り人数
+    Dim nNumOfSortClass As Integer   ' ソート区分毎の残り人数
     Dim nRemNumber As Integer       ' 組の残り人数
     
     Dim nOrder As Integer           ' ProNo毎の順序（逆順）
@@ -94,20 +129,14 @@ Private Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
         Set oProNo = oEntryList.Item(nProNo)
         
         ' プログラムNo毎の人数
-        nNumOfProNo = GetNumberOfProNo(oProNo)
+        nNumOfProNo = oProNo.Count
         
         ' 組数を算出
         nHeats = GetHeats(nNumOfProNo)
         Call GetNumberOfHeat(nNumOfProNo, nHeats, nNumOfHeats, nMinNumberOfRace)
         
-        ' 平均分け方式を利用するケース
-        bAverage = False
-        If GetRange("大会名").Value = "横須賀選手権水泳大会" And nHeats >= 平均分け組数 Then
-            If GetRange("組合せ方式").Value = "混合分け方式" And _
-                VLookupArea(nProNo, "選手権種目区分", "予選／決勝") = "予選" Then
-                bAverage = True
-            End If
-        End If
+        ' 平均分け方式を利用するか判定
+        bAverage = IsAverageOrder(nProNo, nHeats)
         
         ' ProNo毎の選手位置
         nOrder = 1
@@ -138,10 +167,10 @@ Private Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
             ' 組の人数が残っている間
             While nRemNumber > 0
                 ' ソート区分毎の残り人数
-                nNumOfSortType = GetNumberOfSortType(nOrder, oProNo)
-                If nNumOfSortType <= nRemNumber Then
+                nNumOfSortClass = GetNumberOfSortClass(nOrder, oProNo, Range(sTableName & "[ソート区分]").Column)
+                If nNumOfSortClass <= nRemNumber Then
                     ' Lane決定する人数
-                    nMax = nNumOfSortType
+                    nMax = nNumOfSortClass
                 Else
                     nMax = nRemNumber
                 End If
@@ -149,7 +178,7 @@ Private Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
                 ' レーンを決定する
                 For nNum = 1 To nMax
                     ' カレント行番号
-                    nRow = GetProNoRow(nOrder, oProNo)
+                    nRow = oProNo.Item(nOrder).Row
                 
                     ' レースNo、組の書込み
                     Cells(nRow, Range(sTableName & "[レースNo]").Column).Value = nRaceNo
@@ -172,73 +201,30 @@ Private Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
         Next nHeat
     
     Next nProNo
-
 End Sub
-
-'
-' プロNoをキーにデータ格納
-'
-' プロNo毎に通番を振ってその行番号を格納する
-'
-' sTableName    IN      テーブル名
-' oEntryList    OUT     エントリー番号
-'　└プロNo
-'　　└通番：行番号
-'
-Private Sub ReadProNo(sTableName As String, oEntryList As Object)
-    ' データを格納
-    Dim oProNo As Object
-    For Each vProNo In Range(sTableName & "[プロNo]")
-        If Not oEntryList.Exists(vProNo.Value) Then
-            Set oProNo = CreateObject("Scripting.Dictionary")
-            oEntryList.Add vProNo.Value, oProNo
-        End If
-        Set oRow = CreateObject("Scripting.Dictionary")
-        oRow.Add "Row", vProNo.Row
-        oRow.Add "SortType", Trim(Cells(vProNo.Row, Range(sTableName & "[ソート区分]").Column).Value)
-        oProNo.Add oProNo.Count + 1, oRow
-    Next
-End Sub
-
-'
-' プロNo、ソート区分の件数
-'
-' oProNo        IN      プロNo毎のエントリー配列
-'
-Private Function GetNumberOfProNo(oProNo As Object)
-    GetNumberOfProNo = oProNo.Count
-End Function
-
-'
-' プロNoの順番の行
-'
-' nIndex        IN      順序番号
-' oProNo        IN      プロNo毎のエントリー配列
-'
-Private Function GetProNoRow(nIndex As Integer, oProNo As Object)
-    Dim oRow As Object
-    Set oRow = oProNo.Item(nIndex)
-    GetProNoRow = oRow.Item("Row")
-End Function
 
 '
 ' 開始位置から同一ソート区分の件数
 '
-' nIndex        IN      開始位置
-' oProNo        IN      プロNo毎のエントリー配列
+' 開始位置で指定されたソート区分と同じ値の間はカウントする
 '
-Private Function GetNumberOfSortType(nIndex As Integer, oProNo As Object)
+' nIndex            IN      開始位置
+' oProNo            IN      プロNo毎のエントリー配列
+' nSortClassColumn  IN      ソート区分のカラム位置
+'
+Private Function GetNumberOfSortClass(nIndex As Integer, oProNo As Object, nSortClassColumn As Integer)
     
-    GetNumberOfSortType = 1
-    Dim oRow As Object
-    Set oRow = oProNo.Item(nIndex)
-    Dim sSortType As String
-    sSortType = oRow.Item("SortType")
+    GetNumberOfSortClass = 1
+    
+    Dim vProNo As Object
+    Set vProNo = oProNo.Item(nIndex)
+    Dim sSortClass As String
+    sSortClass = GetOffset(vProNo, nSortClassColumn).Value
     
     For i = nIndex + 1 To oProNo.Count
-        Set oRow = oProNo.Item(i)
-        If oRow.Item("SortType") = sSortType Then
-            GetNumberOfSortType = GetNumberOfSortType + 1
+        Set vProNo = oProNo.Item(i)
+        If GetOffset(vProNo, nSortClassColumn).Value = sSortClass Then
+            GetNumberOfSortClass = GetNumberOfSortClass + 1
         Else
             Exit Function
         End If
@@ -382,6 +368,23 @@ Private Function GetLane(nCenter As Integer, nMax As Integer, nOrder As Integer,
 End Function
 
 '
+'  平均分け方式を採用するか
+'
+' nProNo        IN      プログラム番号
+' nHeats        IN      組数
+'
+Private Function IsAverageOrder(nProNo As Variant, nHeats As Integer) As Boolean
+    IsAverageOrder = False
+    If GetRange("大会名").Value = 選手権大会 And nHeats >= 平均分け組数 Then
+        If GetRange("組合せ方式").Value = "混合分け方式" And _
+            VLookupArea(nProNo, "選手権種目区分", "予選／決勝") = "予選" Then
+            IsAverageOrder = True
+        End If
+    End If
+End Function
+
+
+'
 ' レーン決定(平均分け方式)
 '
 ' レーンは競技規則の平均分け方式で並べる
@@ -443,7 +446,7 @@ nOrder As Integer, oProNo As Object, sTableName As String)
     For nNum = 1 To nMaxNum
         
         ' カレント行番号
-        nRow = GetProNoRow(nOrder, oProNo)
+        nRow = oProNo.Item(nOrder).Row
         
         ' レースNo
         nRaceNo = (GetOrderHeat(平均分け組数, nMaxNum, nNum) + (nStartRaceNo / 10 - 1)) * 10
