@@ -1,4 +1,6 @@
 Attribute VB_Name = "CommonModule"
+'Option Explicit    ''←変数の宣言を強制する
+
 ' 大会名
 Public Const 学童大会 As String = "横須賀市学童水泳競技大会"
 Public Const マスターズ大会 As String = "横須賀マスターズ大会"
@@ -459,7 +461,7 @@ Public Function GetAreaTopRow(sName As String) As Integer
     Dim oRange As Range
     Set oRange = Range(sName)
     GetAreaTopRow = oRange.Row
-End Function
+End Function+
 
 '
 ' 範囲の最下行番号を返す
