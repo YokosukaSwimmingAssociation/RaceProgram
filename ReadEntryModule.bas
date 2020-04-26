@@ -20,9 +20,13 @@ Public Sub エントリー読込み()
     Dim oWorkSheet As Worksheet
     Set oWorkSheet = ActiveSheet
 
+
     ' エントリー一覧読込用配列
     Dim oGameList As Object
     Set oGameList = CreateObject("Scripting.Dictionary")
+
+    ' エントリーテーブルを初期化
+    Call DeleteTable(oWorkSheet, エントリーテーブル)
 
     ' エントリーファイル読込み
     Call ReadEntryFiles(oGameList)
@@ -31,11 +35,23 @@ Public Sub エントリー読込み()
     Call WriteEntrySheet(oWorkSheet, エントリーテーブル, oGameList)
     
     ' ProNo、ソート区分、申込み時間でソート
+    Call SetTitleMenu("並び替え中")
     Call SortByProNo(oWorkSheet, エントリーテーブル)
 
+    Call SetTitleMenu("")
+    
     ' シートを保存
     oWorkBook.Save
+    Call SetForcusTop
 
+End Sub
+
+'
+' テーブルを初期化
+'
+Public Sub エントリー一覧初期化()
+    ' エントリーテーブルを初期化
+    Call DeleteTable(oWorkSheet, エントリーテーブル)
 End Sub
 
 '
@@ -463,72 +479,44 @@ End Function
 '
 ' 申込みをシートに出力
 '
-' oWorkBook     IN     出力するシートのあるエクセルWorkBook
+' oWorkSheet    IN     ワークシート
 ' sTable        IN     テーブル名
 ' oTeamList     IN     読み込んだチーム申込み一覧
 '
 Private Sub WriteEntrySheet(oWorkSheet As Worksheet, sTable As String, oGameList As Object)
-    
-    ' エントリーテーブルを初期化
-    Call DeleteTable(oWorkSheet, sTable)
-    
-    ' エントリー一覧の出力
-    Call WriteTeamEntries(oWorkSheet, sTable, oGameList)
 
-End Sub
+    oWorkSheet.Select
 
-'
-' 申込みをシートに出力
-'
-' oWorkBook     IN     出力するシートのあるエクセルWorkBook
-' sTable        IN     テーブル名
-' oTeamList     IN     読み込んだチーム申込み一覧
-'
-Private Sub WriteTeamEntries(oWorkSheet As Worksheet, sTable As String, oGameList As Object)
+    Dim oTeamList As Object
+    Dim oEntryList As Object
 
-    oWorkSheet.Activate
-
-    Dim nPersonNo As Integer
+    Dim nTeamToal As Integer
+    nTeamToal = 0
     Dim nTeamNo As Integer
     nTeamNo = 1
-    
     Dim nRow As Integer
     nRow = 1
+    
     For Each vGame In oGameList.Keys()
-        Dim oTeamList As Object
-        Set oTeamList = oGameList.Item(vGame)
+        ' 出力する大会か判定
+        If IsSameGame(CStr(vGame)) Then
+            Set oTeamList = oGameList.Item(vGame)
+        Else
+            ' 出力する大会以外は捨てる
+            'Set oTeamList = oGameList.Item(vGame)
+            Set oTeamList = CreateObject("Scripting.Dictionary")
+        End If
+        
+        nTeamToal = nTeamToal + oTeamList.Count
         For Each vTeam In oTeamList.Keys()
-            Dim oEntryList As Object
             Set oEntryList = oTeamList.Item(vTeam)
             
-            Dim oLine As Object
-            For Each vNum In oEntryList.Keys()
-                Dim oEntry As Object
-                Set oEntry = oEntryList.Item(vNum)
-                nPersonNo = nTeamNo * 100 + CInt(vNum)
-                
-                If oEntry.Exists("選手名") Then
-                    ' 個人
-                    For i = 1 To 個人最大行数
-                        If Not IsEmpty(oEntry.Item(i)) Then
-                            nRow = nRow + 1
-                            Set oLine = oEntry.Item(i)
-                            Call WriteLine(sTable, nRow, nPersonNo, CStr(vGame), CStr(vTeam), oEntry, oLine)
-                        End If
-                    Next i
-                Else
-                    ' リレー
-                    Dim sKey As String
-                    For i = 1 To リレー最大行数
-                        sKey = "L" & Str(i)
-                        If oEntry.Exists(sKey) Then
-                            nRow = nRow + 1
-                            Set oLine = oEntry.Item(sKey)
-                            Call WriteRelayLine(sTable, nRow, nTeamNo, CStr(vGame), CStr(vTeam), oEntry, oLine)
-                        End If
-                    Next i
-                End If
-            Next
+            ' 進捗表示
+            Call SetTitleMenu("プログラム出力: " & CStr(nTeamNo) & "/" & CStr(nTeamToal))
+            
+            ' チームごとに出力する
+            Call WriteTeamEntry(sTable, nRow, CStr(vGame), CStr(vTeam), nTeamNo, oEntryList)
+            
             ' チーム番号をインクリメント
             nTeamNo = nTeamNo + 1
         Next
@@ -536,18 +524,70 @@ Private Sub WriteTeamEntries(oWorkSheet As Worksheet, sTable As String, oGameLis
 End Sub
 
 '
-' エントリーテーブルを初期化
+' 出力するゲームか判定
 '
-' oWorkSheet    IN      ワークシート
-' sTableName    IN      テーブル名
+' sGame         IN      大会名
 '
-Public Sub DeleteTable(oWorkSheet As Worksheet, sTableName As String)
-    Dim myTable As ListObject
-    Set myTable = oWorkSheet.ListObjects(sTableName)
-    If Not (myTable.DataBodyRange Is Nothing) Then
-        myTable.DataBodyRange.Delete
+Private Function IsSameGame(sGameName As String) As Boolean
+    If GetRange("大会名").Value = sGameName Then
+        IsSameGame = True
+    ElseIf GetRange("大会名").Value = 学マ大会 Then
+        If sGameName = 学童大会 Or sGameName = マスターズ大会 Then
+            IsSameGame = True
+        Else
+            IsSameGame = False
+        End If
+    Else
+        IsSameGame = False
     End If
+
+End Function
+
+'
+' チームの出力をする
+'
+' sTable        IN      テーブル名
+' nRow          IN/OUT  出力する行数
+' sGame         IN      大会名
+' sTaem         IN      チーム名
+' nTeamNo       IN/OUT  チーム番号
+' oEntryList    IN      エントリー一覧
+'
+Private Sub WriteTeamEntry(sTable As String, ByRef nRow As Integer, _
+sGame As String, sTaem As String, _
+nTeamNo As Integer, oEntryList As Object)
+    Dim oEntry As Object
+    Dim oLine As Object
+    Dim nPersonNo As Integer
+    
+    For Each vNum In oEntryList.Keys()
+        Set oEntry = oEntryList.Item(vNum)
+        nPersonNo = nTeamNo * 100 + CInt(vNum)
+        
+        If oEntry.Exists("選手名") Then
+            ' 個人
+            For i = 1 To 個人最大行数
+                If Not IsEmpty(oEntry.Item(i)) Then
+                    nRow = nRow + 1
+                    Set oLine = oEntry.Item(i)
+                    Call WriteLine(sTable, nRow, nPersonNo, sGame, sTaem, oEntry, oLine)
+                End If
+            Next i
+        Else
+            ' リレー
+            Dim sKey As String
+            For i = 1 To リレー最大行数
+                sKey = "L" & Str(i)
+                If oEntry.Exists(sKey) Then
+                    nRow = nRow + 1
+                    Set oLine = oEntry.Item(sKey)
+                    Call WriteRelayLine(sTable, nRow, nTeamNo, sGame, sTaem, oEntry, oLine)
+                End If
+            Next i
+        End If
+    Next
 End Sub
+
 
 '
 ' 申込み行を出力
@@ -707,6 +747,20 @@ Private Sub WriteRelayLine( _
 End Sub
 
 '
+' エントリーテーブルを初期化
+'
+' oWorkSheet    IN      ワークシート
+' sTableName    IN      テーブル名
+'
+Public Sub DeleteTable(oWorkSheet As Worksheet, sTableName As String)
+    Dim myTable As ListObject
+    Set myTable = oWorkSheet.ListObjects(sTableName)
+    If Not (myTable.DataBodyRange Is Nothing) Then
+        myTable.DataBodyRange.Delete
+    End If
+End Sub
+
+'
 ' シートのテーブルをソートする
 '
 ' 第１キー  プロNo      昇順
@@ -714,13 +768,11 @@ End Sub
 ' 第３キー  申込み時間  昇順
 '
 ' oWorkSheet    IN      ワークシート
-' sTableName    OUT     テーブル名
+' sTableName    IN      テーブル名
 '
 Public Sub SortByProNo(oWorkSheet As Worksheet, sTableName As String)
 
-    oWorkSheet.Activate
-
-    With ActiveSheet.ListObjects(sTableName).Sort
+    With oWorkSheet.ListObjects(sTableName).Sort
         .SortFields.Clear
         .SortFields.Add Key:=Range(sTableName + "[プロNo]"), _
             SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal

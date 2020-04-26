@@ -237,7 +237,7 @@ Private Sub 記入票名前定義()
     Call DefineNameByRelayColumns("リレーミリ秒列", "リレーミリ秒")
 
     Sheets("記入票").Select
-    Range("$A$1").Select
+    Call SetForcusTop
     Call SheetProtect(True)
 
 End Sub
@@ -286,7 +286,7 @@ Private Sub 種目番号区分名前定義()
     End If
 
     Sheets("種目番号区分").Select
-    Range("$A$1").Select
+    Call SetForcusTop
     Call SheetProtect(True)
 End Sub
 
@@ -555,7 +555,7 @@ Private Sub 入力制限定義()
     Call DefineMiliSecondValidation("リレーミリ秒")
     
     Sheets("記入票").Select
-    Range("$A$1").Select
+    Call SetForcusTop
     Call SheetProtect(True)
 End Sub
 
@@ -578,7 +578,7 @@ Private Sub ClearValidation(sSheetName As String)
         .ShowInput = True
         .ShowError = True
     End With
-    Range("$A$1").Select
+    Call SetForcusTop
 End Sub
 
 '
@@ -1275,7 +1275,7 @@ Private Sub 条件付き書式定義()
     Call DefineRelaySecondNotification("リレー秒")
     
     Sheets("記入票").Select
-    Range("$A$1").Select
+    Call SetForcusTop
     Call SheetProtect(True)
 End Sub
 

@@ -4,7 +4,7 @@ Attribute VB_Name = "DecisionRaceModule"
 '
 ' レースNoと組、レーンを設定する
 '
-Sub 組み合わせ決定()
+Public Sub 組み合わせ決定()
     ' イベント発生を抑制
     Call EventChange(False)
 
@@ -44,7 +44,7 @@ End Sub
 ' oWorkSheet    IN      ワークシート
 ' sTableName    IN      テーブル名
 '
-Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
+Private Sub SetHeatLaneOrder(oWorkSheet As Worksheet, sTableName As String)
 
     oWorkSheet.Activate
     
@@ -185,17 +185,17 @@ End Sub
 '　└プロNo
 '　　└通番：行番号
 '
-Sub ReadProNo(sTableName As String, oEntryList As Object)
+Private Sub ReadProNo(sTableName As String, oEntryList As Object)
     ' データを格納
     Dim oProNo As Object
-    For Each cProNo In Range(sTableName & "[プロNo]")
-        If Not oEntryList.Exists(cProNo.Value) Then
+    For Each vProNo In Range(sTableName & "[プロNo]")
+        If Not oEntryList.Exists(vProNo.Value) Then
             Set oProNo = CreateObject("Scripting.Dictionary")
-            oEntryList.Add cProNo.Value, oProNo
+            oEntryList.Add vProNo.Value, oProNo
         End If
         Set oRow = CreateObject("Scripting.Dictionary")
-        oRow.Add "Row", cProNo.Row
-        oRow.Add "SortType", Trim(Cells(cProNo.Row, Range(sTableName & "[ソート区分]").Column).Value)
+        oRow.Add "Row", vProNo.Row
+        oRow.Add "SortType", Trim(Cells(vProNo.Row, Range(sTableName & "[ソート区分]").Column).Value)
         oProNo.Add oProNo.Count + 1, oRow
     Next
 End Sub
@@ -205,7 +205,7 @@ End Sub
 '
 ' oProNo        IN      プロNo毎のエントリー配列
 '
-Function GetNumberOfProNo(oProNo As Object)
+Private Function GetNumberOfProNo(oProNo As Object)
     GetNumberOfProNo = oProNo.Count
 End Function
 
@@ -215,7 +215,7 @@ End Function
 ' nIndex        IN      順序番号
 ' oProNo        IN      プロNo毎のエントリー配列
 '
-Function GetProNoRow(nIndex As Integer, oProNo As Object)
+Private Function GetProNoRow(nIndex As Integer, oProNo As Object)
     Dim oRow As Object
     Set oRow = oProNo.Item(nIndex)
     GetProNoRow = oRow.Item("Row")
@@ -227,7 +227,7 @@ End Function
 ' nIndex        IN      開始位置
 ' oProNo        IN      プロNo毎のエントリー配列
 '
-Function GetNumberOfSortType(nIndex As Integer, oProNo As Object)
+Private Function GetNumberOfSortType(nIndex As Integer, oProNo As Object)
     
     GetNumberOfSortType = 1
     Dim oRow As Object
@@ -254,7 +254,7 @@ End Function
 ' nNumberOfHeat() OUT   組毎の人数配列
 ' nMinNumberOfRace IN   組の最小人数
 '
-Sub GetNumberOfHeat(nTotalNum As Integer, nHeats As Integer, nNumberOfHeat() As Integer, nMinNumberOfRace As Integer)
+Private Sub GetNumberOfHeat(nTotalNum As Integer, nHeats As Integer, nNumberOfHeat() As Integer, nMinNumberOfRace As Integer)
     
     ReDim nNumberOfHeat(nHeats - 1) As Integer
     
@@ -281,7 +281,7 @@ End Sub
 '
 ' nTotalNum     IN      レースの総人数
 '
-Function GetHeats(nTotalNum As Integer)
+Private Function GetHeats(nTotalNum As Integer)
 
     GetHeats = Application.WorksheetFunction.RoundUp(nTotalNum / レース定員, 0)
 
@@ -295,7 +295,7 @@ End Function
 ' nTotalNum     IN      レースの総人数
 ' nMinNumberOfRace IN   組の最小人数
 '
-Function GetFirstHeatNumber(nTotalNum As Integer, nMinNumberOfRace As Integer)
+Private Function GetFirstHeatNumber(nTotalNum As Integer, nMinNumberOfRace As Integer)
 
     If nTotalNum <= レース定員 Then
         GetFirstHeatNumber = nTotalNum
@@ -317,7 +317,7 @@ End Function
 ' nTotalNum     IN      レースの総人数
 ' nMinNumberOfRace IN   組の最小人数
 '
-Function GetSecondHeatNumber(nTotalNum As Integer, nMinNumberOfRace As Integer)
+Private Function GetSecondHeatNumber(nTotalNum As Integer, nMinNumberOfRace As Integer)
 
     If nTotalNum <= レース定員 Then
         GetSecondHeatNumber = 0
@@ -337,7 +337,7 @@ End Function
 ' nCount        IN      人数
 ' nStart        IN      開始位置
 '
-Function GetCenterLane(nCount As Integer, nStart As Integer, Optional bFlag As Boolean = True)
+Private Function GetCenterLane(nCount As Integer, nStart As Integer, Optional bFlag As Boolean = True)
     If bFlag Then
         GetCenterLane = nStart + Application.WorksheetFunction.RoundDown((nCount - 1) / 2, 0)
     Else
@@ -351,7 +351,7 @@ End Function
 ' nCount        IN      レース人数
 ' nCenterLane   IN      センターレーン
 '
-Function GetStartLane(nCount As Integer, nCenterLane As Integer, Optional bFlag As Boolean = True)
+Private Function GetStartLane(nCount As Integer, nCenterLane As Integer, Optional bFlag As Boolean = True)
     If bFlag Then
         GetStartLane = nCenterLane - Application.WorksheetFunction.RoundDown((nCount - 1) / 2, 0)
     Else
@@ -369,7 +369,7 @@ End Function
 ' nOrder        IN      順番
 ' bFlag         In      True：通常／False：逆順
 '
-Function GetLane(nCenter As Integer, nMax As Integer, nOrder As Integer, Optional bFlag As Boolean = True)
+Private Function GetLane(nCenter As Integer, nMax As Integer, nOrder As Integer, Optional bFlag As Boolean = True)
     Dim nNum As Integer
     nNum = nMax - nOrder + 1
     If bFlag Then
@@ -390,7 +390,7 @@ End Function
 ' nMax          IN      人数
 ' nOrder        IN      順番
 '
-Function GetLane2(nCenter As Integer, nMax As Integer, nOrder As Integer)
+Private Function GetLane2(nCenter As Integer, nMax As Integer, nOrder As Integer)
     Dim nNum As Integer
     nNum = Application.WorksheetFunction.RoundUp((nMax - nOrder + 1) / 平均分け組数, 0)
     GetLane2 = nCenter - Application.WorksheetFunction.Power(-1, nNum - 1) _
@@ -408,7 +408,7 @@ End Function
 ' nMax          IN      人数
 ' nOrder        IN      順番
 '
-Function GetOrderHeat(nHeats As Integer, nMax As Integer, nOrder As Integer)
+Private Function GetOrderHeat(nHeats As Integer, nMax As Integer, nOrder As Integer)
     Dim nNum As Integer
     nNum = nMax - nOrder + 1
     GetOrderHeat = nHeats - (nNum - 1) Mod nHeats
@@ -426,7 +426,7 @@ End Function
 ' oProNo        IN      順番
 ' sTableName    IN      テーブル名
 '
-Sub AverageMethod(nStartRaceNo As Integer, nStartHeat As Integer, nMaxNum As Integer, _
+Private Sub AverageMethod(nStartRaceNo As Integer, nStartHeat As Integer, nMaxNum As Integer, _
 nOrder As Integer, oProNo As Object, sTableName As String)
     
     Dim nCenterLane As Integer
@@ -507,7 +507,7 @@ End Sub
 ' oWorkSheet    IN  ワークシート
 ' sTableName    IN  テーブル名
 '
-Sub ModifyRaceNo(oWorkSheet As Worksheet, sTableName As String)
+Private Sub ModifyRaceNo(oWorkSheet As Worksheet, sTableName As String)
     
     ' エントリー一覧
     Dim oEntryList As Object
@@ -545,7 +545,7 @@ End Sub
 '   └レースNo
 '   　　└レーン：行
 '
-Sub ReadRace(sTableName As String, oEntryList As Object)
+Private Sub ReadRace(sTableName As String, oEntryList As Object)
     Dim nLane As Integer
     Dim oRaceNo As Object
     For Each cRaceNo In Range(sTableName & "[レースNo]")
@@ -579,7 +579,7 @@ End Sub
 ' oWorkSheet    IN  ワークシート
 ' sTableName    IN  テーブル名
 '
-Sub ModifyRaceNoForSenshuken(oWorkSheet As Worksheet, sTableName As String)
+Private Sub ModifyRaceNoForSenshuken(oWorkSheet As Worksheet, sTableName As String)
     
     ' エントリー一覧
     Dim oEntryList As Object
@@ -659,7 +659,7 @@ End Sub
 '   └レースNo
 '   　　└レーン：行
 '
-Sub ReadRaceForSenshuken(sTableName As String, oEntryList As Object)
+Private Sub ReadRaceForSenshuken(sTableName As String, oEntryList As Object)
     Dim nRaceNo As Integer
     Dim nLane As Integer
     Dim oProNo As Object
@@ -705,7 +705,7 @@ End Sub
 ' oWorkSheet    IN      ワークシート
 ' sTableName    IN      テーブル名
 '
-Sub SortByRace(oWorkSheet As Worksheet, sTableName As String)
+Private Sub SortByRace(oWorkSheet As Worksheet, sTableName As String)
 
     oWorkSheet.Activate
 

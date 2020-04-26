@@ -1,6 +1,6 @@
 Attribute VB_Name = "CommonModule"
 ' 大会名
-Public Const 学童大会 As String = "横須賀学童水泳競技大会"
+Public Const 学童大会 As String = "横須賀市学童水泳競技大会"
 Public Const マスターズ大会 As String = "横須賀マスターズ大会"
 Public Const 学マ大会 As String = "学童マスターズ大会"
 Public Const 市民大会 As String = "横須賀市民体育大会"
@@ -61,6 +61,20 @@ Public Sub SheetProtect(bFlag As Boolean)
         ActiveSheet.Unprotect
     End If
 
+End Sub
+
+'
+' セルを選択
+'
+Public Sub SetForcusTop()
+    Range("$A$1").Select
+End Sub
+
+'
+' セルを選択
+'
+Public Sub SetForcus(sAddress As String)
+    Range(sAddress).Select
 End Sub
 
 '
