@@ -1,4 +1,6 @@
 Attribute VB_Name = "ReadEntryModule"
+Option Explicit    ''←変数の宣言を強制する
+
 '
 ' エントリーファイル一覧の読み込み
 '
@@ -79,6 +81,8 @@ Private Sub ReadEntryFiles(ByRef oGameList As Object)
     '
     ' ファイル毎に処理する
     '
+    Dim SubBook As Workbook
+    Dim vFile As Variant
     For Each vFile In FileList
         
         ' タイトル修正
@@ -202,12 +206,13 @@ End Sub
 '
 Private Sub ReadPersonEntry(nNum As Integer, sTeamName As String, ByRef oEntryList As Object)
     ' 個人番号範囲をすべて読み込む
-    For Each vCell In GetRange("選手番号")
+    Dim oCell As Range
+    For Each oCell In GetRange("選手番号")
         
         ' 個人番号は結合されていて
-        If vCell.MergeCells Then
+        If oCell.MergeCells Then
             ' 結合の先頭行で処理する
-            If vCell.Address = vCell.MergeArea.Item(1).Address Then
+            If oCell.Address = oCell.MergeArea.Item(1).Address Then
         
                 ' 選手毎のエントリーリスト
                 Dim oEntry As Object
@@ -217,25 +222,25 @@ Private Sub ReadPersonEntry(nNum As Integer, sTeamName As String, ByRef oEntryLi
                 If sTeamName = "個人" Then
                     nNum = nNum + 1
                 Else
-                    nNum = vCell.Value
+                    nNum = oCell.Value
                 End If
 
                 ' 選手情報を登録
-                Call ReadEntrySwimmer(nNum, vCell, oEntry)
+                Call ReadEntrySwimmer(nNum, oCell, oEntry)
                 
                 ' １行目
-                Call ReadEntryLine(1, vCell.Row, oEntry)
-                Call CheckEntry(1, vCell.Row, oEntry)
+                Call ReadEntryLine(1, oCell.Row, oEntry)
+                Call CheckEntry(1, oCell.Row, oEntry)
     
                 ' ２行目
-                Call ReadEntryLine(2, vCell.Row, oEntry)
-                Call CheckEntry(2, vCell.Row, oEntry)
+                Call ReadEntryLine(2, oCell.Row, oEntry)
+                Call CheckEntry(2, oCell.Row, oEntry)
                 If oEntry.Item("選手名") <> "" Then
                     oEntryList.Add nNum, oEntry
                 End If
             End If
         End If
-    Next vCell
+    Next oCell
 End Sub
 
 '
@@ -247,35 +252,35 @@ End Sub
 ' nRow          IN      行数
 ' oEntry        OUT     種目行
 '
-Private Sub ReadEntrySwimmer(nNum As Integer, vCell As Variant, ByRef oEntry As Object)
+Private Sub ReadEntrySwimmer(nNum As Integer, oCell As Range, ByRef oEntry As Object)
 
-    oEntry.Add "性別", GetOffset(vCell, GetRange("選手性別").Column).Value + "子"
-    oEntry.Add "フリガナ", ReplaceName(GetOffset(vCell, GetRange("選手フリガナ").Column).Value)
+    oEntry.Add "性別", GetOffset(oCell, GetRange("選手性別").Column).Value + "子"
+    oEntry.Add "フリガナ", ReplaceName(GetOffset(oCell, GetRange("選手フリガナ").Column).Value)
     
     If Range("大会名").Value = 選手権大会 Then
         
-        oEntry.Add "選手名", ReplaceName(GetOffset(vCell, GetRange("選手名").Column).Offset(1).Value)
-        oEntry.Add "区分", GetOffset(vCell, GetRange("選手区分").Column).Offset(1).Value
+        oEntry.Add "選手名", ReplaceName(GetOffset(oCell, GetRange("選手名").Column).Offset(1).Value)
+        oEntry.Add "区分", GetOffset(oCell, GetRange("選手区分").Column).Offset(1).Value
     
     ElseIf Range("大会名").Value = 市民大会 Then
-        oEntry.Add "選手名", ReplaceName(GetOffset(vCell, GetRange("選手名").Column).Offset(1).Value)
-        oEntry.Add "学校名", Trim(GetOffset(vCell, GetRange("選手学校名").Column).Offset(2).Value)
-        If GetOffset(vCell, GetRange("選手区分").Column).Value <> "" Then
-            oEntry.Add "区分", GetOffset(vCell, GetRange("選手区分").Column).Value
+        oEntry.Add "選手名", ReplaceName(GetOffset(oCell, GetRange("選手名").Column).Offset(1).Value)
+        oEntry.Add "学校名", Trim(GetOffset(oCell, GetRange("選手学校名").Column).Offset(2).Value)
+        If GetOffset(oCell, GetRange("選手区分").Column).Value <> "" Then
+            oEntry.Add "区分", GetOffset(oCell, GetRange("選手区分").Column).Value
         Else
             oEntry.Add "区分", "年齢区分"
         End If
-        oEntry.Add "年齢", GetOffset(vCell, GetRange("選手年齢").Column).Offset(1).Value
+        oEntry.Add "年齢", GetOffset(oCell, GetRange("選手年齢").Column).Offset(1).Value
     
     ElseIf Range("大会名").Value = マスターズ大会 Then
     
-        oEntry.Add "選手名", ReplaceName(GetOffset(vCell, GetRange("選手名").Column).Offset(1).Value)
-        oEntry.Add "年齢", GetOffset(vCell, GetRange("選手年齢").Column).Value
+        oEntry.Add "選手名", ReplaceName(GetOffset(oCell, GetRange("選手名").Column).Offset(1).Value)
+        oEntry.Add "年齢", GetOffset(oCell, GetRange("選手年齢").Column).Value
     
     Else
     
-        oEntry.Add "選手名", ReplaceName(GetOffset(vCell, GetRange("選手名").Column).Offset(1).Value)
-        oEntry.Add "区分", GetOffset(vCell, GetRange("選手学年").Column).Value
+        oEntry.Add "選手名", ReplaceName(GetOffset(oCell, GetRange("選手名").Column).Offset(1).Value)
+        oEntry.Add "区分", GetOffset(oCell, GetRange("選手学年").Column).Value
     
     End If
 
@@ -301,12 +306,13 @@ Private Sub ReadEntryLine(nNum As Integer, nRow As Integer, oEntry As Object)
     Dim oProNo As Range
     
     ' 番号範囲をすべて読み込む
-    For Each vCell In GetRange("種目一覧")
-        If vCell.Value <> "" Then
-            sStyle = vCell.Value
+    Dim oCell As Range
+    For Each oCell In GetRange("種目一覧")
+        If oCell.Value <> "" Then
+            sStyle = oCell.Value
         End If
         ' 種目選択が空以外の場合は選択されたものとする
-        Set oProNo = GetRowOffset(vCell, nRow).Offset(nNum - 1)
+        Set oProNo = GetRowOffset(oCell, nRow).Offset(nNum - 1)
         If Trim(oProNo.Value) <> "" Then
             Set oLines = CreateObject("Scripting.Dictionary")
             oEntry.Add nNum, oLines
@@ -314,14 +320,14 @@ Private Sub ReadEntryLine(nNum As Integer, nRow As Integer, oEntry As Object)
             oLines.Add "種目番号", VLookupArea(oProNo.Value, "種目番号区分", "種目番号")
             oLines.Add "種目区分", VLookupArea(oProNo.Value, "種目番号区分", "種目区分")
             oLines.Add "種目名", ReplaceStyle(sStyle)
-            oLines.Add "距離", ReplaceDistance(GetRowOffset(vCell, GetRange("種目距離").Row).Value)
+            oLines.Add "距離", ReplaceDistance(GetRowOffset(oCell, GetRange("種目距離").Row).Value)
             nMin = GetOffset(oProNo, GetRange("選手分").Column).Value
             nSec = GetOffset(oProNo, GetRange("選手秒").Column).Value
             nMil = GetOffset(oProNo, GetRange("選手ミリ秒").Column).Value
             oLines.Add "申込み時間", CLng(nMin * CLng(10000) + nSec * 100 + nMil)
             Exit Sub
         End If
-    Next vCell
+    Next oCell
 End Sub
 
 '
@@ -370,9 +376,10 @@ Private Sub ReadRelayEntry(nNum As Integer, ByRef oEntryList As Object)
     nRelayNum = 0
     Dim oRelayEntry As Object
     Set oRelayEntry = Nothing
-    For Each vCell In GetRange("リレー種目")
+    Dim oCell As Range
+    For Each oCell In GetRange("リレー種目")
         ' 値が設定されている場合は読み込む
-        If vCell.Value <> "" Then
+        If oCell.Value <> "" Then
             ' リレーのエントリーリスト
             If oRelayEntry Is Nothing Then
                 Set oRelayEntry = CreateObject("Scripting.Dictionary")
@@ -380,9 +387,9 @@ Private Sub ReadRelayEntry(nNum As Integer, ByRef oEntryList As Object)
             End If
 
             nRelayNum = nRelayNum + 1
-            Call ReadRelayEntryLine(nRelayNum, vCell, oRelayEntry)
+            Call ReadRelayEntryLine(nRelayNum, oCell, oRelayEntry)
         End If
-    Next vCell
+    Next oCell
 
 End Sub
 
@@ -390,27 +397,28 @@ End Sub
 ' エントリーファイルのリレー種目行読み込み
 '
 ' nNum          IN    リレー番号
-' vCell         IN    カレントセル
+' oCell         IN    カレントセル
 ' oRelayEntry   I/O   種目行
 '
-Private Sub ReadRelayEntryLine(nNum As Integer, vCell As Variant, oRelayEntry As Object)
+Private Sub ReadRelayEntryLine(nNum As Integer, oCell As Range, oRelayEntry As Object)
     
     Dim oLines As Object
     Dim nMin As Integer
     Dim nSec As Integer
     Dim nMil As Integer
     
-    If vCell.Value <> "" Then
+    If oCell.Value <> "" Then
+        Dim oRelayLines As Object
         Set oRelayLines = CreateObject("Scripting.Dictionary")
         oRelayEntry.Add "L" + Str(nNum), oRelayLines
 
-        oRelayLines.Add "種目番号", vCell.Value
+        oRelayLines.Add "種目番号", oCell.Value
         If IsNameExists("リレー区分") Then
-            oRelayLines.Add "区分", GetOffset(vCell, GetRange("リレー区分").Column).Value
+            oRelayLines.Add "区分", GetOffset(oCell, GetRange("リレー区分").Column).Value
         End If
-        nMin = GetOffset(vCell, GetRange("リレー分").Column).Value
-        nSec = GetOffset(vCell, GetRange("リレー秒").Column).Value
-        nMil = GetOffset(vCell, GetRange("リレーミリ秒").Column).Value
+        nMin = GetOffset(oCell, GetRange("リレー分").Column).Value
+        nSec = GetOffset(oCell, GetRange("リレー秒").Column).Value
+        nMil = GetOffset(oCell, GetRange("リレーミリ秒").Column).Value
         oRelayLines.Add "申込み時間", CLng(nMin * CLng(10000) + nSec * 100 + nMil)
     End If
 End Sub
@@ -498,17 +506,19 @@ Private Sub WriteEntrySheet(oWorkSheet As Worksheet, sTable As String, oGameList
     Dim nRow As Integer
     nRow = 1
     
+    Dim vGame As Variant
     For Each vGame In oGameList.Keys()
         ' 出力する大会か判定
         If IsSameGame(CStr(vGame)) Then
-            Set oTeamList = oGameList.Item(vGame)
+            Set oTeamList = oGameList.Item(CStr(vGame))
         Else
             ' 出力する大会以外は捨てる
-            'Set oTeamList = oGameList.Item(vGame)
             Set oTeamList = CreateObject("Scripting.Dictionary")
         End If
         
         nTeamToal = nTeamToal + oTeamList.Count
+        
+        Dim vTeam As Variant
         For Each vTeam In oTeamList.Keys()
             Set oEntryList = oTeamList.Item(vTeam)
             
@@ -550,43 +560,80 @@ End Function
 ' sTable        IN      テーブル名
 ' nRow          IN/OUT  出力する行数
 ' sGame         IN      大会名
-' sTaem         IN      チーム名
-' nTeamNo       IN/OUT  チーム番号
+' sTeam         IN      チーム名
+' nTeamNo       IN      チーム番号
 ' oEntryList    IN      エントリー一覧
 '
 Private Sub WriteTeamEntry(sTable As String, ByRef nRow As Integer, _
-sGame As String, sTaem As String, _
+sGame As String, sTeam As String, _
 nTeamNo As Integer, oEntryList As Object)
     Dim oEntry As Object
     Dim oLine As Object
     Dim nPersonNo As Integer
     
+    Dim vNum As Variant
     For Each vNum In oEntryList.Keys()
         Set oEntry = oEntryList.Item(vNum)
         nPersonNo = nTeamNo * 100 + CInt(vNum)
         
         If oEntry.Exists("選手名") Then
             ' 個人
-            For i = 1 To 個人最大行数
-                If Not IsEmpty(oEntry.Item(i)) Then
-                    nRow = nRow + 1
-                    Set oLine = oEntry.Item(i)
-                    Call WriteLine(sTable, nRow, nPersonNo, sGame, sTaem, oEntry, oLine)
-                End If
-            Next i
+            Call WriteTeamPersonLine(sTable, nRow, sGame, sTeam, nPersonNo, oEntry, oLine)
         Else
             ' リレー
-            Dim sKey As String
-            For i = 1 To リレー最大行数
-                sKey = "L" & Str(i)
-                If oEntry.Exists(sKey) Then
-                    nRow = nRow + 1
-                    Set oLine = oEntry.Item(sKey)
-                    Call WriteRelayLine(sTable, nRow, nTeamNo, sGame, sTaem, oEntry, oLine)
-                End If
-            Next i
+            Call WriteTeamRelayLine(sTable, nRow, sGame, sTeam, nTeamNo, oEntry, oLine)
         End If
-    Next
+    Next vNum
+End Sub
+
+'
+' 個人の出力をする
+'
+' sTable        IN      テーブル名
+' nRow          IN/OUT  出力する行数
+' sGame         IN      大会名
+' sTeam         IN      チーム名
+' nPersonNo     IN      個人番号
+' oEntry        IN      エントリー
+' oLine         IN      種目、申込み時間
+'
+Private Sub WriteTeamPersonLine(sTable As String, ByRef nRow As Integer, _
+sGame As String, sTeam As String, nPersonNo As Integer, _
+oEntry As Object, oLine As Object)
+    Dim i As Integer
+    For i = 1 To 個人最大行数
+        If Not IsEmpty(oEntry.Item(i)) Then
+            nRow = nRow + 1
+            Set oLine = oEntry.Item(i)
+            Call WriteLine(sTable, nRow, sGame, sTeam, nPersonNo, oEntry, oLine)
+        End If
+    Next i
+End Sub
+
+'
+' リレーの出力をする
+'
+' sTable        IN      テーブル名
+' nRow          IN/OUT  出力する行数
+' sGame         IN      大会名
+' sTeam         IN      チーム名
+' nTeamNo       IN      チーム番号
+' oEntry        IN      エントリー
+' oLine         IN      種目、申込み時間
+'
+Private Sub WriteTeamRelayLine(sTable As String, ByRef nRow As Integer, _
+sGame As String, sTeam As String, nTeamNo As Integer, _
+oEntry As Object, oLine As Object)
+    Dim i As Integer
+    Dim sKey As String
+    For i = 1 To リレー最大行数
+        sKey = "L" & Str(i)
+        If oEntry.Exists(sKey) Then
+            nRow = nRow + 1
+            Set oLine = oEntry.Item(sKey)
+            Call WriteRelayLine(sTable, nRow, sGame, sTeam, nTeamNo, oEntry, oLine)
+        End If
+    Next i
 End Sub
 
 
@@ -595,18 +642,18 @@ End Sub
 '
 ' sTable        IN      テーブル名
 ' nRow          IN      出力行番号
-' nPersonNo     IN      選手番号
 ' sGame         IN      大会名
 ' sTeam         IN      チーム名
+' nPersonNo     IN      選手番号
 ' oEntry        IN      エントリー
 ' oLine         IN      種目、申込み時間
 '
 Private Sub WriteLine( _
     sTable As String, _
     nRow As Integer, _
-    nPersonNo As Integer, _
     sGame As String, _
     sTeam As String, _
+    nPersonNo As Integer, _
     oEntry As Object, _
     oLine As Object _
 )
@@ -684,18 +731,18 @@ End Sub
 '
 ' sTable        IN      テーブル名
 ' nRow          IN      出力行番号
-' nTeamNo       IN      チーム番号
 ' sGame         IN      大会名
 ' sTeam         IN      チーム名
+' nTeamNo       IN      チーム番号
 ' oEntry        IN      エントリー
 ' oLine         IN      種目、申込み時間
 '
 Private Sub WriteRelayLine( _
     sTable As String, _
     nRow As Integer, _
-    nTeamNo As Integer, _
     sGame As String, _
     sTeam As String, _
+    nTeamNo As Integer, _
     oEntry As Object, _
     oLine As Object _
 )

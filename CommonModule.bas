@@ -1,5 +1,5 @@
 Attribute VB_Name = "CommonModule"
-'Option Explicit    ''←変数の宣言を強制する
+Option Explicit    ''←変数の宣言を強制する
 
 ' 大会名
 Public Const 学童大会 As String = "横須賀市学童水泳競技大会"
@@ -304,8 +304,9 @@ End Function
 '
 Public Function IsNameExists(sName As String) As Boolean
     IsNameExists = False
-    For Each Nm In ActiveWorkbook.Names
-        If Nm.Name = sName Then
+    Dim vName As Variant
+    For Each vName In ActiveWorkbook.Names
+        If vName.Name = sName Then
             IsNameExists = True
             Exit For
         End If
@@ -503,13 +504,14 @@ End Function
 Public Function GetAreaColumnIndex(sName As String, sColName As String) As Integer
     Dim nIndex As Integer
     nIndex = 1
-    For Each vCell In GetRange(sName).Rows(1).Columns
-        If STrimAll(vCell.Value) = sColName Then
+    Dim oCell As Range
+    For Each oCell In GetRange(sName).Rows(1).Columns
+        If STrimAll(oCell.Value) = sColName Then
             GetAreaColumnIndex = nIndex
             Exit Function
         End If
         nIndex = nIndex + 1
-    Next vCell
+    Next oCell
 End Function
 
 '
@@ -629,6 +631,7 @@ End Sub
 '
 Public Function SelectDir()
     ' 新しいファイルを開く
+    Dim FileSysObj As Object
     Dim sPathName As String
     Set FileSysObj = CreateObject("Scripting.FileSystemObject")
     sPathName = FileSysObj.GetParentFolderName(ActiveWorkbook.FullName)

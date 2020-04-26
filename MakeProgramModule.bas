@@ -52,7 +52,7 @@ End Sub
 ' oEntryList    OUT     エントリー一覧(Dictionary)
 ' └プロNo
 ' 　└組
-' 　　└レーン = 行番号
+' 　　└レーン = ProNo列のセル
 '
 Public Sub ReadEntrySheet(sTableName As String, oEntryList As Object)
 
@@ -63,15 +63,16 @@ Public Sub ReadEntrySheet(sTableName As String, oEntryList As Object)
     Dim oHeats As Object    ' 組
     
     ' プログラムNo毎に読み込み
-    For Each cProNo In Range(sTableName & "[プロNo]")
-        If Not oEntryList.Exists(cProNo.Value) Then
+    Dim vProNo As Variant
+    For Each vProNo In Range(sTableName & "[プロNo]")
+        If Not oEntryList.Exists(vProNo.Value) Then
             Set oProNo = CreateObject("Scripting.Dictionary")
-            oEntryList.Add cProNo.Value, oProNo
+            oEntryList.Add vProNo.Value, oProNo
         End If
         
         ' 行番号
-        nHeat = cProNo.Offset(0, Range(sTableName & "[組]").Column - Range(sTableName & "[プロNo]").Column).Value
-        nLane = cProNo.Offset(0, Range(sTableName & "[レーン]").Column - Range(sTableName & "[プロNo]").Column).Value
+        nHeat = GetOffset(vProNo, Range(sTableName & "[組]").Column).Value
+        nLane = GetOffset(vProNo, Range(sTableName & "[レーン]").Column).Value
         
         ' 組毎に読み込み
         If Not oProNo.Exists(nHeat) Then
@@ -81,18 +82,18 @@ Public Sub ReadEntrySheet(sTableName As String, oEntryList As Object)
         
         ' レーン重複チェック
         If oHeats.Exists(nLane) Then
-            MsgBox "プロNo：" & Str(cProNo.Value) & vbCrLf & _
+            MsgBox "プロNo：" & Str(vProNo.Value) & vbCrLf & _
                     "組　　：" & Str(nHeat) & vbCrLf & _
                     "レーン：" & Str(nLane) & vbCrLf & _
                     "が重複しています。"
             Range(sTableName).Parent.Activate
-            Range(Cells(cProNo.Row, Range(sTableName & "[レースNo]").Column), _
-                    Cells(cProNo.Row, Range(sTableName & "[レーン]").Column)).Select
-            cProNo.Activate
+            Range(GetOffset(vProNo, Range(sTableName & "[レースNo]").Column), _
+                    GetOffset(vProNo, Range(sTableName & "[レーン]").Column)).Select
+            vProNo.Activate
             End
         End If
         ' レーン登録
-        oHeats.Add nLane, cProNo.Row
+        oHeats.Add nLane, vProNo
     Next
 
 End Sub
@@ -104,7 +105,7 @@ End Sub
 '
 ' oEntryList    OUT     エントリー一覧(Dictionary)
 '
-Sub CheckFinal(oEntryList As Object)
+Private Sub CheckFinal(oEntryList As Object)
 
     Dim oProNo As Object
     Dim nFinalNo As Integer
@@ -154,7 +155,7 @@ End Sub
 ' oWorkBook     IN      ワークシート
 ' sSheetName    OUT     シート名
 '
-Sub MakeSheet(oWorkBook As Workbook, sSheetName As String)
+Private Sub MakeSheet(oWorkBook As Workbook, sSheetName As String)
 
     If IsSheetExists(sSheetName) Then
         ' シートが存在する場合は内容をすべて削除
@@ -201,7 +202,7 @@ End Sub
 ' Worksheet     IN      ワークシート
 ' sCellName     IN      セルの名前
 '
-Sub CopyHeaderCell(oWorkSheet As Worksheet, sCellName As String)
+Private Sub CopyHeaderCell(oWorkSheet As Worksheet, sCellName As String)
 
     Dim oRange As Range
     Set oRange = GetRange(sCellName)
@@ -222,7 +223,7 @@ End Sub
 ' sTableName    IN      テーブル名
 ' oEntryList    IN      エントリー一覧
 '
-Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Object)
+Private Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryList As Object)
 
     oWorkSheet.Activate
 
@@ -339,7 +340,7 @@ End Sub
 ' oWorkSheet    IN      プログラムシート
 ' nCurrentRow   IN      通番
 '
-Sub SetNo(oWorkSheet As Worksheet, nCurrentRow As Integer)
+Private Sub SetNo(oWorkSheet As Worksheet, nCurrentRow As Integer)
     nCurrentRow = nCurrentRow + 1
     With oWorkSheet.Cells(nCurrentRow, GetRange("Header通番").Column)
         .Value = Str(nCurrentRow)
@@ -354,7 +355,7 @@ End Sub
 ' nCurrentRow   IN      現在の行数
 ' sRangeName    IN      範囲の名前
 '
-Sub CopyFormat(nCurrentRow As Integer, sRangeName As String)
+Private Sub CopyFormat(nCurrentRow As Integer, sRangeName As String)
 
     ' 元をコピー
     GetRange(sRangeName).Copy
@@ -375,7 +376,7 @@ End Sub
 ' nCurrentRow   IN      カレント行数
 ' nProNo        IN      プログラム番号
 '
-Sub MakeProgramHeader(oWorkSheet As Worksheet, sTableName As String, nCurrentRow As Integer, nProNo As Integer)
+Private Sub MakeProgramHeader(oWorkSheet As Worksheet, sTableName As String, nCurrentRow As Integer, nProNo As Integer)
 
     Dim sMaster As String
     sMaster = GetMaster(GetRange("大会名").Value)
@@ -445,7 +446,7 @@ End Sub
 ' sCellName     IN      デフォルトのセル名
 ' vOverRide     IN      コピーする文字列
 '
-Sub CopyCell(oWorkSheet As Worksheet, nRow As Integer, sCellName As String, Optional vOverRide As Variant = Empty)
+Private Sub CopyCell(oWorkSheet As Worksheet, nRow As Integer, sCellName As String, Optional vOverRide As Variant = Empty)
 
     Dim oRange As Range
     Set oRange = GetRange(sCellName)
@@ -475,7 +476,7 @@ End Sub
 ' nCurrentRow   IN      カレント行番号
 ' nHeat         IN      組番号
 '
-Sub MakeHeatHeader(oWorkSheet As Worksheet, sTableName As String, nCurrentRow As Integer, nHeat As Integer)
+Private Sub MakeHeatHeader(oWorkSheet As Worksheet, sTableName As String, nCurrentRow As Integer, nHeat As Integer)
     
     Call CopyCell(oWorkSheet, nCurrentRow, "Header組")
     Call CopyCell(oWorkSheet, nCurrentRow, "Headerレーン")
@@ -505,7 +506,7 @@ End Sub
 ' nHeat         IN      組番号
 ' nLane         IN      レーン番号
 '
-Sub MakeHeatDefault(oWorkSheet As Worksheet, nCurrentRow As Integer, _
+Private Sub MakeHeatDefault(oWorkSheet As Worksheet, nCurrentRow As Integer, _
 nProNo As Integer, nHeat As Integer, nLane As Integer, _
 Optional sRaceNo As String = Empty)
     
@@ -539,7 +540,7 @@ End Sub
 ' nProNo        IN      プログラム番号
 ' nHeat         IN      組番号
 '
-Sub MakeHeat(oWorkSheet As Worksheet, sTableName As String, nCurrentRow As Integer, _
+Private Sub MakeHeat(oWorkSheet As Worksheet, sTableName As String, nCurrentRow As Integer, _
 nRow As Integer, nProNo As Integer, nHeat As Integer)
 
     oWorkSheet.Activate
@@ -618,7 +619,7 @@ End Sub
 '
 ' 「プログラム作成マクロ」からボタンで実行される
 '
-Sub プログラム名前定義()
+Public Sub プログラム名前定義()
     Sheets(プログラムシート).Activate
     Call SetProgramName(ActiveSheet)
 End Sub
@@ -628,7 +629,7 @@ End Sub
 '
 ' oWorkBook     IN      ワークシート
 '
-Sub SetProgramName(oWorkSheet As Worksheet)
+Private Sub SetProgramName(oWorkSheet As Worksheet)
     Call DeleteName("プログラム*")
     Call SetNoName(oWorkSheet)
     Call SetProNoName(oWorkSheet)
@@ -647,7 +648,7 @@ End Sub
 '
 ' oWorkBook     IN      ワークシート
 '
-Sub SetNoName(oWorkSheet As Worksheet)
+Private Sub SetNoName(oWorkSheet As Worksheet)
     oWorkSheet.Activate
     Cells(2, GetRange("Header通番").Column).Select
     Range(Selection, Selection.End(xlDown)).Select
@@ -662,7 +663,7 @@ End Sub
 '
 ' oWorkBook     IN      ワークシート
 '
-Sub SetProNoName(oWorkSheet As Worksheet)
+Private Sub SetProNoName(oWorkSheet As Worksheet)
     
     ' プロNo
     Dim nProNo As Integer
@@ -703,7 +704,7 @@ End Sub
 '
 ' oWorkBook     IN      ワークシート
 '
-Sub SetProNoListName(oWorkSheet As Worksheet)
+Private Sub SetProNoListName(oWorkSheet As Worksheet)
     
     ' プロNo
     Dim nProNo As Integer
@@ -755,7 +756,7 @@ End Sub
 '
 ' oWorkBook     IN      ワークシート
 '
-Sub SetHeatName(oWorkSheet As Worksheet)
+Private Sub SetHeatName(oWorkSheet As Worksheet)
    
     ' プログラム番号
     Dim nProNo As Integer
@@ -817,7 +818,7 @@ End Sub
 '
 ' oWorkBook     IN      ワークシート
 '
-Sub SetRaceName(oWorkSheet As Worksheet)
+Private Sub SetRaceName(oWorkSheet As Worksheet)
     
     Dim nRaceNo As Integer
     nRaceNo = 0
@@ -867,7 +868,7 @@ End Sub
 '
 ' oWorkBook     IN      ワークシート
 '
-Sub SetSameRaceLabel(oWorkSheet As Worksheet)
+Private Sub SetSameRaceLabel(oWorkSheet As Worksheet)
     
     Dim oRaceNo As Object
     Set oRaceNo = CreateObject("Scripting.Dictionary")
@@ -888,7 +889,7 @@ End Sub
 '  └レースNo
 '  　└プロNo：1
 '
-Sub ReadSameRace(oWorkSheet As Worksheet, oRaceNo As Object)
+Private Sub ReadSameRace(oWorkSheet As Worksheet, oRaceNo As Object)
     Dim nRaceNo As Integer
     Dim oProNo As Object
     For Each vNo In GetRange("プログラム通番")
@@ -918,7 +919,7 @@ End Sub
 '
 ' oRaceNo       IN      レースNo配列
 '
-Sub WriteSameRaceLabel(oRaceNo As Object)
+Private Sub WriteSameRaceLabel(oRaceNo As Object)
     Dim cProNo As Range
     For Each vRaceNo In oRaceNo
         Set oProNo = oRaceNo.Item(vRaceNo)
@@ -940,7 +941,7 @@ End Sub
 '
 ' oRaceNo       IN      レースNo配列
 '
-Function GetProNoRow(nProNo As Integer) As Range
+Private Function GetProNoRow(nProNo As Integer) As Range
     Dim sName As String
     sName = "プログラム種目番号"
 
@@ -957,7 +958,7 @@ End Function
 '
 ' oWorkBook     IN      ワークシート
 '
-Sub SetPrintArea(oWorkSheet As Worksheet)
+Private Sub SetPrintArea(oWorkSheet As Worksheet)
     oWorkSheet.Activate
     
     ' 印刷エリアのクリア

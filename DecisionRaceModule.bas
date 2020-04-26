@@ -1,4 +1,6 @@
 Attribute VB_Name = "DecisionRaceModule"
+Option Explicit    ''←変数の宣言を強制する
+
 '
 ' 組み合わせ決定
 '
@@ -80,7 +82,7 @@ Private Sub ReadProNo(sTableName As String, oEntryList As Object)
             oEntryList.Add vProNo.Value, oProNo
         End If
         oProNo.Add oProNo.Count + 1, vProNo
-    Next
+    Next vProNo
 End Sub
 
 '
@@ -270,6 +272,7 @@ Private Function GetNumberOfSortClass(nIndex As Integer, oProNo As Object, nSort
     Dim sSortClass As String
     sSortClass = GetOffset(vProNo, nSortClassColumn).Value
     
+    Dim i As Integer
     For i = nIndex + 1 To oProNo.Count
         Set vProNo = oProNo.Item(i)
         If GetOffset(vProNo, nSortClassColumn).Value = sSortClass Then
@@ -277,7 +280,7 @@ Private Function GetNumberOfSortClass(nIndex As Integer, oProNo As Object, nSort
         Else
             Exit Function
         End If
-    Next
+    Next i
 End Function
 
 '
@@ -301,9 +304,10 @@ Private Sub GetNumberOfHeat(nTotalNum As Integer, nHeats As Integer, nNumberOfHe
     
         ' ３組目以降
         If nHeats > 2 Then
+            Dim i As Integer
             For i = 2 To nHeats - 1
                 nNumberOfHeat(i) = レース定員
-            Next
+            Next i
         End If
     End If
 End Sub
@@ -480,6 +484,7 @@ Private Sub WriteHeatLaneOrderByAverage(nStartRaceNo As Integer, nStartHeat As I
 nOrder As Integer, oProNo As Object, sTableName As String)
     Dim nMaxNum As Integer
     nMaxNum = 0
+    Dim i As Integer
     For i = nStartHeat To nStartHeat + 平均分け組数 - 1
         nMaxNum = nMaxNum + nNumOfHeats(i - 1)
     Next i
@@ -532,9 +537,8 @@ nOrder As Integer, oProNo As Object, sTableName As String)
     
         ' 順番をインクリメント
         nOrder = nOrder + 1
-    Next
+    Next nIndex
 End Sub
-
 
 '
 ' レース番号修正
@@ -561,7 +565,7 @@ Sub レース番号修正()
     Call ReadEntrySheet(エントリーテーブル, oEntryList)
     
     ' レース番号修正
-    If GetRange("大会名").Value = "横須賀選手権水泳大会" Then
+    If GetRange("大会名").Value = 選手権大会 Then
         Call ModifyRaceNoForSenshuken(oWorkSheet, エントリーテーブル)
     Else
         Call ModifyRaceNo(oWorkSheet, エントリーテーブル)
@@ -584,24 +588,10 @@ Private Sub ModifyRaceNo(oWorkSheet As Worksheet, sTableName As String)
     Set oEntryList = CreateObject("Scripting.Dictionary")
     
     ' データを格納＆レース番号のチェック
-    Call ReadRace(sTableName, oEntryList)
+    Call ReadEntryByRaceNo(sTableName, oEntryList)
     
-    ' レース番号修正
-    Dim nNewNo As Integer
-    nNewNo = 1
-    Dim nRow As Integer
-    For Each vRaceNo In oEntryList.Keys
-        Set oRaceNo = oEntryList.Item(vRaceNo)
-        
-        ' レーン
-        For Each vLane In oRaceNo.Keys
-            nRow = oRaceNo.Item(vLane)
-            
-            ' レース番号
-            Cells(nRow, Range(sTableName & "[レースNo]").Column).Value = nNewNo
-        Next
-        nNewNo = nNewNo + 1
-    Next
+    ' 出力
+    Call ModifyEntryByRaceNo(sTableName, oEntryList)
 
 End Sub
 
@@ -611,36 +601,67 @@ End Sub
 ' 読込みながらレース番号中のレーン重複チェックも行う
 '
 ' sTableName    IN      テーブル名
-' oEntryList    I/O     エントリー一覧
+' oEntryList    IN/OUT  エントリー一覧
 '   └レースNo
-'   　　└レーン：行
+'   　　└レーン：プロNo列のセル
 '
-Private Sub ReadRace(sTableName As String, oEntryList As Object)
+Private Sub ReadEntryByRaceNo(sTableName As String, oEntryList As Object)
     Dim nLane As Integer
     Dim oRaceNo As Object
-    For Each cRaceNo In Range(sTableName & "[レースNo]")
+    Dim vRaceNo As Variant
+    For Each vRaceNo In Range(sTableName & "[レースNo]")
         ' 存在しないレースNoの場合は
-        If Not oEntryList.Exists(cRaceNo.Value) Then
+        If Not oEntryList.Exists(vRaceNo.Value) Then
             ' エントリー一覧に登録する
             Set oRaceNo = CreateObject("Scripting.Dictionary")
-            oEntryList.Add cRaceNo.Value, oRaceNo
+            oEntryList.Add vRaceNo.Value, oRaceNo
         End If
+        
         ' レーン番号を取得
-        nLane = cRaceNo.Offset(0, Range(sTableName & "[レーン]").Column - Range(sTableName & "[レースNo]").Column).Value
+        nLane = GetOffset(vRaceNo, Range(sTableName & "[レーン]").Column).Value
+        
         ' レース番号に対するレーンの重複チェック
         If oRaceNo.Exists(nLane) Then
-            MsgBox "レースNo：" & Str(cRaceNo.Value) & vbCrLf & _
+            MsgBox "レースNo：" & Str(vRaceNo.Value) & vbCrLf & _
                     "レーン　：" & Str(nLane) & vbCrLf & _
                     "が重複しています。"
             Range(sTableName).Parent.Activate
-            Range(Cells(cRaceNo.Row, Range(sTableName & "[レースNo]").Column), _
-                    Cells(cRaceNo.Row, Range(sTableName & "[レーン]").Column)).Select
-            cRaceNo.Activate
+            Range(vRaceNo, GetOffset(vRaceNo, Range(sTableName & "[レーン]").Column)).Select
+            vRaceNo.Activate
             End
         Else
-            oRaceNo.Add nLane, cRaceNo.Row
+            oRaceNo.Add nLane, vRaceNo
         End If
-    Next cRaceNo
+    Next vRaceNo
+End Sub
+
+'
+' レース番号を修正出力
+'
+' sTableName    IN      テーブル名
+' oEntryList    IN/OUT  エントリー一覧
+'
+Private Sub ModifyEntryByRaceNo(sTableName As String, oEntryList As Object)
+    ' レース番号修正
+    Dim nRaceNo As Integer
+    nRaceNo = 1
+    
+    Dim oCell As Range
+    Dim vRaceNo As Variant
+    Dim oRaceNo As Object
+    For Each vRaceNo In oEntryList.Keys
+        Set oRaceNo = oEntryList.Item(vRaceNo)
+        
+        ' レーン
+        Dim vLane As Variant
+        For Each vLane In oRaceNo.Keys
+            Set oCell = oRaceNo.Item(vLane)
+            
+            ' レース番号
+            GetOffset(oCell, Range(sTableName & "[レースNo]").Column).Value = nRaceNo
+        Next
+        nRaceNo = nRaceNo + 1
+    Next vRaceNo
 End Sub
 
 '
@@ -658,65 +679,10 @@ Private Sub ModifyRaceNoForSenshuken(oWorkSheet As Worksheet, sTableName As Stri
     ' データを格納＆レース番号のチェック
     Call ReadRaceForSenshuken(sTableName, oEntryList)
     
-    ' レース番号修正
-    Dim nNewNo As Integer
-    nNewNo = 1
-    Dim nRow As Integer
-    
-    Dim oProNo As Object
-    Dim oRaceNo As Object
-    Dim oFinalProNo As Object
-    Dim nFinalNo As Integer
-    
-    For Each vProNo In GetAreaKeyData("選手権種目区分")
-        ' ProNoのエントリーがない場合はスキップ
-        If oEntryList.Exists(vProNo.Value) Then
-            ' 決勝番号を取得
-            nFinalNo = VLookupArea(vProNo.Value, "選手権種目区分", "決勝番号")
-            
-            ' ProNoのエントリーを取得
-            Set oProNo = oEntryList.Item(vProNo.Value)
-            
-            ' 予選の場合
-            If vProNo.Value <> nFinalNo Then
-                ' 組が１組の場合
-                If oProNo.Count = 1 Then
-                    ' ProNoを決勝に入れ替える
-                    oEntryList.Add nFinalNo, oProNo
-                    oEntryList.Remove vProNo.Value
-                    ' レース番号は振らない
-                    Set oProNo = CreateObject("Scripting.Dictionary")
-                ElseIf oProNo.Count > 1 Then
-                    ' 決勝に空のエントリーを作っておく
-                    Set oFinalProNo = CreateObject("Scripting.Dictionary")
-                    oEntryList.Add nFinalNo, oFinalProNo
-                End If
-            Else
-                ' 決勝の組が0の場合
-                If oProNo.Count = 0 Then
-                    ' 予選決勝があるパターンなのでインクリメントしておく
-                    nNewNo = nNewNo + 1
-                End If
-            End If
-                 
-            For Each vRaceNo In oProNo.Keys()
-                Set oRaceNo = oProNo.Item(vRaceNo)
-            
-                ' レーン
-                For Each vLane In oRaceNo.Keys
-                    nRow = oRaceNo.Item(vLane)
-                    
-                    ' レース番号
-                    Cells(nRow, Range(sTableName & "[レースNo]").Column).Value = nNewNo
-                Next
-            
-                nNewNo = nNewNo + 1
-            Next
-        End If
-    Next
+    ' 出力
+    Call ModifyEntryByProNoForSenshuken(sTableName, oEntryList)
 
 End Sub
-
 
 '
 ' レース番号の読込み(選手権用)
@@ -724,7 +690,7 @@ End Sub
 ' 読込みながらレース番号中のレーン重複チェックも行う
 '
 ' sTableName    IN      テーブル名
-' oEntryList    I/O     エントリー一覧
+' oEntryList    IN/OUT エントリー一覧
 ' └プロNo
 '   └レースNo
 '   　　└レーン：行
@@ -735,6 +701,7 @@ Private Sub ReadRaceForSenshuken(sTableName As String, oEntryList As Object)
     Dim oProNo As Object
     Dim oRaceNo As Object
     
+    Dim vProNo As Variant
     For Each vProNo In Range(sTableName & "[プロNo]")
         ' 存在しないプロNoの場合は
         If Not oEntryList.Exists(vProNo.Value) Then
@@ -759,15 +726,114 @@ Private Sub ReadRaceForSenshuken(sTableName As String, oEntryList As Object)
                     "レーン　：" & Str(nLane) & vbCrLf & _
                     "が重複しています。"
             Range(sTableName).Parent.Activate
-            Range(Cells(vProNo.Row, Range(sTableName & "[レースNo]").Column), _
-                    Cells(vProNo.Row, Range(sTableName & "[レーン]").Column)).Select
+            Range(vProNo, GetOffset(vProNo, Range(sTableName & "[レーン]").Column)).Select
             vProNo.Activate
             End
         Else
-            oRaceNo.Add nLane, vProNo.Row
+            oRaceNo.Add nLane, vProNo
         End If
     Next vProNo
 End Sub
+
+'
+' レース番号修正(選手権用)
+'
+' oWorkSheet    IN  ワークシート
+' sTableName    IN  テーブル名
+'
+Private Sub ModifyEntryByProNoForSenshuken(oWorkSheet As Worksheet, sTableName As String)
+    
+    ' レース番号修正
+    Dim nRaceNo As Integer
+    nRaceNo = 1
+    
+    Dim vProNo As Variant
+    For Each vProNo In GetAreaKeyData("選手権種目区分")
+        ' ProNoのエントリーがない場合はスキップ
+        If oEntryList.Exists(vProNo.Value) Then
+            
+            ' 予選決勝の修正
+            Call ModifyFinalEntry(vProNo, oEntryList, nRaceNo)
+            
+            ' レースNoの修正
+            Call ModifyEntryByRaceNoForSenshuken(vProNo, oEntryList, nRaceNo)
+                 
+        End If
+    Next vProNo
+
+End Sub
+
+'
+' 予選決勝の修正
+'
+' vProNo        IN      ProNo列のセル
+' oEntryList    IN/OUT  エントリー配列
+' nRaceNo       IN/OUT  レース番号
+'
+Private Sub ModifyFinalEntry(vProNo As Variant, oEntryList As Object, nRaceNo As Integer)
+    ' ProNoのエントリーを取得
+    Dim oProNo As Object
+    Set oProNo = oEntryList.Item(vProNo.Value)
+    
+    ' 決勝番号を取得
+    Dim nFinalNo As Integer
+    nFinalNo = VLookupArea(vProNo.Value, "選手権種目区分", "決勝番号")
+    
+    ' 予選の場合
+    If vProNo.Value <> nFinalNo Then
+        ' 組が１組の場合
+        If oProNo.Count = 1 Then
+            ' ProNoを決勝に入れ替える
+            oEntryList.Add nFinalNo, oProNo
+            oEntryList.Remove vProNo.Value
+            ' レース番号は振らない
+            Set oProNo = CreateObject("Scripting.Dictionary")
+        ElseIf oProNo.Count > 1 Then
+            ' 決勝に空のエントリーを作っておく
+            Dim oFinalProNo As Object
+            Set oFinalProNo = CreateObject("Scripting.Dictionary")
+            oEntryList.Add nFinalNo, oFinalProNo
+        End If
+    Else
+        ' 決勝の組が0の場合
+        If oProNo.Count = 0 Then
+            ' 予選決勝があるパターンなのでインクリメントしておく
+            nRaceNo = nRaceNo + 1
+        End If
+    End If
+End Sub
+
+'
+' レース番号の修正出力
+'
+' vProNo        IN      ProNo列のセル
+' oEntryList    IN/OUT  エントリー配列
+' nRaceNo       IN/OUT  レース番号
+'
+Private Sub ModifyEntryByRaceNoForSenshuken(vProNo As Variant, oEntryList As Object, nRaceNo As Integer)
+    Dim oCell As Range
+    Dim oProNo As Object
+    Dim oRaceNo As Object
+    
+    ' ProNoのエントリーを取得
+    Set oProNo = oEntryList.Item(vProNo.Value)
+    
+    Dim vRaceNo As Variant
+    For Each vRaceNo In oProNo.Keys()
+        Set oRaceNo = oProNo.Item(vRaceNo)
+    
+        ' レーン
+        For Each vLane In oRaceNo.Keys
+            Set oCell = oRaceNo.Item(vLane)
+            
+            ' レース番号
+            GetOffset(oCell, Range(sTableName & "[レースNo]").Column).Value = nRaceNo
+        Next
+    
+        nRaceNo = nRaceNo + 1
+    Next vRaceNo
+End Sub
+
 
 '
 ' レースNo、組でソートする
