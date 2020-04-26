@@ -265,6 +265,8 @@ End Sub
 '
 Sub 入力学マ記録()
     Sheets("記録画面").Select
+    Call 初期化
+    
     Call SetRace(1, 1)
     Call SetLean(1, 3, "34709")
     Call SetLean(2, 4, "25977")

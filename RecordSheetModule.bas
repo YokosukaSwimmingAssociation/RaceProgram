@@ -1,17 +1,20 @@
 Attribute VB_Name = "RecordSheetModule"
+Option Explicit    ''←変数の宣言を強制する
+
 '
 ' 種目名読込み
 '
 ' 記録画面でProNoが入力されたら種目名を読込み表示する
 ' 存在しないProNoの場合は種目名は空欄となる
 '
-Sub 種目名読込み()
+Public Sub 種目名読込み()
     Sheets("記録画面").Protect UserInterfaceOnly:=True
+    Dim vNo As Range
     For Each vNo In GetRange("プログラム種目番号")
         If vNo.Value = GetRange("記録画面種目番号").Value Then
             ' 種目区分と種目名を連結して表示する
-            GetRange("記録画面種目名").Value = vNo.Offset(0, GetRange("Prog種目区分").Column - vNo.Column).Value _
-                    & " " & vNo.Offset(0, GetRange("Prog種目名").Column - vNo.Column).Value
+            GetRange("記録画面種目名").Value = GetOffset(vNo, GetRange("Prog種目区分").Column).Value _
+                    & " " & GetOffset(vNo, GetRange("Prog種目名").Column).Value
             Exit Sub
         End If
     Next vNo
@@ -26,7 +29,7 @@ End Sub
 ' 記録画面でProNoまたは組が入力されたらレース番号を読込み表示する
 ' 存在しない組み合わせの場合はレース番号は空欄となる
 '
-Sub レース番号読込み()
+Public Sub レース番号読込み()
     Dim nProNo As Integer
     Dim nHeat As Integer
 
@@ -34,12 +37,13 @@ Sub レース番号読込み()
     nHeat = GetRange("記録画面組").Value
     
     Dim sName As String
-    sName = "プログラム組" & Format(nProNo, "0#") & "_" & Trim(Str(nHeat))
+    sName = "プログラム組" & Format(nProNo, "0#") & "_" & Trim(CStr(nHeat))
 
     If IsNameExists(sName) Then
+        Dim vLane As Range
         For Each vLane In Range(sName)
-            If vLane.Offset(0, GetRange("HeaderレースNo").Column - vLane.Column).Value <> "" Then
-                GetRange("記録画面レースNo").Value = vLane.Offset(0, GetRange("HeaderレースNo").Column - vLane.Column).Value
+            If GetOffset(vLane, GetRange("HeaderレースNo").Column).Value <> "" Then
+                GetRange("記録画面レースNo").Value = GetOffset(vLane, GetRange("HeaderレースNo").Column).Value
                 Exit Sub
             End If
         Next vLane
@@ -58,7 +62,7 @@ End Sub
 '
 ' oLaneCell     IN  変更のあったレーンのセル
 '
-Sub 選手名読込み(oLaneCell As Range)
+Public Sub 選手名読込み(oLaneCell As Range)
     Dim nRaceNo As Integer
     nRaceNo = Range("記録画面レースNo").Value
     If nRaceNo = 0 Then
@@ -68,9 +72,9 @@ Sub 選手名読込み(oLaneCell As Range)
     Dim nLane As Integer
     nLane = oLaneCell.Value
     ' 選手名
-    Cells(oLaneCell.Row, Range("記録画面選手名").Column).Value = SearchName(nRaceNo, nLane)
+    GetOffset(oLaneCell, Range("記録画面選手名").Column).Value = SearchName(nRaceNo, nLane)
     ' チーム名
-    Cells(oLaneCell.Row, Range("記録画面チーム名").Column).Value = SearchTeam(nRaceNo, nLane)
+    GetOffset(oLaneCell, Range("記録画面チーム名").Column).Value = SearchTeam(nRaceNo, nLane)
 End Sub
 
 '
@@ -83,18 +87,19 @@ End Sub
 ' nRaceNo           IN      レース番号
 ' nLane             IN      レーン番号
 '
-Function SearchName(nRaceNo As Integer, nLane As Integer)
+Private Function SearchName(nRaceNo As Integer, nLane As Integer) As String
 
     Dim sName As String
-    sName = "プログラムレース" & Trim(Str(nRaceNo))
+    sName = "プログラムレース" & Trim(CStr(nRaceNo))
 
     ' 存在するレース番号の場合
     If IsNameExists(sName) Then
         ' レーン毎に処理する
+        Dim vLaneNo As Range
         For Each vLaneNo In Range(sName)
             ' レーン番号が指定されたレーン番号の場合
-            If vLaneNo.Offset(0, Range("Progレーン").Column - vLaneNo.Column).Value = nLane Then
-                SearchName = vLaneNo.Offset(0, Range("Prog氏名").Column - vLaneNo.Column).Value
+            If GetOffset(vLaneNo, Range("Progレーン").Column).Value = nLane Then
+                SearchName = GetOffset(vLaneNo, Range("Prog氏名").Column).Value
                 ' 名前が空白用文字列の場合は空白にする
                 If SearchName = 選手名ブランク Then
                     SearchName = ""
@@ -116,18 +121,19 @@ End Function
 ' nRaceNo           IN      レース番号
 ' nLane             IN      レーン番号
 '
-Function SearchTeam(nRaceNo As Integer, nLane As Integer)
+Private Function SearchTeam(nRaceNo As Integer, nLane As Integer) As String
 
     Dim sName As String
-    sName = "プログラムレース" & Trim(Str(nRaceNo))
+    sName = "プログラムレース" & Trim(CStr(nRaceNo))
 
     ' 存在するレース番号の場合
     If IsNameExists(sName) Then
         ' レーン毎に処理する
+        Dim vLaneNo As Range
         For Each vLaneNo In Range(sName)
             ' レーン番号が指定されたレーン番号の場合
-            If vLaneNo.Offset(0, Range("Progレーン").Column - vLaneNo.Column).Value = nLane Then
-                SearchTeam = vLaneNo.Offset(0, Range("Prog所属").Column - vLaneNo.Column).Value
+            If GetOffset(vLaneNo, Range("Progレーン").Column).Value = nLane Then
+                SearchTeam = GetOffset(vLaneNo, Range("Prog所属").Column).Value
                 Exit Function
             End If
         Next vLaneNo
@@ -140,7 +146,7 @@ End Function
 '
 ' oDqCell       IN  変更のあった違反セル
 '
-Sub 違反反映(oDqCell As Range)
+Public Sub 違反反映(oDqCell As Range)
     Application.EnableEvents = False
     
     Dim sDq As String
@@ -149,17 +155,17 @@ Sub 違反反映(oDqCell As Range)
     ' OPを設定されている場合
     If sDq = "OP" Then
         ' タイムを残してOPを設定
-        Cells(oDqCell.Row, GetRange("記録画面備考").Column).Value = sDq
+        GetOffset(oDqCell, GetRange("記録画面備考").Column).Value = sDq
     
     ' 失格を設定されている場合
     ElseIf sDq <> "" Then
         ' タイムを空にして違反を設定
-        Cells(oDqCell.Row, GetRange("記録画面タイム").Column).Value = ""
-        Cells(oDqCell.Row, GetRange("記録画面備考").Column).Value = sDq
+        GetOffset(oDqCell, GetRange("記録画面タイム").Column).Value = ""
+        GetOffset(oDqCell, GetRange("記録画面備考").Column).Value = sDq
     
     ' 空白に戻した場合
     Else
-        Call 大会記録判定(Cells(oDqCell.Row, GetRange("記録画面タイム").Column))
+        Call 大会記録判定(GetOffset(oDqCell, GetRange("記録画面タイム").Column))
     End If
 
     Application.EnableEvents = True
@@ -174,7 +180,7 @@ End Sub
 '
 ' oTimeCell       IN  変更のあったタイムセル
 '
-Sub 大会記録判定(oTimeCell As Range)
+Public Sub 大会記録判定(oTimeCell As Range)
     Application.EnableEvents = False
     Dim nRaceNo As Integer
     Dim nLane As Integer
@@ -184,8 +190,8 @@ Sub 大会記録判定(oTimeCell As Range)
 
     nRaceNo = GetRange("記録画面レースNo").Value
    
-    nLane = Cells(oTimeCell.Row, GetRange("記録画面レーン").Column).Value
-    nTime = Cells(oTimeCell.Row, GetRange("記録画面タイム").Column).Value
+    nLane = GetOffset(oTimeCell, GetRange("記録画面レーン").Column).Value
+    nTime = GetOffset(oTimeCell, GetRange("記録画面タイム").Column).Value
     
     ' レーン、タイムに値が設定されている場合
     If nLane > 0 And nTime > 0 Then
@@ -193,19 +199,19 @@ Sub 大会記録判定(oTimeCell As Range)
         nQualifyTime = SearchQualify(nRaceNo, nLane)
         If nQualifyTime > 0 And nTime > nQualifyTime Then
             ' 時間が標準記録より大きい場合はタイム失格
-            Cells(oTimeCell.Row, GetRange("記録画面備考").Column).Value = "タイム失格"
+            GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = "タイム失格"
         ElseIf nRecordTime = 0 Or nTime < nRecordTime Then
             ' 時間が大会記録より小さい場合は大会新（同一タイムはNG）
-            Cells(oTimeCell.Row, GetRange("記録画面備考").Column).Value = "大会新"
+            GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = "大会新"
         Else
             ' それ以外は空欄
-            Cells(oTimeCell.Row, GetRange("記録画面備考").Column).Value = ""
+            GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = ""
         End If
     Else
         ' 何も入力されていないレーンも空欄
-        Cells(oTimeCell.Row, GetRange("記録画面備考").Column).Value = ""
+        GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = ""
     End If
-    Cells(oTimeCell.Row, GetRange("記録画面違反").Column).Value = ""
+    GetOffset(oTimeCell, GetRange("記録画面違反").Column).Value = ""
 
     Application.EnableEvents = True
 End Sub
@@ -220,16 +226,17 @@ End Sub
 ' nRaceNo           IN      レース番号
 ' nLane             IN      レーン番号
 '
-Function SearchRecord(nRaceNo As Integer, nLane As Integer)
+Private Function SearchRecord(nRaceNo As Integer, nLane As Integer) As Long
 
     Dim sName As String
-    sName = "プログラムレース" & Trim(Str(nRaceNo))
+    sName = "プログラムレース" & Trim(CStr(nRaceNo))
 
     If IsNameExists(sName) Then
+        Dim vLaneNo As Range
         For Each vLaneNo In Range(sName)
-            If vLaneNo.Offset(0, GetRange("Progレーン").Column - vLaneNo.Column).Value = nLane Then
-                If IsNumeric(vLaneNo.Offset(0, GetRange("Prog大会記録").Column - vLaneNo.Column).Value) Then
-                    SearchRecord = CLng(vLaneNo.Offset(0, GetRange("Prog大会記録").Column - vLaneNo.Column).Value)
+            If GetOffset(vLaneNo, GetRange("Progレーン").Column).Value = nLane Then
+                If IsNumeric(GetOffset(vLaneNo, GetRange("Prog大会記録").Column).Value) Then
+                    SearchRecord = CLng(GetOffset(vLaneNo, GetRange("Prog大会記録").Column).Value)
                 Else
                     SearchRecord = 0
                 End If
@@ -249,16 +256,17 @@ End Function
 ' nRaceNo           IN      レース番号
 ' nLane             IN      レーン番号
 '
-Function SearchQualify(nRaceNo As Integer, nLane As Integer)
+Private Function SearchQualify(nRaceNo As Integer, nLane As Integer) As Long
 
     Dim sName As String
-    sName = "プログラムレース" & Trim(Str(nRaceNo))
+    sName = "プログラムレース" & Trim(CStr(nRaceNo))
 
     If IsNameExists(sName) Then
+        Dim vLaneNo As Range
         For Each vLaneNo In Range(sName)
-            If vLaneNo.Offset(0, GetRange("Progレーン").Column - vLaneNo.Column).Value = nLane Then
-                If IsNumeric(vLaneNo.Offset(0, GetRange("Prog標準記録").Column - vLaneNo.Column).Value) Then
-                    SearchQualify = CLng(vLaneNo.Offset(0, GetRange("Prog標準記録").Column - vLaneNo.Column).Value)
+            If GetOffset(vLaneNo, GetRange("Progレーン").Column).Value = nLane Then
+                If IsNumeric(GetOffset(vLaneNo, GetRange("Prog標準記録").Column).Value) Then
+                    SearchQualify = CLng(GetOffset(vLaneNo, GetRange("Prog標準記録").Column).Value)
                 Else
                     SearchQualify = 0
                 End If
@@ -273,19 +281,20 @@ End Function
 '
 ' レーンの初期化は行うが種目番号、組の初期化は行わない
 '
-Sub 初期化()
+Public Sub 初期化()
     Sheets("記録画面").Protect UserInterfaceOnly:=True
     
     ' イベント発生を抑制
     Call EventChange(False)
     
+    Dim vLane As Range
     For Each vLane In GetRange("記録画面レーン")
         vLane.Value = ""
-        vLane.Offset(0, GetRange("記録画面タイム").Column - vLane.Column).Value = ""
-        vLane.Offset(0, GetRange("記録画面選手名").Column - vLane.Column).Value = ""
-        vLane.Offset(0, GetRange("記録画面チーム名").Column - vLane.Column).Value = ""
-        vLane.Offset(0, GetRange("記録画面備考").Column - vLane.Column).Value = ""
-        vLane.Offset(0, GetRange("記録画面違反").Column - vLane.Column).Value = ""
+        GetOffset(vLane, GetRange("記録画面タイム").Column).Value = ""
+        GetOffset(vLane, GetRange("記録画面選手名").Column).Value = ""
+        GetOffset(vLane, GetRange("記録画面チーム名").Column).Value = ""
+        GetOffset(vLane, GetRange("記録画面備考").Column).Value = ""
+        GetOffset(vLane, GetRange("記録画面違反").Column).Value = ""
     Next vLane
 
     ' イベント発生を再開
@@ -297,7 +306,7 @@ End Sub
 '
 ' 記録画面で登録ボタンが押された際にプログラムに記入する
 '
-Sub 登録()
+Public Sub 登録()
     ' イベント発生を抑制
     Call EventChange(False)
 
@@ -308,10 +317,11 @@ Sub 登録()
 
     nRaceNo = GetRange("記録画面レースNo").Value
     
+    Dim vLane As Range
     For Each vLane In GetRange("記録画面レーン")
-        nLane = Cells(vLane.Row, GetRange("記録画面レーン").Column).Value
-        nTime = Cells(vLane.Row, GetRange("記録画面タイム").Column).Value
-        sAdditional = Cells(vLane.Row, GetRange("記録画面備考").Column).Value
+        nLane = GetOffset(vLane, GetRange("記録画面レーン").Column).Value
+        nTime = GetOffset(vLane, GetRange("記録画面タイム").Column).Value
+        sAdditional = GetOffset(vLane, GetRange("記録画面備考").Column).Value
         
         If nLane <> 0 Then
             Call SetRecord(nRaceNo, nLane, nTime, sAdditional)
@@ -330,31 +340,32 @@ End Sub
 ' nTime             IN      タイム
 ' sAdditional       IN      大会新
 '
-Function SetRecord(nRaceNo As Integer, nLane As Integer, nTime As Long, sAdditional As String)
+Private Sub SetRecord(nRaceNo As Integer, nLane As Integer, nTime As Long, sAdditional As String)
 
     Dim sName As String
-    sName = "プログラムレース" & Trim(Str(nRaceNo))
+    sName = "プログラムレース" & Trim(CStr(nRaceNo))
 
+    Dim vLaneNo As Range
     For Each vLaneNo In GetRange(sName)
-        If vLaneNo.Offset(0, GetRange("Progレーン").Column - vLaneNo.Column).Value = nLane Then
+        If GetOffset(vLaneNo, GetRange("Progレーン").Column).Value = nLane Then
             If nTime = 0 Then
                 ' タイムが入力されていない場合
                 If sAdditional <> "" Then
                     ' 備考の値を設定
-                    vLaneNo.Offset(0, GetRange("Prog備考").Column - vLaneNo.Column).Value = sAdditional
+                    GetOffset(vLaneNo, GetRange("Prog備考").Column).Value = sAdditional
                 Else
                     ' 備考が空欄なら棄権
-                    vLaneNo.Offset(0, GetRange("Prog備考").Column - vLaneNo.Column).Value = "棄権"
+                    GetOffset(vLaneNo, GetRange("Prog備考").Column).Value = "棄権"
                 End If
             Else
                 ' タイムが入力されている場合は時間と備考を設定
-                vLaneNo.Offset(0, GetRange("Prog時間").Column - vLaneNo.Column).Value = nTime
-                vLaneNo.Offset(0, GetRange("Prog備考").Column - vLaneNo.Column).Value = sAdditional
+                GetOffset(vLaneNo, GetRange("Prog時間").Column).Value = nTime
+                GetOffset(vLaneNo, GetRange("Prog備考").Column).Value = sAdditional
             End If
-            Exit Function
+            Exit Sub
         End If
     Next vLaneNo
-End Function
+End Sub
 
 
 '
@@ -363,7 +374,7 @@ End Function
 ' 同一レースを考慮して、レースNoの中に含まれるプロNoに対して
 ' すべて順位をつける
 '
-Sub 順位決定()
+Public Sub 順位決定()
     ' イベント発生を抑制
     Call EventChange(False)
 
@@ -371,15 +382,16 @@ Sub 順位決定()
     nRaceNo = GetRange("記録画面レースNo").Value
 
     Dim sName As String
-    sName = "プログラムレース" & Trim(Str(nRaceNo))
+    sName = "プログラムレース" & Trim(CStr(nRaceNo))
 
     Dim oProNo As Object
     Set oProNo = CreateObject("Scripting.Dictionary")
 
     Dim nProNo As Integer
     If IsNameExists(sName) Then
+        Dim vRaceNo As Range
         For Each vRaceNo In GetRange(sName)
-            nProNo = vRaceNo.Offset(0, GetRange("HeaderプロNo").Column - vRaceNo.Column).Value
+            nProNo = GetOffset(vRaceNo, GetRange("HeaderプロNo").Column).Value
             ' 最初の１回だけ実行
             If Not oProNo.Exists(nProNo) Then
                 Call SetOrder(nProNo)
@@ -397,10 +409,10 @@ End Sub
 '
 ' nProNo            IN      種目番号
 '
-Sub SetOrder(nProNo As Integer)
+Private Sub SetOrder(nProNo As Integer)
 
     Dim sName As String
-    sName = "プログラム番号" & Trim(Str(nProNo))
+    sName = "プログラム番号" & Trim(CStr(nProNo))
     
     Dim oProNo As Object
     Set oProNo = CreateObject("Scripting.Dictionary")
@@ -424,19 +436,21 @@ End Sub
 ' sName             IN      種目番号の名前
 ' oProNo            OUT     配列
 '
-Sub ReadOrder(nProNo As Integer, sName As String, oProNo As Object)
+Private Sub ReadOrder(nProNo As Integer, sName As String, oProNo As Object)
     
     ' 読込み
+    Dim sSubClass As String
     Dim oSubClass As Object
     If IsNameExists(sName) Then
         ' レースNo毎に実施
+        Dim vLane As Range
         For Each vLane In Range(sName)
             ' 記録があり、タイム失格、OPでない合が対象
-            If IsNumeric(vLane.Offset(0, GetRange("Prog時間").Column - vLane.Column).Value) And _
-                vLane.Offset(0, GetRange("Prog備考").Column - vLane.Column).Value <> "タイム失格" And _
-                vLane.Offset(0, GetRange("Prog備考").Column - vLane.Column).Value <> "OP" Then
+            If IsNumeric(GetOffset(vLane, GetRange("Prog時間").Column).Value) And _
+                GetOffset(vLane, GetRange("Prog備考").Column).Value <> "タイム失格" And _
+                GetOffset(vLane, GetRange("Prog備考").Column).Value <> "OP" Then
                 ' ソート区分（年齢区分）毎に順位をつける
-                sSubClass = vLane.Offset(0, GetRange("Headerソート区分").Column - vLane.Column).Value
+                sSubClass = GetOffset(vLane, GetRange("Headerソート区分").Column).Value
                 If sSubClass = "" Then
                     ' ソート区分がない場合は１区分（ALL）としておく
                     sSubClass = "ALL"
@@ -447,7 +461,7 @@ Sub ReadOrder(nProNo As Integer, sName As String, oProNo As Object)
                 End If
 
                 ' Key（行）：Value（時間）として辞書型に登録
-                oSubClass.Add vLane.Row, vLane.Offset(0, GetRange("Prog時間").Column - vLane.Column).Value
+                oSubClass.Add vLane.Row, GetOffset(vLane, GetRange("Prog時間").Column).Value
             End If
         Next vLane
     Else
@@ -463,13 +477,14 @@ End Sub
 ' sName             IN      種目番号の名前
 ' oProNo            OUT     配列
 '
-Sub SortDictOrder(nProNo As Integer, sName As String, oProNo As Object)
+Private Sub SortDictOrder(nProNo As Integer, sName As String, oProNo As Object)
     ' 並び替え
     Dim oSubClass As Object
     Dim nOrder As Integer
     Dim nCount As Integer
     Dim nTime As Long
     Dim nPreTime As Long
+    Dim vProNo As Variant
     For Each vProNo In oProNo
         Set oSubClass = oProNo.Item(vProNo)
         ' 並び替えを実施
@@ -477,6 +492,7 @@ Sub SortDictOrder(nProNo As Integer, sName As String, oProNo As Object)
         nOrder = 1
         nCount = 1
         nPreTime = 0
+        Dim vRow As Variant
         For Each vRow In oSubClass
             nTime = oSubClass.Item(vRow)
             ' 同一タイムでないときは順位を上げる
@@ -494,12 +510,12 @@ End Sub
 '
 ' 予選の場合に決勝を作成
 '
-Sub 決勝登録()
+Public Sub 決勝登録()
     ' イベント発生を抑制
     Call EventChange(False)
 
     ' 選手権以外は無効
-    If GetRange("大会名").Value <> "横須賀選手権水泳大会" Then
+    If GetRange("大会名").Value <> 選手権大会 Then
         Exit Sub
     End If
 
@@ -537,13 +553,16 @@ End Sub
 ' nProNo            IN      種目番号
 ' oFinalist         OUT     決勝進出者の行番号配列
 '
-Sub ReadFinalist(nProNo As Integer, oFinalist As Object)
+Private Sub ReadFinalist(nProNo As Integer, oFinalist As Object)
     Dim sName As String
-    sName = "プログラム番号" & Trim(Str(nProNo))
+    sName = "プログラム番号" & Trim(CStr(nProNo))
 
     Set oFinalist = CreateObject("Scripting.Dictionary")
 
+    Dim nOrder As Integer
+
     If IsNameExists(sName) Then
+        Dim vProNo As Range
         For Each vProNo In GetRange(sName)
             nOrder = GetOffset(vProNo, GetRange("Header順位").Column).Value
             ' 決勝人数まで保存
@@ -562,15 +581,16 @@ End Sub
 ' nRecord           IN      大会記録
 ' nQualify          IN      標準記録
 '
-Sub WriteFinalist(nProNo As Integer, oFinalist As Object, nRecord As Long, nQualify As Long)
+Private Sub WriteFinalist(nProNo As Integer, oFinalist As Object, nRecord As Long, nQualify As Long)
     Dim sName As String
-    sName = "プログラム番号" & Trim(Str(nProNo))
+    sName = "プログラム番号" & Trim(CStr(nProNo))
 
     Dim nLane As Integer
     Dim nOrder As Integer
-    Dim nRow As Integer
-
+    Dim vCell As Range
+    
     If IsNameExists(sName) Then
+        Dim vProNo As Range
         For Each vProNo In GetRange(sName)
             ' レーン毎
             nLane = GetOffset(vProNo, GetRange("Headerレーン").Column).Value
@@ -596,7 +616,7 @@ End Sub
 ' nCenterLane       IN      センターレーン
 ' nLane             IN      レーン番号
 '
-Function GetOrderByLane(nCenterLane As Integer, nLane As Integer)
+Private Function GetOrderByLane(nCenterLane As Integer, nLane As Integer) As Integer
     Dim nNum As Integer
     nNum = nLane - nCenterLane
     If nNum <= 0 Then

@@ -208,6 +208,7 @@ Public Sub DictQuickSort(ByRef dic As Object, Optional sIndex As String = "Key")
   
     ' Dictionaryから二元配列に転写
     i = 0
+    Dim Key As Variant
     For Each Key In dic
         varTmp(i, 0) = Key
         varTmp(i, 1) = dic(Key)
@@ -229,6 +230,7 @@ End Sub
 Private Sub QuickSort(ByRef targetVar() As Long, ByVal min As Long, ByVal max As Long, nIndex As Integer)
     Dim i, j As Long
     Dim tmp As Long
+    Dim pivot As Long
     
     If min < max Then
         i = min
@@ -262,7 +264,7 @@ Private Sub QuickSort(ByRef targetVar() As Long, ByVal min As Long, ByVal max As
 End Sub
 
 '' Long, y, z を辞書順比較し二番目のものを返す
-Private Function med3(ByVal x As Long, ByVal y As Long, ByVal z As Long)
+Private Function med3(ByVal x As Long, ByVal y As Long, ByVal z As Long) As Long
     If x < y Then
         If y < z Then
             med3 = y
@@ -333,9 +335,10 @@ End Sub
 ' sRegStr           IN      削除する名前の文字列
 '
 Public Sub DeleteName(sRegStr As String)
-    For Each vNm In ActiveWorkbook.Names
-        If vNm.Name Like sRegStr Then
-            vNm.Delete
+    Dim vName As Variant
+    For Each vName In ActiveWorkbook.Names
+        If vName.Name Like sRegStr Then
+            vName.Delete
         End If
     Next
 End Sub
@@ -462,7 +465,7 @@ Public Function GetAreaTopRow(sName As String) As Integer
     Dim oRange As Range
     Set oRange = Range(sName)
     GetAreaTopRow = oRange.Row
-End Function+
+End Function
 
 '
 ' 範囲の最下行番号を返す
@@ -720,6 +723,7 @@ End Sub
 '
 Public Function SearchCell(nProNo As Integer, sName As String, sColName As String) As String
 
+    Dim vCell As Range
     For Each vCell In GetAreaKeyData(エントリーテーブル & "[プロNo]")
         If GetOffset(vCell, Range(エントリーテーブル & "[プロNo]").Column).Value = nProNo And _
             GetOffset(vCell, Range(エントリーテーブル & "[選手名]").Column).Value = sName Then
