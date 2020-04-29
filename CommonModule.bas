@@ -14,6 +14,7 @@ Public Const エントリーテーブル As String = "エントリーテーブル"
 Public Const プログラムシート As String = "プログラム"
 Public Const フォーマットシート As String = "プログラムフォーマット"
 Public Const 記録画面シート As String = "記録画面"
+Public Const 設定各種シート As String = "設定各種"
 
 Public Const レース定員 As Integer = 7       ' １レースの人数
 Public Const 最大レーン番号 As Integer = 9     ' レーンの最大番号
@@ -53,23 +54,29 @@ End Sub
 ' シートの保護
 '
 ' bFlag         IN      True：保護／False：解除
+' oWorkSheet    IN      保護するシートオブジェクト
 '
-Public Sub SheetProtect(bFlag As Boolean)
+Public Function SheetProtect(bFlag As Boolean, Optional oWorkSheet As Worksheet = Nothing)
 
-    If bFlag Then
-        ActiveSheet.Protect DrawingObjects:=True, Contents:=True, _
-            Scenarios:=True, UserInterfaceOnly:=True, AllowFiltering:=True
-    Else
-        ActiveSheet.Unprotect
+    If oWorkSheet Is Nothing Then
+        Set oWorkSheet = ActiveSheet
     End If
 
-End Sub
+    If bFlag Then
+        oWorkSheet.Protect DrawingObjects:=True, Contents:=True, _
+            Scenarios:=True, UserInterfaceOnly:=True, AllowFiltering:=True
+    Else
+        oWorkSheet.Unprotect
+    End If
+    Set SheetProtect = oWorkSheet
+
+End Function
 
 '
 ' セルを選択
 '
-Public Sub SetForcusTop()
-    Range("$A$1").Select
+Public Sub SetForcusTop(Optional sRange As String = "$A$1")
+    Range(sRange).Select
 End Sub
 
 '
@@ -101,16 +108,8 @@ End Sub
 ' 大会名から種目区分を返す
 '
 Public Function GetMaster(sGameName As String)
-    ' 横須賀選手権水泳大会
-    If sGameName = 選手権大会 Then
-        GetMaster = "選手権種目区分"
-    ' 横須賀市民体育大会
-    ElseIf sGameName = 市民大会 Then
-        GetMaster = "市民種目区分"
-    Else
-        ' 学マ大会
-        GetMaster = "学マ種目区分"
-    End If
+    
+    GetMaster = VLookupArea(sGameName, "設定各種", "種目区分範囲名")
 
 End Function
 
@@ -155,17 +154,39 @@ End Function
 '
 ' シートの存在チェック付きアクティベート
 '
+' シートの存在を確認しVisibleがTrueでなければTrueにしてから
+' Activateする
+'
+' Sheets.Visibleの値を返す
+'
 ' sSheetName    IN      シート名
 '
-Public Sub SheetActivate(sSheetName As String)
+Public Function SheetActivate(sSheetName As String) As Variant
     If IsSheetExists(sSheetName) Then
+        SheetActivate = Worksheets(sSheetName).Visible
+        If Worksheets(sSheetName).Visible <> True Then
+            Worksheets(sSheetName).Visible = True
+        End If
         Worksheets(sSheetName).Activate
     Else
         MsgBox "「" & sSheetName & "」シートが存在しません。" & vbCrLf & _
                 "正しいファイルをお使いください。", vbOKOnly
         End
     End If
+End Function
+
+'
+' シートの存在チェック付き非表示
+'
+'
+' sSheetName    IN      シート名
+'
+Public Sub SheetVisible(sSheetName As String, vVisible As Variant)
+    If IsSheetExists(sSheetName) Then
+        Worksheets(sSheetName).Visible = vVisible
+    End If
 End Sub
+
 
 '
 ' シートの存在チェック

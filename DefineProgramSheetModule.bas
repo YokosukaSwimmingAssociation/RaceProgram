@@ -3,27 +3,20 @@ Attribute VB_Name = "DefineProgramSheetModule"
 ' 名前を定義する
 '
 Sub ワークブック名前定義()
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = ActiveSheet
+    
     Call EventChange(False)
   
     Call Header名前定義(フォーマットシート)
     Call Prog名前定義(フォーマットシート)
     Call 記録画面名前定義(記録画面シート)
-    Call 学童マスターズ大会種目区分名前定義
-    Call 学童マスターズ大会記録名前定義
-    Call 学童マスターズ大会優勝者名前定義
-    Call 市民大会種目区分名前定義
-    Call 市民大会記録名前定義
-    Call 市民大会優勝者名前定義
-    Call 選手権大会種目区分名前定義
-    Call 選手権大会記録名前定義
-    Call 選手権大会優勝者名前定義
-    Call 賞状名前定義
-    Call トップページ定義
+    Call 各種設定名前定義(設定各種シート)
+    Call トップページ定義(トップページシート)
     Call シート非表示
     
     Call EventChange(True)
-    Sheets(トップページシート).Select
-    Range("A1").Select
+    oWorkSheet.Activate
 End Sub
 
 '
@@ -32,9 +25,10 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Private Sub Header名前定義(sSheetName As String)
-    Sheets(sSheetName).Visible = True
-    Sheets(sSheetName).Select
-    Call SheetProtect(False)
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
     Range("$A$1").Select
 
     ' 名前をすべて削除
@@ -54,8 +48,9 @@ Private Sub Header名前定義(sSheetName As String)
         End If
     Next nColumn
 
-    Call SheetProtect(True)
-    ActiveSheet.Visible = True
+    ' シートのロック
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 End Sub
 
 '
@@ -64,9 +59,10 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Private Sub Prog名前定義(sSheetName As String)
-    Sheets(sSheetName).Visible = True
-    Sheets(sSheetName).Select
-    Call SheetProtect(False)
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
     Range("$A$1").Select
 
     ' 名前をすべて削除
@@ -104,8 +100,9 @@ Private Sub Prog名前定義(sSheetName As String)
     Call DefineName("Prog組ヘッダフォーマット", "A$2:$R$3")
     Call DefineName("Prog組フォーマット", "A$4:$R$13")
      
-    Call SheetProtect(True)
-    ActiveSheet.Visible = True
+    ' シートのロック
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 End Sub
 
 '
@@ -114,9 +111,10 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Private Sub 記録画面名前定義(sSheetName As String)
-    Sheets(sSheetName).Visible = True
-    Sheets(sSheetName).Select
-    Call SheetProtect(False)
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("記録画面*")
@@ -135,8 +133,8 @@ Private Sub 記録画面名前定義(sSheetName As String)
     Call 記録画面違反定義
 
     ' シートのロック
-    Call SheetProtect(True)
-    ActiveSheet.Visible = True
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 End Sub
 
 '
@@ -162,68 +160,121 @@ Private Sub 記録画面違反定義()
 End Sub
 
 '
+' 各種シートの設定
+'
+' sSheetName        IN      シート名
+'
+Public Sub 各種設定名前定義(sSheetName As String)
+
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
+
+    ' 名前をすべて削除
+    Call DeleteName("設定*")
+
+    ' シートを定義
+    Call DefineName("設定各種", TableRangeAddress("$A$1"))
+
+    ' 各種設定を行う
+    For Each vGameName In GetAreaKeyData("設定各種")
+        If VLookupArea(vGameName, "設定各種", "対象") = 1 Then
+        
+            Debug.Print vGameName
+        
+            ' 名前をすべて削除
+            Call DeleteName(VLookupArea(vGameName, "設定各種", "変数名先頭") & "*")
+        
+            ' 種目区分の設定
+            Call DefineTableRange(VLookupArea(vGameName, "設定各種", "種目区分シート名"), _
+                                    VLookupArea(vGameName, "設定各種", "種目区分範囲名"))
+            ' 種目区分の設定
+            If VLookupArea(vGameName, "設定各種", "種目区分関数名") <> "" Then
+                Application.Run VLookupArea(vGameName, "設定各種", "種目区分関数名"), _
+                                    VLookupArea(vGameName, "設定各種", "種目区分シート名")
+            End If
+        
+            ' 大会記録の設定
+            Call DefineTableRange(VLookupArea(vGameName, "設定各種", "大会記録シート名"), _
+                                    VLookupArea(vGameName, "設定各種", "大会記録範囲名"))
+        
+            ' 優勝者の設定
+            Call DefineColumnRange(VLookupArea(vGameName, "設定各種", "優勝者シート名"), _
+                                    VLookupArea(vGameName, "設定各種", "優勝者範囲名"))
+        
+            ' 賞状の設定
+            If VLookupArea(vGameName, "設定各種", "賞状関数名") <> "" Then
+                Application.Run VLookupArea(vGameName, "設定各種", "賞状関数名"), _
+                                    VLookupArea(vGameName, "設定各種", "賞状シート名")
+            End If
+        
+        End If
+    Next vGameName
+    
+    ' シートのロック
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
+
+End Sub
+
+'
+' シートのテーブル範囲名を定義する
+'
+' sSheetName    IN      シート名
+' sAreaName     IN      範囲名
+'
+Private Sub DefineTableRange(sSheetName As String, sAreaName As String)
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
+
+    Call DefineName(sAreaName, TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
+   
+    ' シートのロック
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
+End Sub
+
+'
+' シートのヘッダ行の範囲名を定義する
+'
+' sSheetName    IN      シート名
+' sAreaName     IN      範囲名
+'
+Private Sub DefineColumnRange(sSheetName As String, sAreaName As String)
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
+
+    Call DefineName(sAreaName, ColumnRangeAddress("$A$1"))
+    
+    ' シートのロック
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
+End Sub
+
+
+'
 ' 学童マスターズ大会種目区分の名前を定義する
 '
 ' sSheetName    IN      シート名
 '
-Private Sub 学童マスターズ大会種目区分名前定義(Optional sValue As String = "")
-
-    Sheets("学童マスターズ種目区分").Visible = True
-    Sheets("学童マスターズ種目区分").Select
-    Call SheetProtect(False)
-
-    ' 名前をすべて削除
-    Call DeleteName("学マ*")
-    
-    Call DefineName("学マ種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
+Private Sub 学マ大会種目区分設定(sSheetName As String)
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
     
     Call DefineName("学マ年齢区分", TableRangeAddress("$H$1"))
     Call DefineName("学マ学童区分", TableRangeAddress("$K$1"))
     Call DefineName("学マ学年表示", TableRangeAddress("$N$1"))
-    
+
     ' シートのロック
-    Call SheetProtect(True)
-    ActiveSheet.Visible = False
-End Sub
-
-'
-' 学童マスターズ大会記録の名前を定義する
-'
-' sSheetName    IN      シート名
-'
-Private Sub 学童マスターズ大会記録名前定義(Optional sValue As String = "")
-    Sheets("学童マスターズ大会記録").Visible = True
-    Sheets("学童マスターズ大会記録").Select
-    Call SheetProtect(False)
-
-    ' 名前をすべて削除
-    Call DeleteName("学マ大会記録")
-    
-    Call DefineName("学マ大会記録", TableRangeAddress("$A$1"))
-    
-    ' シートのロック
-    Call SheetProtect(True)
-    ActiveSheet.Visible = False
-End Sub
-
-'
-' 学童マスターズ優勝者の名前を定義する
-'
-' sSheetName    IN      シート名
-'
-Private Sub 学童マスターズ大会優勝者名前定義(Optional sValue As String = "")
-    Sheets("学童マスターズ優勝者").Visible = True
-    Sheets("学童マスターズ優勝者").Select
-    Call SheetProtect(False)
-
-    ' 名前をすべて削除
-    Call DeleteName("学マ大会優勝者")
-    
-    Call DefineName("学マ大会優勝者", ColumnRangeAddress("$A$1"))
-    
-    ' シートのロック
-    Call SheetProtect(True)
-    ActiveSheet.Visible = False
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 End Sub
 
 '
@@ -231,135 +282,59 @@ End Sub
 '
 ' sSheetName    IN      シート名
 '
-Private Sub 市民大会種目区分名前定義(Optional sValue As String = "")
-    Sheets("市民大会種目区分").Visible = True
-    Sheets("市民大会種目区分").Select
-    Call SheetProtect(False)
-
-    ' 名前をすべて削除
-    Call DeleteName("市民*")
-    
-    Call DefineName("市民種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
+Private Sub 市民大会種目区分設定(sSheetName As String)
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
     
     Call DefineName("市民選手年齢区分", RowRangeAddress("$H$1"))
     Call DefineName("市民リレー年齢区分", RowRangeAddress("$IJ$1"))
     Call DefineName("市民年齢区分", TableRangeAddress("$K$1"))
-    
+
     ' シートのロック
-    Call SheetProtect(True)
-    ActiveSheet.Visible = False
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 End Sub
 
 '
-' 市民大会記録の名前を定義する
+' 学マ大会の賞状定義
 '
 ' sSheetName    IN      シート名
 '
-Private Sub 市民大会記録名前定義(Optional sValue As String = "")
-    Sheets("市民大会記録").Visible = True
-    Sheets("市民大会記録").Select
-    Call SheetProtect(False)
+Sub 学マ賞状名前定義(sSheetName As String)
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
 
     ' 名前をすべて削除
-    Call DeleteName("市民大会記録")
-    
-    Call DefineName("市民大会記録", TableRangeAddress("$A$1"))
-    
+    Call DeleteName("賞状*")
+
+    Call DefineName("賞状種目区分", "$C$9")
+    Call DefineName("賞状距離", "$G$9")
+    Call DefineName("賞状種目", "$L$9")
+    Call DefineName("賞状順位", "$A$13")
+    Call DefineName("賞状タイム", "$L$14")
+    Call DefineName("賞状大会新", "$S$14")
+    Call DefineName("賞状氏名", "$C$20")
+    Call DefineName("賞状所属", "$C$24")
+ 
     ' シートのロック
-    Call SheetProtect(True)
-    ActiveSheet.Visible = False
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 End Sub
-
-'
-' 市民大会優勝者の名前を定義する
-'
-' sSheetName    IN      シート名
-'
-Private Sub 市民大会優勝者名前定義(Optional sValue As String = "")
-    Sheets("市民大会優勝者").Visible = True
-    Sheets("市民大会優勝者").Select
-    Call SheetProtect(False)
-
-    ' 名前をすべて削除
-    Call DeleteName("市民大会優勝者")
-    
-    Call DefineName("市民大会優勝者", ColumnRangeAddress("$A$1"))
-    
-    ' シートのロック
-    Call SheetProtect(True)
-    ActiveSheet.Visible = False
-End Sub
-
-'
-' 選手権大会種目区分の名前を定義する
-'
-' sSheetName    IN      シート名
-'
-Private Sub 選手権大会種目区分名前定義(Optional sValue As String = "")
-    Sheets("選手権大会種目区分").Visible = True
-    Sheets("選手権大会種目区分").Select
-    Call SheetProtect(False)
-
-    ' 名前をすべて削除
-    Call DeleteName("選手権*")
-    
-    Call DefineName("選手権種目区分", TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
-   
-    ' シートのロック
-    Call SheetProtect(True)
-    ActiveSheet.Visible = False
-End Sub
-
-'
-' 選手権大会記録の名前を定義する
-'
-' sSheetName    IN      シート名
-'
-Private Sub 選手権大会記録名前定義(Optional sValue As String = "")
-    Sheets("選手権大会記録").Visible = True
-    Sheets("選手権大会記録").Select
-    Call SheetProtect(False)
-
-    ' 名前をすべて削除
-    Call DeleteName("選手権大会記録")
-    
-    Call DefineName("選手権大会記録", TableRangeAddress("$A$2"))
-    
-    ' シートのロック
-    Call SheetProtect(True)
-    ActiveSheet.Visible = False
-End Sub
-
-'
-' 選手権大会優勝者の名前を定義する
-'
-' sValue        IN      ダミー
-'
-Private Sub 選手権大会優勝者名前定義(Optional sValue As String = "")
-    Sheets("選手権大会優勝者").Visible = True
-    Sheets("選手権大会優勝者").Select
-    Call SheetProtect(False)
-
-    ' 名前をすべて削除
-    Call DeleteName("選手権大会優勝者")
-    
-    Call DefineName("選手権大会優勝者", ColumnRangeAddress("$A$1"))
-    
-    ' シートのロック
-    Call SheetProtect(True)
-    ActiveSheet.Visible = False
-End Sub
-
 
 '
 ' トップページの定義
 '
-' sValue        IN      ダミー
+' sSheetName    IN      シート名
 '
-Private Sub トップページ定義(Optional sValue As String = "")
-
-    Sheets(トップページシート).Select
-    Call SheetProtect(False)
+Private Sub トップページ定義(sSheetName As String)
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
 
     Call 大会名定義
     Call 大会年定義
@@ -367,7 +342,8 @@ Private Sub トップページ定義(Optional sValue As String = "")
     Call 組最少人数定義
 
     ' シートのロック
-    Call SheetProtect(True)
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = True
 End Sub
 
 '
@@ -474,66 +450,44 @@ Private Sub 組最少人数定義(Optional sValue As String = "")
 End Sub
 
 '
-' シート非表示の定義
+' シート非表示の設定
 '
 ' sValue        IN      ダミー
 '
 Public Sub シート非表示(Optional sValue As String = "")
 
-    If GetRange("大会名").Value = 選手権大会 Then
-        Call 学マ大会シート非表示(False)
-        Call 市民大会シート非表示(False)
-        Call 選手権大会シート非表示(True)
-    
-    ElseIf GetRange("大会名").Value = 市民大会 Then
-        Call 学マ大会シート非表示(False)
-        Call 市民大会シート非表示(True)
-        Call 選手権大会シート非表示(False)
-    
-    Else
-        ' 学マ大会
-        Call 学マ大会シート非表示(True)
-        Call 市民大会シート非表示(False)
-        Call 選手権大会シート非表示(False)
-    
+    For Each vGameName In GetAreaKeyData("設定各種")
+        If VLookupArea(vGameName, "設定各種", "対象") = 1 Then
+            If GetRange("大会名").Value = CStr(vGameName) Then
+                Call SetSheetVisible(CStr(vGameName), True)
+            Else
+                Call SetSheetVisible(CStr(vGameName), False)
+            End If
+        End If
+    Next vGameName
+
+End Sub
+
+'
+' 各種シート表示／非表示
+'
+' vGameName IN  大会名
+' bFlag     IN  True:表示／False:非表示
+'
+Private Sub SetSheetVisible(vGameName As String, bFlag As Boolean)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = ActiveSheet
+
+    Call SheetVisible(VLookupArea(vGameName, "設定各種", "種目区分シート名"), bFlag)
+    Call SheetVisible(VLookupArea(vGameName, "設定各種", "大会記録シート名"), bFlag)
+    Call SheetVisible(VLookupArea(vGameName, "設定各種", "優勝者シート名"), bFlag)
+    Call SheetVisible(VLookupArea(vGameName, "設定各種", "賞状シート名"), bFlag)
+    ' 賞状の設定
+    If VLookupArea(vGameName, "設定各種", "賞状関数名") <> "" Then
+        Application.Run VLookupArea(vGameName, "設定各種", "賞状関数名"), _
+                            VLookupArea(vGameName, "設定各種", "賞状シート名")
     End If
-
-End Sub
-
-'
-' 学童マスターズシート非表示
-'
-' bFlag     IN  True:表示／False:非表示
-'
-Private Sub 学マ大会シート非表示(bFlag As Boolean)
-    Sheets("学童マスターズ種目区分").Visible = bFlag
-    Sheets("学童マスターズ大会記録").Visible = bFlag
-    Sheets("学童マスターズ優勝者").Visible = bFlag
-    Sheets("学童マスターズ賞状").Visible = bFlag
-End Sub
-
-'
-' 学童マスターズシート非表示
-'
-' bFlag     IN  True:表示／False:非表示
-'
-Private Sub 市民大会シート非表示(bFlag As Boolean)
-    Sheets("市民大会種目区分").Visible = bFlag
-    Sheets("市民大会記録").Visible = bFlag
-    Sheets("市民大会優勝者").Visible = bFlag
-    'Sheets("市民大会賞状").Visible = bFlag
-End Sub
-
-'
-' 学童マスターズシート非表示
-'
-' bFlag     IN  True:表示／False:非表示
-'
-Private Sub 選手権大会シート非表示(bFlag As Boolean)
-    Sheets("選手権大会種目区分").Visible = bFlag
-    Sheets("選手権大会記録").Visible = bFlag
-    Sheets("選手権大会優勝者").Visible = bFlag
-    'Sheets("選手権大会賞状").Visible = bFlag
+    oWorkSheet.Activate
 End Sub
 
 '

@@ -25,8 +25,10 @@ End Sub
 '
 Private Sub 記入票名前定義()
 
-    Sheets("記入票").Select
-    Call SheetProtect(False)
+    Dim vVisible As Variant
+    vVisible = SheetActivate("記入票")
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
 
     ' 名前をすべて削除
     Call DeleteName("*")
@@ -238,7 +240,10 @@ Private Sub 記入票名前定義()
 
     Sheets("記入票").Select
     Call SetForcusTop
-    Call SheetProtect(True)
+
+    ' シートのロック
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 
 End Sub
 
@@ -246,9 +251,10 @@ End Sub
 '種目番号区分シートに名前を定義する
 '
 Private Sub 種目番号区分名前定義()
-    
-    Sheets("種目番号区分").Select
-    Call SheetProtect(False)
+    Dim vVisible As Variant
+    vVisible = SheetActivate("種目番号区分")
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
 
     If Range("大会名").Value = 選手権大会 Then
     
@@ -287,7 +293,10 @@ Private Sub 種目番号区分名前定義()
 
     Sheets("種目番号区分").Select
     Call SetForcusTop
-    Call SheetProtect(True)
+
+    ' シートのロック
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 End Sub
 
 '
@@ -507,8 +516,10 @@ End Sub
 ' 入力制限設定
 '
 Private Sub 入力制限定義()
-    Sheets("記入票").Select
-    Call SheetProtect(False)
+    Dim vVisible As Variant
+    vVisible = SheetActivate("記入票")
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
     
     ' 入力制限全解除
     Call ClearValidation("記入票")
@@ -556,7 +567,10 @@ Private Sub 入力制限定義()
     
     Sheets("記入票").Select
     Call SetForcusTop
-    Call SheetProtect(True)
+
+    ' シートのロック
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 End Sub
 
 '
@@ -1220,8 +1234,10 @@ End Sub
 ' 条件付き書式設定
 '
 Private Sub 条件付き書式定義()
-    Sheets("記入票").Select
-    Call SheetProtect(False)
+    Dim vVisible As Variant
+    vVisible = SheetActivate("記入票")
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
     
     ' すべての条件付き書式をクリア
     Cells.FormatConditions.Delete
@@ -1276,7 +1292,10 @@ Private Sub 条件付き書式定義()
     
     Sheets("記入票").Select
     Call SetForcusTop
-    Call SheetProtect(True)
+
+    ' シートのロック
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 End Sub
 
 '
@@ -1700,7 +1719,8 @@ End Sub
 ' 印刷範囲を設定する
 '
 Private Sub 印刷範囲の設定()
-    Sheets("記入票").Select
+    Seehts("記入票").Select
+    
     Application.PrintCommunication = True
     If Range("大会名").Value = 選手権大会 Then
         With ActiveSheet.PageSetup
