@@ -326,6 +326,61 @@ Sub 学マ賞状名前定義(sSheetName As String)
 End Sub
 
 '
+' 市民大会の賞状定義
+'
+' sSheetName    IN      シート名
+'
+Sub 市民賞状名前定義(sSheetName As String)
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
+
+    ' 名前をすべて削除
+    Call DeleteName("賞状*")
+
+    Call DefineName("賞状性別", "$AC$4")
+    Call DefineName("賞状種目距離区分", "$AC$16")
+    Call DefineName("賞状順位", "$AA$7")
+    Call DefineName("賞状タイム", "$Y$10")
+    Call DefineName("賞状大会新", "$Y$27")
+    Call DefineName("賞状氏名", "$U$9")
+    Call DefineName("賞状所属", "$W$6")
+ 
+    ' シートのロック
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
+End Sub
+
+'
+' 選手権大会の賞状定義
+'
+' sSheetName    IN      シート名
+'
+Sub 選手権賞状名前定義(sSheetName As String)
+    Dim vVisible As Variant
+    vVisible = SheetActivate(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetProtect(False)
+
+    ' 名前をすべて削除
+    Call DeleteName("賞状*")
+
+    Call DefineName("賞状性別", "$H$8")
+    Call DefineName("賞状距離", "$L$8")
+    Call DefineName("賞状種目", "$S$8")
+    Call DefineName("賞状順位", "$C$6")
+    Call DefineName("賞状タイム", "$H$10")
+    Call DefineName("賞状大会新", "$W$10")
+    Call DefineName("賞状氏名", "$H$12")
+    Call DefineName("賞状所属", "$H$14")
+ 
+    ' シートのロック
+    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
+End Sub
+
+'
 ' トップページの定義
 '
 ' sSheetName    IN      シート名
@@ -338,6 +393,7 @@ Private Sub トップページ定義(sSheetName As String)
 
     Call 大会名定義
     Call 大会年定義
+    Call プリンタ定義
     Call 組合せ方式定義
     Call 組最少人数定義
 
@@ -351,7 +407,7 @@ End Sub
 '
 ' sValue        IN      ダミー
 '
-Private Sub 大会名定義(Optional sValue As String = "")
+Private Sub 大会名定義()
     
     Call DefineName("大会名", "$B$1")
     With Range("大会名").Validation
@@ -376,9 +432,9 @@ End Sub
 '
 ' sValue        IN      ダミー
 '
-Private Sub 大会年定義(Optional sValue As String = "")
+Private Sub 大会年定義()
     
-    Call DefineName("大会年", "$E$7")
+    Call DefineName("大会年", "$E$4")
     With Range("大会年").Validation
         .Delete
         .Add Type:=xlValidateWholeNumber, AlertStyle:=xlValidAlertStop, _
@@ -396,6 +452,16 @@ Private Sub 大会年定義(Optional sValue As String = "")
     Range("大会年").Value = Year(Now)
 
 End Sub
+
+'
+' 大会年を定義
+'
+' sValue        IN      ダミー
+'
+Private Sub プリンタ定義()
+    Call DefineName("プリンタ名", "$E$5")
+End Sub
+
 
 '
 '組合せ方式定義
@@ -483,12 +549,21 @@ Private Sub SetSheetVisible(vGameName As String, bFlag As Boolean)
     Call SheetVisible(VLookupArea(vGameName, "設定各種", "優勝者シート名"), bFlag)
     Call SheetVisible(VLookupArea(vGameName, "設定各種", "賞状シート名"), bFlag)
     ' 賞状の設定
-    If VLookupArea(vGameName, "設定各種", "賞状関数名") <> "" Then
+    If bFlag And _
+        VLookupArea(vGameName, "設定各種", "賞状関数名") <> "" Then
         Application.Run VLookupArea(vGameName, "設定各種", "賞状関数名"), _
                             VLookupArea(vGameName, "設定各種", "賞状シート名")
     End If
     oWorkSheet.Activate
 End Sub
+
+'
+' 各種設定シートを表示
+'
+Sub 各種設定表示()
+    Call SheetVisible(設定各種シート, True)
+End Sub
+
 
 '
 ' モジュール読込み

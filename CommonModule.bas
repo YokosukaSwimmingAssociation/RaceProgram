@@ -632,11 +632,12 @@ Public Sub ExportAll(oWorkBook As Workbook, sPath As String)
     
     Dim sFileName As String
     With ActiveWorkbook.VBProject
+        Dim i As Integer
         For i = 1 To .VBComponents.Count
             Debug.Print "Type: " & .VBComponents(i).Type
             Debug.Print "Name: " & .VBComponents(i).Name
             If .VBComponents(i).Type = 1 Then
-                sFileName = sPath & "\\" & .VBComponents(i).Name & ".vbs"
+                sFileName = sPath & "\\" & .VBComponents(i).Name & ".bas"
                 .VBComponents(i).Export sFileName
             ElseIf .VBComponents(i).Type = 2 Then
                 sFileName = sPath & "\\" & .VBComponents(i).Name & ".cls"

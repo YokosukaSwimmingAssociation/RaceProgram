@@ -141,18 +141,18 @@ End Sub
 ' sGameName     IN  大会名
 ' sMasterName   IN  マスター名
 ' nProNo        IN  種目番号
-' sType         IN  区分
+' sClass        IN  区分
 '
-Private Function GetWinnerKey(sGameName As String, sMasterName As String, nProNo As Integer, sType As String)
+Private Function GetWinnerKey(sGameName As String, sMasterName As String, nProNo As Integer, sClass As String)
 
     If sGameName = 選手権大会 Then
         GetWinnerKey = CStr(nProNo)
     ElseIf sGameName = 市民大会 Then
-        GetWinnerKey = CStr(nProNo) & sType
+        GetWinnerKey = CStr(nProNo) & sClass
     Else
         ' 区分を取得
         If Trim(VLookupArea(nProNo, sMasterName, "種目区分")) = "" Then
-            GetWinnerKey = CStr(nProNo) & sType
+            GetWinnerKey = CStr(nProNo) & sClass
         Else
             GetWinnerKey = CStr(nProNo)
         End If

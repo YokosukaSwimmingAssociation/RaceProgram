@@ -4,11 +4,12 @@ Attribute VB_Name = "PrintAwardModule"
 '
 ' 指定したレースNoに存在するProNoの賞状を印刷する
 '
-Sub 賞状印刷()
+Public Sub 賞状印刷()
 
     ' イベント発生を抑制
     Call EventChange(False)
 
+    ' 記録画面シートを保存
     Dim oWorkSheet As Worksheet
     Set oWorkSheet = ActiveSheet
 
@@ -16,28 +17,10 @@ Sub 賞状印刷()
     Dim nRaceNo As Integer
     nRaceNo = GetRange("記録画面レースNo").Value
 
-    Dim sName As String
-    sName = "プログラムレース" & Trim(Str(nRaceNo))
+    ' 賞状印刷
+    Call PrintAwardByRace(nRaceNo)
 
-    Dim oProNo As Object
-    Set oProNo = CreateObject("Scripting.Dictionary")
-
-    Dim nProNo As Integer
-    If IsNameExists(sName) Then
-        For Each vRaceNo In GetRange(sName)
-            nProNo = vRaceNo.Offset(0, GetRange("HeaderプロNo").Column - vRaceNo.Column).Value
-            ' 最初の１回だけ実行
-            If Not oProNo.Exists(nProNo) Then
-                ' 賞状印刷対象か確認
-                If CheckTarget(nProNo) Then
-                    ' 賞状を印刷
-                    Call PrintAward(nProNo)
-                End If
-                oProNo.Add nProNo, 1
-            End If
-        Next vRaceNo
-    End If
-
+    ' 記録画面シートに戻る
     oWorkSheet.Activate
 
     ' イベント発生を再開
@@ -46,18 +29,87 @@ Sub 賞状印刷()
 End Sub
 
 '
+' レース番号指定賞状印刷
+'
+' nRaceNo           IN      レースNo
+'
+Private Function PrintAwardByRace(nRaceNo As Integer)
+
+    ' レースの名前取得
+    Dim sName As String
+    sName = "プログラムレース" & Trim(Str(nRaceNo))
+    If Not IsNameExists(sName) Then
+        MsgBox "印刷対象が取得できませんでした。" & vbCrLf & _
+                "レースNoが正しく指定されているか確認してください。" & vbCrLf & _
+                "正しく指定されている場合は、プログラム名前定義を実行してみてください。", vbOKOnly
+        End
+    End If
+
+    ' 賞状印刷
+    Call PrintAwardByName(sName)
+
+End Function
+
+'
+' 名前指定賞状印刷
+'
+' sName             IN      レースの名前定義
+'
+Private Function PrintAwardByName(sName As String)
+
+    Dim oProNo As Object
+    Set oProNo = CreateObject("Scripting.Dictionary")
+
+    Dim nProNo As Integer
+    Dim vRaceNo As Variant
+    For Each vRaceNo In GetRange(sName)
+        nProNo = GetOffset(vRaceNo, GetRange("HeaderプロNo").Column).Value
+        ' 最初の１回だけ実行
+        If Not oProNo.Exists(nProNo) Then
+            ' 賞状印刷対象か確認
+            If CheckTarget(nProNo) Then
+                ' 賞状を印刷
+                Call PrintAwardByProNo(nProNo)
+            End If
+            oProNo.Add nProNo, 1
+        End If
+    Next vRaceNo
+
+End Function
+
+
+'
 ' 印刷対象かを確認する
+'
+' 学マ大会は学童のみ対象（種目区分から対象を取得）
+' 市民大会はすべて対象
+' 選手権大会は決勝のみ対象（種目区分から対象を取得）
+'
 '
 ' nProNo            IN      プロNo
 '
-Function CheckTarget(nProNo As Integer) As Boolean
+Private Function CheckTarget(nProNo As Integer) As Boolean
 
-    ' 種目の区分を取得
-    Dim sGameType
-    sGameType = Application.WorksheetFunction.VLookup(nProNo, Range("学マ種目区分"), 6, False)
-    
-    If sGameType = "学童" Or sGameType = "学童リレー" Then
+    ' 大会名
+    Dim sGameName As String
+    sGameName = GetRange("大会名").Value
+
+    If sGameName = 選手権大会 Then
+        ' 予選・決勝の確認
+        If VLookupArea(vProNo, "選手権種目区分", "予選／決勝") <> "予選" Then
+            CheckTarget = True
+        Else
+            CheckTarget = False
+        End If
+    ElseIf sGameName = 市民大会 Then
         CheckTarget = True
+    ElseIf sGameName = 学マ大会 Then
+        ' 種目の大会を取得
+        If VLookupArea(vProNo, "学マ種目区分", "大会区分") = "学童" Then
+            CheckTarget = True
+        Else
+            CheckTarget = False
+        End If
     Else
         CheckTarget = False
     End If
@@ -71,28 +123,36 @@ End Function
 '
 ' nProNo            IN      プロNo
 '
-Sub PrintAward(nProNo As Integer)
+Private Sub PrintAwardByProNo(nProNo As Integer)
 
-    Dim sName As String
-    sName = "プログラム番号" & Trim(Str(nProNo))
+    ' 大会名
+    Dim sGameName As String
+    sGameName = GetRange("大会名").Value
     
-    Dim oWorkSheet As Worksheet
-    Set oWorkSheet = GetRange(sName).Parent
+    ' 種目区分を取得
+    Dim sMasterName As String
+    sMasterName = GetMaster(GetRange("大会名").Value)
     
-    Dim sRaceType As String ' 区分
-    sRaceType = Application.WorksheetFunction.VLookup(nProNo, Range("学マ種目区分"), 2, False)
+    Dim sRaceClass As String ' 区分
+    sRaceClass = VLookupArea(nProNo, sMasterName, "種目区分")
     Dim sGender As String ' 性別
-    sGender = Application.WorksheetFunction.VLookup(nProNo, Range("学マ種目区分"), 3, False)
+    sGender = VLookupArea(nProNo, sMasterName, "性別")
     Dim sDistance As String ' 距離
-    sDistance = Application.WorksheetFunction.VLookup(nProNo, Range("学マ種目区分"), 4, False)
+    sDistance = VLookupArea(nProNo, sMasterName, "距離")
     Dim sStyle As String ' 種目名
-    sStyle = Application.WorksheetFunction.VLookup(nProNo, Range("学マ種目区分"), 5, False)
+    sStyle = VLookupArea(nProNo, sMasterName, "種目名")
+    Dim nMaxOrder As Integer ' 出力する順位
+    nMaxOrder = VLookupArea(sGameName, "設定各種", "賞状順位")
     
+    Dim sName As String
+    sName = "プログラム番号" & Trim(CStr(nProNo))
+    
+    Dim vProNo As Variant
     Dim nOrder As Integer
     For Each vProNo In GetRange(sName)
-        nOrder = Val(vProNo.Offset(0, GetRange("Prog順位").Column - vProNo.Column).Value)
-        If nOrder >= 1 And nOrder <= 3 Then
-            Call PrintAwardByLine(oWorkSheet, vProNo.Row, sRaceType, sGender, sDistance, sStyle)
+        nOrder = Val(GetOffset(vProNo, GetRange("Prog順位").Column).Value)
+        If nOrder >= 1 And nOrder <= nMaxOrder Then
+            Call PrintAwardByLine(sGameName, vProNo, sRaceClass, sGender, sDistance, sStyle)
         End If
     Next vProNo
     
@@ -103,40 +163,87 @@ End Sub
 '
 ' 指定した行のレコードを印刷する
 '
-' oWorkSheet        IN      ワークシート
-' nRow              IN      行番号
-' sRaceType         IN      種目区分
+' sGameName         IN      大会名
+' vProNo            IN      ProNo
+' sRaceClass        IN      種目区分
 ' sGender           IN      性別
 ' sDistance         IN      距離
 ' sStyle            IN      種目名
 '
-Sub PrintAwardByLine(oWorkSheet As Worksheet, _
-nRow As Integer, _
-sRaceType As String, _
+Private Sub PrintAwardByLine(sGameName As String, _
+vProNo As Variant, _
+sRaceClass As String, _
 sGender As String, _
 sDistance As String, _
 sStyle As String)
    
-    GetRange("賞状種目区分").Value = sRaceType & sGender
-    GetRange("賞状距離").Value = sDistance
-    GetRange("賞状種目").Value = sStyle
-    GetRange("賞状順位").Value = oWorkSheet.Cells(nRow, Range("Prog順位").Column).Value
-    GetRange("賞状タイム").Value = oWorkSheet.Cells(nRow, Range("Prog時間").Column).Value
-    GetRange("賞状大会新").Value = oWorkSheet.Cells(nRow, Range("Prog備考").Column).Value
-    GetRange("賞状氏名").Value = oWorkSheet.Cells(nRow, Range("Prog氏名").Column).Value
-    GetRange("賞状所属").Value = oWorkSheet.Cells(nRow, Range("Prog所属").Column).Value
-
+    ' 共通の設定
+    GetRange("賞状順位").Value = GetOffset(vProNo, Range("Prog順位").Column).Value
+    GetRange("賞状タイム").Value = GetOffset(vProNo, Range("Prog時間").Column).Value
+    If GetOffset(vProNo, Range("Prog備考").Column).Value = "大会新" Then
+        GetRange("賞状大会新").Value = "大会新"
+    End If
+    GetRange("賞状氏名").Value = GetOffset(vProNo, Range("Prog氏名").Column).Value
+    GetRange("賞状所属").Value = GetOffset(vProNo, Range("Prog所属").Column).Value
+   
     If GetRange("賞状タイム").Value >= 10000 Then
         GetRange("賞状タイム").NumberFormatLocal = "#""分""##""秒""##"
     Else
         GetRange("賞状タイム").NumberFormatLocal = "##""秒""##"
     End If
 
+    ' 大会固有の設定
+    If sGameName = 選手権大会 Then
+        Call SetAwardValForSenshuken(sGender, sDistance, sStyle)
+    ElseIf sGameName = 市民大会 Then
+        Call SetAwardValForShimin(sGender, sDistance, sStyle, _
+                GetOffset(vProNo, Range("Prog区分").Column).Value)
+    Else
+        Call SetAwardValForGakudo(sRaceClass, sGender, sDistance, sStyle)
+    End If
+
     ' 印刷
-    GetRange("賞状種目区分").Parent.Activate
-    ActiveWindow.SelectedSheets.PrintOut Copies:=1, Collate:=True, Preview:=True
+    GetRange("賞状氏名").Parent.PrintOut _
+        Copies:=1, Collate:=True, IgnorePrintAreas:=False, Preview:=True, _
+        ActivePrinter:=GetRange("プリンタ名").Value
 
 End Sub
 
+'
+' 学童大会賞状変数設定
+'
+Private Sub SetAwardValForGakudo( _
+sRaceClass As String, _
+sGender As String, _
+sDistance As String, _
+sStyle As String)
+    GetRange("賞状種目区分").Value = sRaceClass & sGender
+    GetRange("賞状距離").Value = sDistance
+    GetRange("賞状種目").Value = sStyle
+End Sub
 
+
+'
+' 市民大会賞状変数設定
+'
+Private Sub SetAwardValForShimin( _
+sGender As String, _
+sDistance As String, _
+sStype As String, _
+sClass As String)
+    GetRange("賞状性別").Value = sGender
+    GetRange("賞状種目距離区分").Value = sDistance & sStype & "　" & sClass
+End Sub
+
+'
+' 選手権賞状変数設定
+'
+Private Sub SetAwardValForSenshuken( _
+sGender As String, _
+sDistance As String, _
+sStyle As String)
+    GetRange("賞状性別").Value = sGender
+    GetRange("賞状距離").Value = sDistance
+    GetRange("賞状種目").Value = sStyle
+End Sub
 
