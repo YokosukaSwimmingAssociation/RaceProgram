@@ -113,7 +113,7 @@ Private Sub SetWinnerInfo(sGameName As String, vProNo As Variant, oWinnerList As
     nRecord = GetOffset(vCell, Range("Header大会記録").Column).Value
     
     Dim sKey As String
-    sKey = GetWinnerKey(sGameName, sMasterName, CInt(vProNo), _
+    sKey = GetRecordKey(sGameName, CInt(vProNo), _
         GetOffset(vCell, Range("Header区分").Column).Value)
     
     oWinner.Add "氏名", GetOffset(vCell, Range("Header氏名").Column).Value
@@ -139,22 +139,23 @@ End Sub
 ' 大会毎の大会記録の区分
 '
 ' sGameName     IN  大会名
-' sMasterName   IN  マスター名
 ' nProNo        IN  種目番号
 ' sClass        IN  区分
 '
-Private Function GetWinnerKey(sGameName As String, sMasterName As String, nProNo As Integer, sClass As String)
+Public Function GetRecordKey(sGameName As String, nProNo As Integer, sClass As String) As String
 
     If sGameName = 選手権大会 Then
-        GetWinnerKey = CStr(nProNo)
+        GetRecordKey = CStr(nProNo)
     ElseIf sGameName = 市民大会 Then
-        GetWinnerKey = CStr(nProNo) & sClass
+        GetRecordKey = CStr(nProNo) & "_" & STrimAll(sClass)
     Else
+        Dim sMasterName As String
+        sMasterName = GetMaster(sGameName)
         ' 区分を取得
         If Trim(VLookupArea(nProNo, sMasterName, "種目区分")) = "" Then
-            GetWinnerKey = CStr(nProNo) & sClass
+            GetRecordKey = CStr(nProNo) & "_" & sClass
         Else
-            GetWinnerKey = CStr(nProNo)
+            GetRecordKey = CStr(nProNo) & "_"
         End If
     End If
 
@@ -172,10 +173,12 @@ Private Sub WriteWinner(sGameName As String, oWinnerList As Object)
     Dim sSheetName As String
     sSheetName = GetWinnerSheetName(sGameName)
     
+    ' 表示／アクティブ／解除
     Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    vVisible = GetSheetVisible(sSheetName)
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
 
     ' 優勝者範囲名
     Dim sWinnerAreaName As String
@@ -191,12 +194,15 @@ Private Sub WriteWinner(sGameName As String, oWinnerList As Object)
     ' 出力する
     Call WriteWinnerList(sWinnerAreaName, sRecordAreaName, oWinnerList)
 
+    ' 優勝者シート設定
+    Call DefineWinnerSheet(sSheetName, sWinnerAreaName)
+
     ' 書式設定
     Call SetWinnerRecordStyle(sGameName)
-    
-    ' 印刷範囲の設定
-    ActiveSheet.PageSetup.PrintArea = TableRangeAddress(sWinnerAreaName)
 
+    ' シートの保護
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 End Sub
 
 '
@@ -207,6 +213,11 @@ End Sub
 ' oWinnerList       IN  優勝者リスト
 '
 Private Sub WriteWinnerList(sWinnerAreaName As String, sRecordAreaName As String, oWinnerList As Object)
+    
+    ' 同一の区分に対して１回のみ実施するチェック用
+    Dim oKeyList As Object
+    Set oKeyList = CreateObject("Scripting.Dictionary")
+    
     Dim oWinners As Object
     Dim oWinner As Object
         
@@ -216,14 +227,17 @@ Private Sub WriteWinnerList(sWinnerAreaName As String, sRecordAreaName As String
     ' 大会記録毎
     Dim vKey As Range
     For Each vKey In GetAreaKeyData(sRecordAreaName)
-        If oWinnerList.Exists(CStr(vKey.Value)) Then
-            Set oWinners = oWinnerList.Item(CStr(vKey.Value))
-            Dim vIdx As Variant
-            For Each vIdx In oWinners
-                Set oWinner = oWinners.Item(vIdx)
-                Call WriteWinnerLine(sWinnerAreaName, sRecordAreaName, nRow, vKey, oWinner)
-                nRow = nRow + 1
-            Next vIdx
+        If Not oKeyList.Exists(CStr(vKey.Value)) Then
+            If oWinnerList.Exists(CStr(vKey.Value)) Then
+                Set oWinners = oWinnerList.Item(CStr(vKey.Value))
+                Dim vIdx As Variant
+                For Each vIdx In oWinners
+                    Set oWinner = oWinners.Item(vIdx)
+                    Call WriteWinnerLine(sWinnerAreaName, sRecordAreaName, nRow, vKey, oWinner)
+                    nRow = nRow + 1
+                Next vIdx
+            End If
+            oKeyList.Add CStr(vKey.Value), 1
         End If
     Next vKey
 End Sub
@@ -401,8 +415,6 @@ Public Sub 大会記録更新()
     ' 大会記録の書込み
     Call WriteNewRecords(sGameName, oWinnerList)
 
-    Call 各種設定名前定義(設定各種シート)
-
     ' イベント発生を発生
     Call EventChange(True)
 
@@ -441,10 +453,7 @@ Private Sub ReadRecords(sGameName As String, oRecordList As Object)
     Dim sSheetName As String
     sSheetName = GetRecordSheetName(sGameName)
     
-    Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
-    Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Call SheetActivate(sSheetName)
 
     ' 大会記録範囲名
     Dim sRecordAreaName As String
@@ -456,6 +465,10 @@ Private Sub ReadRecords(sGameName As String, oRecordList As Object)
     Dim oWinners As Object
     Dim oWinner As Object
         
+    ' 大会年
+    Dim nYear As Integer
+    nYear = GetRange("大会年").Value
+    
     Dim sKey As String
         
     ' 大会記録毎
@@ -471,14 +484,17 @@ Private Sub ReadRecords(sGameName As String, oRecordList As Object)
             oWinner.Add STrimAll(vKey.Value), GetOffset(vCell, vKey.Column).Value
         Next vKey
         
-        ' プロNo＋区分の１位が未登録の場合
-        If Not (oRecordList.Exists(sKey)) Then
-            Set oWinners = CreateObject("Scripting.Dictionary")
-            oWinners.Add oWinners.Count + 1, oWinner
-            oRecordList.Add sKey, oWinners
-        Else
-            Set oWinners = oRecordList.Item(sKey)
-            oWinners.Add oWinners.Count + 1, oWinner
+        ' 大会年と異なる場合読み込む
+        If oWinner.Item("年") <> nYear Then
+            ' プロNo＋区分の１位が未登録の場合
+            If Not (oRecordList.Exists(sKey)) Then
+                Set oWinners = CreateObject("Scripting.Dictionary")
+                oWinners.Add oWinners.Count + 1, oWinner
+                oRecordList.Add sKey, oWinners
+            Else
+                Set oWinners = oRecordList.Item(sKey)
+                oWinners.Add oWinners.Count + 1, oWinner
+            End If
         End If
     Next vCell
 End Sub
@@ -540,7 +556,7 @@ Private Sub ReadNewRecords(sGameName As String, oRecordList As Object)
         If GetOffset(vCell, GetAreaColumnIndex(sWinnerAreaName, "大会新")).Value = "大会新" Then
                 
             ' キーを取得
-            sKey = GetWinnerKey(sGameName, sMasterName, CInt(vCell.Value), _
+            sKey = GetRecordKey(sGameName, CInt(vCell.Value), _
                     GetOffset(vCell, GetAreaColumnIndex(sWinnerAreaName, "区分")))
                 
             Set oWinner = CreateObject("Scripting.Dictionary")
@@ -561,9 +577,11 @@ Private Sub ReadNewRecords(sGameName As String, oRecordList As Object)
             Else
                 Set oWinners = oRecordList.Item(sKey)
                 ' 既に存在する場合はタイムを比較し古ければ削除
+                ' 過去の大会新が存在しない場合も削除する
                 For Each vKey In oWinners.Keys()
                     Set oWinnerOld = oWinners.Item(vKey)
-                    If oWinner.Item("記録") < oWinnerOld.Item("記録") Then
+                    If oWinner.Item("記録") < oWinnerOld.Item("記録") Or _
+                       oWinnerOld.Item("記録") = "" Then
                         oWinners.Remove vKey
                     End If
                 Next vKey
@@ -587,14 +605,19 @@ Private Sub WriteNewRecords(sGameName As String, oRecordList As Object)
     Dim sSheetName As String
     sSheetName = GetRecordSheetName(sGameName)
     
+    ' 表示／アクティブ／解除
     Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    vVisible = GetSheetVisible(sSheetName)
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
     
     ' 大会記録範囲名
     Dim sRecordAreaName As String
     sRecordAreaName = GetRecordAreaName(sGameName)
+    
+    ' フィルタ解除
+    Call SetAutoFilter(sRecordAreaName, False)
 
     ' 削除
     Call DeleteWinnerSheet(sRecordAreaName, 2)
@@ -626,55 +649,13 @@ Private Sub WriteNewRecords(sGameName As String, oRecordList As Object)
     ' 書式設定
     Call SetRecordWinnerStyle(sGameName, sSheetName, sRecordAreaName)
 
-    ' シートの保護
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
-    oWorkSheet.Visible = True
-End Sub
-
-'
-' 大会記録書込み
-'
-' sGameName     IN  大会名
-' oWinnerList   IN  優勝者リスト
-'
-Private Sub WriteNewRecordsOld(sGameName As String, oRecordList As Object)
-
-    ' 大会記録シート
-    Dim sSheetName As String
-    sSheetName = GetRecordSheetName(sGameName)
-    Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
-    Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
-
-    ' 大会記録範囲名
-    Dim sRecordAreaName As String
-    sRecordAreaName = GetRecordAreaName(sGameName)
-
-    Dim oRange As Range
-    Set oRange = GetRange(sRecordAreaName)
-        
-    Dim oWinners As Object
-    Dim oWinner As Object
-        
-    ' 大会記録毎
-    Dim vCell As Range
-    For Each vCell In GetAreaKeyData(sRecordAreaName)
-        If oRecordList.Exists(vCell.Value) Then
-            Set oWinners = oRecordList.Item(vCell.Value)
-            Dim vIdx As Variant
-            For Each vIdx In oWinners
-                Set oWinner = oWinners.Item(vIdx)
-                Call WriteRecordLine(sRecordAreaName, vCell, oWinner)
-            Next vIdx
-        End If
-    Next vCell
+    ' 大会記録シートの設定
+    Call DefineRecordSheet(sSheetName, sRecordAreaName)
 
     ' シートの保護
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
-    oWorkSheet.Visible = True
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
 End Sub
-
 
 '
 ' 大会記録シート記入

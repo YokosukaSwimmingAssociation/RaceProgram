@@ -25,10 +25,11 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Private Sub Header名前定義(sSheetName As String)
-    Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    ' 表示／アクティブ／解除
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
+    
     Range("$A$1").Select
 
     ' 名前をすべて削除
@@ -49,8 +50,8 @@ Private Sub Header名前定義(sSheetName As String)
     Next nColumn
 
     ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
-    oWorkSheet.Visible = vVisible
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = xlSheetVisible
 End Sub
 
 '
@@ -59,10 +60,10 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Private Sub Prog名前定義(sSheetName As String)
-    Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    ' 表示／アクティブ／解除
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
     Range("$A$1").Select
 
     ' 名前をすべて削除
@@ -101,8 +102,8 @@ Private Sub Prog名前定義(sSheetName As String)
     Call DefineName("Prog組フォーマット", "A$4:$R$13")
      
     ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
-    oWorkSheet.Visible = vVisible
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = xlSheetVisible
 End Sub
 
 '
@@ -111,10 +112,10 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Private Sub 記録画面名前定義(sSheetName As String)
-    Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    ' アクティブ／解除
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
 
     ' 名前をすべて削除
     Call DeleteName("記録画面*")
@@ -133,8 +134,8 @@ Private Sub 記録画面名前定義(sSheetName As String)
     Call 記録画面違反定義
 
     ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
-    oWorkSheet.Visible = vVisible
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = xlSheetVisible
 End Sub
 
 '
@@ -166,10 +167,12 @@ End Sub
 '
 Public Sub 各種設定名前定義(sSheetName As String)
 
+    ' 表示／アクティブ／解除
     Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    vVisible = GetSheetVisible(sSheetName)
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
 
     ' 名前をすべて削除
     Call DeleteName("設定*")
@@ -181,7 +184,7 @@ Public Sub 各種設定名前定義(sSheetName As String)
     For Each vGameName In GetAreaKeyData("設定各種")
         If VLookupArea(vGameName, "設定各種", "対象") = 1 Then
         
-            Debug.Print vGameName
+            'Debug.Print vGameName
         
             ' 名前をすべて削除
             Call DeleteName(VLookupArea(vGameName, "設定各種", "変数名先頭") & "*")
@@ -196,12 +199,26 @@ Public Sub 各種設定名前定義(sSheetName As String)
             End If
         
             ' 大会記録の設定
-            Call DefineTableRange(VLookupArea(vGameName, "設定各種", "大会記録シート名"), _
+            If VLookupArea(vGameName, "設定各種", "大会記録関数名") <> "" Then
+                ' 特殊関数を実施
+                Application.Run VLookupArea(vGameName, "設定各種", "大会記録関数名"), _
+                                    VLookupArea(vGameName, "設定各種", "大会記録シート名"), _
+                                    VLookupArea(vGameName, "設定各種", "大会記録範囲名")
+            Else
+                Call DefineRecordSheet(VLookupArea(vGameName, "設定各種", "大会記録シート名"), _
                                     VLookupArea(vGameName, "設定各種", "大会記録範囲名"))
+            End If
         
             ' 優勝者の設定
-            Call DefineColumnRange(VLookupArea(vGameName, "設定各種", "優勝者シート名"), _
+            If VLookupArea(vGameName, "設定各種", "大会記録関数名") <> "" Then
+                ' 特殊関数を実施
+                Application.Run VLookupArea(vGameName, "設定各種", "大会記録関数名"), _
+                                    VLookupArea(vGameName, "設定各種", "優勝者シート名"), _
+                                    VLookupArea(vGameName, "設定各種", "優勝者範囲名")
+            Else
+                Call DefineWinnerSheet(VLookupArea(vGameName, "設定各種", "優勝者シート名"), _
                                     VLookupArea(vGameName, "設定各種", "優勝者範囲名"))
+            End If
         
             ' 賞状の設定
             If VLookupArea(vGameName, "設定各種", "賞状関数名") <> "" Then
@@ -213,7 +230,7 @@ Public Sub 各種設定名前定義(sSheetName As String)
     Next vGameName
     
     ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    Call SheetProtect(True, oWorkSheet)
     oWorkSheet.Visible = vVisible
 
 End Sub
@@ -225,37 +242,20 @@ End Sub
 ' sAreaName     IN      範囲名
 '
 Private Sub DefineTableRange(sSheetName As String, sAreaName As String)
+    ' 表示／アクティブ／解除
     Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    vVisible = GetSheetVisible(sSheetName)
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
-
-    Call DefineName(sAreaName, TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
-   
-    ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
-    oWorkSheet.Visible = vVisible
-End Sub
-
-'
-' シートのヘッダ行の範囲名を定義する
-'
-' sSheetName    IN      シート名
-' sAreaName     IN      範囲名
-'
-Private Sub DefineColumnRange(sSheetName As String, sAreaName As String)
-    Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
-    Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
-
-    Call DefineName(sAreaName, ColumnRangeAddress("$A$1"))
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Dim bProtect As Boolean
+    bProtect = SheetProtect(False, oWorkSheet)
     
-    ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    Call DefineName(sAreaName, TableRangeAddress("$A$1")) ' 種目番号から各要素を引く
+
+    ' シートの表示／保護
+    Call SheetProtect(bProtect, oWorkSheet)
     oWorkSheet.Visible = vVisible
 End Sub
-
 
 '
 ' 学童マスターズ大会種目区分の名前を定義する
@@ -263,17 +263,19 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Private Sub 学マ大会種目区分設定(sSheetName As String)
+    ' 表示／アクティブ／解除
     Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    vVisible = GetSheetVisible(sSheetName)
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
     
     Call DefineName("学マ年齢区分", TableRangeAddress("$H$1"))
     Call DefineName("学マ学童区分", TableRangeAddress("$K$1"))
     Call DefineName("学マ学年表示", TableRangeAddress("$N$1"))
 
-    ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    ' シートの表示／保護
+    Call SheetProtect(True, oWorkSheet)
     oWorkSheet.Visible = vVisible
 End Sub
 
@@ -283,17 +285,110 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Private Sub 市民大会種目区分設定(sSheetName As String)
+    ' 表示／アクティブ／解除
     Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    vVisible = GetSheetVisible(sSheetName)
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
     
     Call DefineName("市民選手年齢区分", RowRangeAddress("$H$1"))
     Call DefineName("市民リレー年齢区分", RowRangeAddress("$IJ$1"))
     Call DefineName("市民年齢区分", TableRangeAddress("$K$1"))
 
-    ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    ' シートの表示／保護
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
+End Sub
+
+'
+' 優勝者シートの設定
+'
+' sSheetName    IN      シート名
+' sAreaName     IN      範囲名
+'
+'
+Public Sub DefineWinnerSheet(sSheetName As String, sAreaName As String)
+    ' 表示／アクティブ／解除
+    Dim vVisible As Variant
+    vVisible = GetSheetVisible(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
+    
+    ' 範囲名の設定
+    Call DefineTableRange(sSheetName, sAreaName)
+
+    ' フィルタ設定
+    Call SetAutoFilter(sAreaName, True)
+    
+    ' 印刷範囲の設定
+    Sheets(sSheetName).PageSetup.PrintArea = GetRange(sAreaName).Address
+
+    ' シートの表示／保護
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
+End Sub
+
+'
+' 大会記録シートの設定
+'
+' sSheetName    IN      シート名
+' sAreaName     IN      範囲名
+'
+'
+Public Sub DefineRecordSheet(sSheetName As String, sAreaName As String)
+    ' 表示／アクティブ／解除
+    Dim vVisible As Variant
+    vVisible = GetSheetVisible(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
+    
+    ' 範囲名の設定
+    Call DefineTableRange(sSheetName, sAreaName)
+
+    ' フィルタ設定
+    Call SetAutoFilter(sAreaName, True)
+    
+    ' 印刷範囲の設定
+    Dim oRange As Range
+    Set oRange = GetRange(sAreaName)
+    Sheets(sSheetName).PageSetup.PrintArea = oRange.Offset(0, 1).Resize(oRange.Rows.Count, oRange.Columns.Count - 1).Address
+
+    ' シートの表示／保護
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
+End Sub
+
+'
+' 大会記録／優勝者シートの設定（選手権用）
+'
+' sSheetName    IN      シート名
+' sAreaName     IN      範囲名
+'
+'
+Public Sub 選手権大会記録設定(sSheetName As String, sAreaName As String)
+    ' 表示／アクティブ／解除
+    Dim vVisible As Variant
+    vVisible = GetSheetVisible(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
+    
+    ' 範囲名の設定
+    Call DefineName(sAreaName, TableRangeAddress("$A$2"))
+
+    ' フィルタ設定
+    Call SetAutoFilter(sAreaName, False)
+    
+    ' 印刷範囲の設定
+    Dim oRange As Range
+    Set oRange = GetRange(sAreaName)
+    Sheets(sSheetName).PageSetup.PrintArea = oRange.Offset(-1, 2).Resize(oRange.Rows.Count + 1, oRange.Columns.Count - 2).Address
+
+    ' シートの表示／保護
+    Call SheetProtect(True, oWorkSheet)
     oWorkSheet.Visible = vVisible
 End Sub
 
@@ -303,10 +398,12 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub 学マ賞状名前定義(sSheetName As String)
+    ' 表示／アクティブ／解除
     Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    vVisible = GetSheetVisible(sSheetName)
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
 
     ' 名前をすべて削除
     Call DeleteName("賞状*")
@@ -320,8 +417,8 @@ Sub 学マ賞状名前定義(sSheetName As String)
     Call DefineName("賞状氏名", "$C$20")
     Call DefineName("賞状所属", "$C$24")
  
-    ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    ' シートの表示／保護
+    Call SheetProtect(True, oWorkSheet)
     oWorkSheet.Visible = vVisible
 End Sub
 
@@ -331,24 +428,32 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub 市民賞状名前定義(sSheetName As String)
+    ' 表示／アクティブ／解除
     Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    vVisible = GetSheetVisible(sSheetName)
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
 
     ' 名前をすべて削除
     Call DeleteName("賞状*")
 
-    Call DefineName("賞状性別", "$AC$4")
+    Call DefineName("賞状種目区分", "$AC$4")
     Call DefineName("賞状種目距離区分", "$AC$16")
     Call DefineName("賞状順位", "$AA$7")
     Call DefineName("賞状タイム", "$Y$10")
     Call DefineName("賞状大会新", "$Y$27")
     Call DefineName("賞状氏名", "$U$9")
     Call DefineName("賞状所属", "$W$6")
+    
+    Call DefineName("賞状大会回数１", "$C$11")
+    Call DefineName("賞状大会回数２", "$R$19")
+    Call DefineName("賞状年", "$F$8")
+    Call DefineName("賞状月", "$F$18")
+    Call DefineName("賞状日", "$F$23")
  
-    ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    ' シートの表示／保護
+    Call SheetProtect(True, oWorkSheet)
     oWorkSheet.Visible = vVisible
 End Sub
 
@@ -358,10 +463,12 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Sub 選手権賞状名前定義(sSheetName As String)
+    ' 表示／アクティブ／解除
     Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    vVisible = GetSheetVisible(sSheetName)
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
 
     ' 名前をすべて削除
     Call DeleteName("賞状*")
@@ -375,8 +482,13 @@ Sub 選手権賞状名前定義(sSheetName As String)
     Call DefineName("賞状氏名", "$H$12")
     Call DefineName("賞状所属", "$H$14")
  
-    ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
+    Call DefineName("賞状大会回数", "$C$4")
+    Call DefineName("賞状年", "$G$25")
+    Call DefineName("賞状月", "$N$25")
+    Call DefineName("賞状日", "$R$25")
+ 
+    ' シートの表示／保護
+    Call SheetProtect(True, oWorkSheet)
     oWorkSheet.Visible = vVisible
 End Sub
 
@@ -386,34 +498,40 @@ End Sub
 ' sSheetName    IN      シート名
 '
 Private Sub トップページ定義(sSheetName As String)
-    Dim vVisible As Variant
-    vVisible = SheetActivate(sSheetName)
+    ' 表示／アクティブ／解除
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
 
+    ' 名前をすべて削除
+    Call DeleteName("大会*")
+    
     Call 大会名定義
     Call 大会年定義
     Call プリンタ定義
     Call 組合せ方式定義
     Call 組最少人数定義
+    Call 賞状定数定義
 
     ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
-    oWorkSheet.Visible = True
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = xlSheetVisible
 End Sub
 
 '
-' 大会名を定義
+' 配列の設定定義
 '
-' sValue        IN      ダミー
+' sName         IN      名前
+' sAddress      IN      アドレス
+' sAry          IN      リスト
 '
-Private Sub 大会名定義()
-    
-    Call DefineName("大会名", "$B$1")
-    With Range("大会名").Validation
+Private Sub DefineListValidation(sName As String, sAddress As String, sAry() As String)
+
+    Call DefineName(sName, sAddress)
+    With Range(sName).Validation
         .Delete
-        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
-        xlBetween, Formula1:="学童マスターズ大会,横須賀市民体育大会,横須賀選手権水泳大会"
+        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:=xlBetween, _
+            Formula1:=Join(sAry, ",")
         .IgnoreBlank = True
         .InCellDropdown = True
         .InputTitle = ""
@@ -425,41 +543,171 @@ Private Sub 大会名定義()
         .ShowError = True
     End With
     
+    ' デフォルト値の設定
+    If Not isAryExist(sAry, Range(sName).Value) Then
+        Range(sName).Value = sAry(0)
+    End If
+    
 End Sub
 
 '
-' 大会年を定義
+' 配列の設定定義
 '
-' sValue        IN      ダミー
+' sName         IN      名前
+' sAddress      IN      アドレス
+' nMin          IN      最小値
+' nMax          IN      最大値
+' nDefault      IN      デフォルト値
 '
-Private Sub 大会年定義()
-    
-    Call DefineName("大会年", "$E$4")
-    With Range("大会年").Validation
+Private Sub DefineBetweenValidation(sName As String, sAddress As String, _
+nMin As Integer, nMax As Integer, Optional nDefault As Variant = Empty)
+
+    Call DefineName(sName, sAddress)
+    With Range(sName).Validation
         .Delete
         .Add Type:=xlValidateWholeNumber, AlertStyle:=xlValidAlertStop, _
-            Operator:=xlBetween, Formula1:="2000", Formula2:="2050"
+            Operator:=xlBetween, Formula1:=CStr(nMin), Formula2:=CStr(nMax)
         .IgnoreBlank = True
         .InCellDropdown = True
-        .InputTitle = "開催年は数字だけで入力してください。"
+        .InputTitle = sName & "は数字だけで入力してください。"
         .ErrorTitle = "入力エラー"
         .InputMessage = ""
-        .ErrorMessage = "2000～2050までの数字を入力してください。"
+        .ErrorMessage = CStr(nMin) & "～" & CStr(nMax) & "までの数字を入力してください。"
         .IMEMode = xlIMEModeAlpha
         .ShowInput = True
         .ShowError = True
     End With
-    Range("大会年").Value = Year(Now)
+    
+    ' デフォルト値の設定
+    If Range(sName).Value < nMin Or Range(sName).Value > nMax Then
+        If IsEmpty(nDefault) Then
+            Range(sName).Value = ""
+        Else
+            Range(sName).Value = nDefault
+        End If
+    End If
+    
+End Sub
 
+'
+' 大会名を定義
+'
+Private Sub 大会名定義()
+    
+    Dim sAry(3) As String
+    sAry(0) = 学マ大会
+    sAry(1) = 市民大会
+    sAry(2) = 選手権大会
+    
+    Call DefineListValidation("大会名", "$B$1", sAry)
+    
 End Sub
 
 '
 ' 大会年を定義
 '
-' sValue        IN      ダミー
+Private Sub 大会年定義()
+    
+    Call DefineBetweenValidation("大会年", "$E$4", 2000, 2050, Year(Now))
+
+End Sub
+
+'
+' 賞状定数を定義
+'
+Private Sub 賞状定数定義()
+    Call 賞状回数定義
+    Call 賞状年定義
+    Call 賞状月定義
+    Call 賞状日定義
+End Sub
+
+'
+' 賞状大会回数を定義
+'
+Private Sub 賞状回数定義()
+    
+    Call DefineBetweenValidation("大会回数", "$E$7", 1, 150)
+
+End Sub
+
+'
+' 賞状年を定義
+'
+Private Sub 賞状年定義()
+    
+    Call DefineName("大会元号年", "$E$8")
+
+End Sub
+
+'
+' 賞状月を定義
+'
+Private Sub 賞状月定義()
+    
+    Call DefineBetweenValidation("大会月", "$E$9", 1, 12)
+
+End Sub
+
+'
+' 賞状日を定義
+'
+Private Sub 賞状日定義()
+    
+    Call DefineBetweenValidation("大会日", "$E$10", 1, 31)
+
+End Sub
+
+
+'
+' プリンタを定義
 '
 Private Sub プリンタ定義()
-    Call DefineName("プリンタ名", "$E$5")
+    Call プリンタ名定義
+    Call 賞状印刷プレビュー定義
+End Sub
+
+
+'
+' プリンタを定義
+'
+Private Sub プリンタ名定義()
+
+    Dim sAry() As String
+    sAry = GetPrinters
+    Call DefineListValidation("大会プリンタ名", "$E$5", sAry)
+    
+End Sub
+
+'
+' プリンタの一覧を取得する
+'
+Private Function GetPrinters() As String()
+    ' プリンタ一覧の取得
+    Dim oShell As Object
+    Set oShell = CreateObject("Shell.Application")
+    
+    ReDim sDeviceAry(oShell.Namespace(4).Items.Count) As String
+    Dim i As Integer
+    i = 0
+    Dim vPrinters As Variant
+    For Each vPrinters In oShell.Namespace(4).Items
+        sDeviceAry(i) = vPrinters.Name
+        i = i + 1
+    Next
+    GetPrinters = sDeviceAry
+End Function
+
+'
+'賞状印刷プレビュー定義
+'
+Private Sub 賞状印刷プレビュー定義()
+    
+    Dim sAry(2) As String
+    sAry(0) = "しない"
+    sAry(1) = "する"
+    Call DefineListValidation("大会印刷プレビュー", "$E$6", sAry)
+    
 End Sub
 
 
@@ -470,22 +718,10 @@ End Sub
 '
 Private Sub 組合せ方式定義(Optional sValue As String = "")
     
-    Call DefineName("組合せ方式", "$E$3")
-    With Range("組合せ方式").Validation
-        .Delete
-        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
-        xlBetween, Formula1:="単純方式,混合分け方式"
-        .IgnoreBlank = True
-        .InCellDropdown = True
-        .InputTitle = ""
-        .ErrorTitle = ""
-        .InputMessage = ""
-        .ErrorMessage = ""
-        .IMEMode = xlIMEModeNoControl
-        .ShowInput = True
-        .ShowError = True
-    End With
-    Range("組合せ方式").Value = "単純方式"
+    Dim sAry(2) As String
+    sAry(0) = "単純方式"
+    sAry(1) = "混合分け方式"
+    Call DefineListValidation("大会組合せ方式", "$E$3", sAry)
     
 End Sub
 
@@ -496,22 +732,10 @@ End Sub
 '
 Private Sub 組最少人数定義(Optional sValue As String = "")
 
-    Call DefineName("組最少人数", "$E$2")
-    With Range("組最少人数").Validation
-        .Delete
-        .Add Type:=xlValidateList, AlertStyle:=xlValidAlertStop, Operator:= _
-        xlBetween, Formula1:="3,4"
-        .IgnoreBlank = True
-        .InCellDropdown = True
-        .InputTitle = ""
-        .ErrorTitle = ""
-        .InputMessage = ""
-        .ErrorMessage = ""
-        .IMEMode = xlIMEModeNoControl
-        .ShowInput = True
-        .ShowError = True
-    End With
-    Range("組最少人数").Value = 4
+    Dim sAry(2) As String
+    sAry(0) = "3"
+    sAry(1) = "4"
+    Call DefineListValidation("大会組最少人数", "$E$2", sAry)
 
 End Sub
 
@@ -560,7 +784,7 @@ End Sub
 '
 ' 各種設定シートを表示
 '
-Sub 各種設定表示()
+Public Sub 設定各種表示()
     Call SheetVisible(設定各種シート, True)
 End Sub
 

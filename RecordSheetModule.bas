@@ -9,15 +9,17 @@ Option Explicit    ''←変数の宣言を強制する
 '
 Public Sub 種目名読込み()
     Sheets("記録画面").Protect UserInterfaceOnly:=True
-    Dim vNo As Range
-    For Each vNo In GetRange("プログラム種目番号")
-        If vNo.Value = GetRange("記録画面種目番号").Value Then
-            ' 種目区分と種目名を連結して表示する
-            GetRange("記録画面種目名").Value = GetOffset(vNo, GetRange("Prog種目区分").Column).Value _
-                    & " " & GetOffset(vNo, GetRange("Prog種目名").Column).Value
-            Exit Sub
-        End If
-    Next vNo
+    If Trim(GetRange("記録画面種目番号").Value) <> "" Then
+        Dim vNo As Range
+        For Each vNo In GetRange("プログラム種目番号")
+            If vNo.Value = GetRange("記録画面種目番号").Value Then
+                ' 種目区分と種目名を連結して表示する
+                GetRange("記録画面種目名").Value = GetOffset(vNo, GetRange("Prog種目区分").Column).Value _
+                        & " " & GetOffset(vNo, GetRange("Prog種目名").Column).Value
+                Exit Sub
+            End If
+        Next vNo
+    End If
     ' 該当がない場合は初期化
     Range("記録画面種目名").Value = ""
     Range("記録画面組").Value = 1
@@ -526,7 +528,7 @@ Public Sub 決勝登録()
     nFinalNo = VLookupArea(nProNo, "選手権種目区分", "決勝番号")
 
     ' 決勝がない場合も無効
-    If nProNo = nFileNo Then
+    If nProNo = nFinalNo Then
         Exit Sub
     End If
 
@@ -564,10 +566,12 @@ Private Sub ReadFinalist(nProNo As Integer, oFinalist As Object)
     If IsNameExists(sName) Then
         Dim vProNo As Range
         For Each vProNo In GetRange(sName)
-            nOrder = GetOffset(vProNo, GetRange("Header順位").Column).Value
-            ' 決勝人数まで保存
-            If nOrder <= レース定員 Then
-                oFinalist.Add nOrder, vProNo
+            If STrimAll(GetOffset(vProNo, GetRange("Header順位").Column).Value) <> "" Then
+                nOrder = STrimAll(GetOffset(vProNo, GetRange("Header順位").Column).Value)
+                ' 決勝人数まで保存
+                If nOrder > 0 And nOrder <= レース定員 Then
+                    oFinalist.Add nOrder, vProNo
+                End If
             End If
         Next vProNo
     End If

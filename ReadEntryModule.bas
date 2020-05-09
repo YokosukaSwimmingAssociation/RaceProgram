@@ -7,7 +7,7 @@ Option Explicit    ''←変数の宣言を強制する
 ' 特定のフォルダを指定して、中にあるエントリーファイルを
 ' すべて読み込み一覧シートに出力する。
 '
-Public Sub エントリー読込み()
+Public Sub エントリー読込み(Optional sPathName As String = "")
     ' エクセルシートを選択
     Call SheetActivate(エントリーシート)
 
@@ -33,7 +33,7 @@ Public Sub エントリー読込み()
     Call DeleteTable(oWorkSheet, エントリーテーブル)
 
     ' エントリーファイル読込み
-    Call ReadEntryFiles(oGameList)
+    Call ReadEntryFiles(oGameList, sPathName)
 
     ' エントリーシートの書き込み
     Call WriteEntrySheet(oWorkSheet, エントリーテーブル, oGameList)
@@ -54,7 +54,7 @@ End Sub
 '
 Public Sub エントリー一覧初期化()
     ' エントリーテーブルを初期化
-    Call DeleteTable(oWorkSheet, エントリーテーブル)
+    Call DeleteTable(Sheets(エントリーシート), エントリーテーブル)
 End Sub
 
 '
@@ -63,13 +63,15 @@ End Sub
 ' フォルダを指定して、その中に含まれるエントリーシート（*.xlsx）をすべて詠み込む
 '
 ' oGameList     OUT     エントリー一覧
+' sDirName      OUT     フォルダ名
 '
-Private Sub ReadEntryFiles(ByRef oGameList As Object)
+Private Sub ReadEntryFiles(ByRef oGameList As Object, Optional sPathName As String = "")
 
     ' ファイル一覧を取得
     '
-    Dim sPathName As String
-    sPathName = SelectDir()
+    If sPathName = "" Then
+        sPathName = SelectDir()
+    End If
     Dim FileList As Collection
     Set FileList = GetFiles(sPathName, "\*.xlsx")
 
@@ -136,7 +138,7 @@ End Sub
 '
 ' oLines
 ' │
-' ├─種目名：Range("種目名")
+' ├─種目名：Range("種目")
 ' │
 ' ├─距離：Range("種目距離")
 ' │
@@ -260,7 +262,7 @@ Private Sub ReadEntrySwimmer(nNum As Integer, oCell As Range, ByRef oEntry As Ob
     If Range("大会名").Value = 選手権大会 Then
         
         oEntry.Add "選手名", ReplaceName(GetOffset(oCell, GetRange("選手名").Column).Offset(1).Value)
-        oEntry.Add "区分", GetOffset(oCell, GetRange("選手区分").Column).Offset(1).Value
+        oEntry.Add "区分", GetOffset(oCell, GetRange("選手区分").Column).Value
     
     ElseIf Range("大会名").Value = 市民大会 Then
         oEntry.Add "選手名", ReplaceName(GetOffset(oCell, GetRange("選手名").Column).Offset(1).Value)
@@ -319,7 +321,7 @@ Private Sub ReadEntryLine(nNum As Integer, nRow As Integer, oEntry As Object)
             
             oLines.Add "種目番号", VLookupArea(oProNo.Value, "種目番号区分", "種目番号")
             oLines.Add "種目区分", VLookupArea(oProNo.Value, "種目番号区分", "種目区分")
-            oLines.Add "種目名", ReplaceStyle(sStyle)
+            oLines.Add "種目", ReplaceStyle(sStyle)
             oLines.Add "距離", ReplaceDistance(GetRowOffset(oCell, GetRange("種目距離").Row).Value)
             nMin = GetOffset(oProNo, GetRange("選手分").Column).Value
             nSec = GetOffset(oProNo, GetRange("選手秒").Column).Value
@@ -354,7 +356,7 @@ Private Sub CheckEntry(nNum As Integer, nRow As Integer, oEntry As Object)
     sDistance = VLookupArea(oLines.Item("種目番号"), "種目番号区分", "距離")
     sStyle = VLookupArea(oLines.Item("種目番号"), "種目番号区分", "種目")
     
-    If sGender <> oEntry.Item("性別") Or sDistance <> oLines.Item("距離") Or sStyle <> oLines.Item("種目名") Then
+    If sGender <> oEntry.Item("性別") Or sDistance <> oLines.Item("距離") Or sStyle <> oLines.Item("種目") Then
         MsgBox CStr(nRow) & "行目：種目番号が正しくありません。：" & oLines.Item("種目番号")
         End
     End If
@@ -666,7 +668,7 @@ Private Sub WriteLine( _
     Cells(nRow, Range(sTable & "[フリガナ]").Column).Value = oEntry.Item("フリガナ")
     Cells(nRow, Range(sTable & "[性別]").Column).Value = oEntry.Item("性別")
     Cells(nRow, Range(sTable & "[距離]").Column).Value = oLine.Item("距離")
-    Cells(nRow, Range(sTable & "[種目名]").Column).Value = oLine.Item("種目名")
+    Cells(nRow, Range(sTable & "[種目]").Column).Value = oLine.Item("種目")
     Cells(nRow, Range(sTable & "[申込み時間]").Column).Value = oLine.Item("申込み時間")
     If oLine.Item("申込み時間") >= 10000 Then
         Cells(nRow, Range(sTable & "[申込み時間]").Column).NumberFormatLocal = "#"":""##"".""##"
@@ -765,7 +767,7 @@ Private Sub WriteRelayLine( _
     Cells(nRow, Range(sTable & "[距離]").Column).Value = _
         VLookupArea(oLine.Item("種目番号"), sMasterName, "距離")
     
-    Cells(nRow, Range(sTable & "[種目名]").Column).Value = _
+    Cells(nRow, Range(sTable & "[種目]").Column).Value = _
         VLookupArea(oLine.Item("種目番号"), sMasterName, "種目")
 
     Cells(nRow, Range(sTable & "[申込み時間]").Column).Value = oLine.Item("申込み時間")

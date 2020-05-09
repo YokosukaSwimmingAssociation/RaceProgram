@@ -1,4 +1,5 @@
 Attribute VB_Name = "PrintAwardModule"
+Option Explicit    ''←変数の宣言を強制する
 '
 ' 賞状印刷
 '
@@ -96,7 +97,7 @@ Private Function CheckTarget(nProNo As Integer) As Boolean
 
     If sGameName = 選手権大会 Then
         ' 予選・決勝の確認
-        If VLookupArea(vProNo, "選手権種目区分", "予選／決勝") <> "予選" Then
+        If VLookupArea(nProNo, "選手権種目区分", "予選／決勝") <> "予選" Then
             CheckTarget = True
         Else
             CheckTarget = False
@@ -105,13 +106,14 @@ Private Function CheckTarget(nProNo As Integer) As Boolean
         CheckTarget = True
     ElseIf sGameName = 学マ大会 Then
         ' 種目の大会を取得
-        If VLookupArea(vProNo, "学マ種目区分", "大会区分") = "学童" Then
+        If VLookupArea(nProNo, "学マ種目区分", "大会区分") = "学童" Then
             CheckTarget = True
         Else
             CheckTarget = False
         End If
     Else
-        CheckTarget = False
+        MsgBox "大会名が正しく指定されていません。", vbOKOnly
+        End
     End If
 
 End Function
@@ -139,8 +141,8 @@ Private Sub PrintAwardByProNo(nProNo As Integer)
     sGender = VLookupArea(nProNo, sMasterName, "性別")
     Dim sDistance As String ' 距離
     sDistance = VLookupArea(nProNo, sMasterName, "距離")
-    Dim sStyle As String ' 種目名
-    sStyle = VLookupArea(nProNo, sMasterName, "種目名")
+    Dim sStyle As String ' 種目
+    sStyle = VLookupArea(nProNo, sMasterName, "種目")
     Dim nMaxOrder As Integer ' 出力する順位
     nMaxOrder = VLookupArea(sGameName, "設定各種", "賞状順位")
     
@@ -168,7 +170,7 @@ End Sub
 ' sRaceClass        IN      種目区分
 ' sGender           IN      性別
 ' sDistance         IN      距離
-' sStyle            IN      種目名
+' sStyle            IN      種目
 '
 Private Sub PrintAwardByLine(sGameName As String, _
 vProNo As Variant, _
@@ -182,6 +184,8 @@ sStyle As String)
     GetRange("賞状タイム").Value = GetOffset(vProNo, Range("Prog時間").Column).Value
     If GetOffset(vProNo, Range("Prog備考").Column).Value = "大会新" Then
         GetRange("賞状大会新").Value = "大会新"
+    Else
+        GetRange("賞状大会新").Value = ""
     End If
     GetRange("賞状氏名").Value = GetOffset(vProNo, Range("Prog氏名").Column).Value
     GetRange("賞状所属").Value = GetOffset(vProNo, Range("Prog所属").Column).Value
@@ -196,18 +200,44 @@ sStyle As String)
     If sGameName = 選手権大会 Then
         Call SetAwardValForSenshuken(sGender, sDistance, sStyle)
     ElseIf sGameName = 市民大会 Then
-        Call SetAwardValForShimin(sGender, sDistance, sStyle, _
+        Call SetAwardValForShimin(sRaceClass, sGender, sDistance, sStyle, _
                 GetOffset(vProNo, Range("Prog区分").Column).Value)
     Else
         Call SetAwardValForGakudo(sRaceClass, sGender, sDistance, sStyle)
     End If
 
     ' 印刷
-    GetRange("賞状氏名").Parent.PrintOut _
-        Copies:=1, Collate:=True, IgnorePrintAreas:=False, Preview:=True, _
-        ActivePrinter:=GetRange("プリンタ名").Value
+    Call PrintAward
 
 End Sub
+
+'
+' 賞状印刷
+'
+Private Sub PrintAward()
+    ' プレビュー有無
+    Dim bPreview As Boolean
+    If GetRange("大会印刷プレビュー").Value = "する" Then
+        bPreview = True
+    Else
+        bPreview = False
+    End If
+    
+    ' プリンタ名
+    Dim sPrinterName As String
+    sPrinterName = GetRange("プリンタ名").Value
+    If sPrinterName = "" Then
+        MsgBox "プリンタ名が設定されていません。", vbOKOnly
+        End
+    End If
+    
+    ' 印刷
+    GetRange("賞状氏名").Parent.PrintOut _
+        Copies:=1, Collate:=True, IgnorePrintAreas:=False, Preview:=bPreview, _
+        ActivePrinter:=sPrinterName
+
+End Sub
+
 
 '
 ' 学童大会賞状変数設定
@@ -227,12 +257,33 @@ End Sub
 ' 市民大会賞状変数設定
 '
 Private Sub SetAwardValForShimin( _
+sRaceClass As String, _
 sGender As String, _
 sDistance As String, _
-sStype As String, _
+sStyle As String, _
 sClass As String)
-    GetRange("賞状性別").Value = sGender
-    GetRange("賞状種目距離区分").Value = sDistance & sStype & "　" & sClass
+    If sRaceClass = "年齢区分" Then
+        GetRange("賞状種目区分").Value = sGender
+        GetRange("賞状種目距離区分").Value = sDistance & sStyle & "　" & sClass
+    Else
+        GetRange("賞状種目区分").Value = sRaceClass & sGender
+        GetRange("賞状種目距離区分").Value = sDistance & sStyle
+    End If
+    GetRange("賞状大会回数１").Value = GetRange("大会回数").Value
+    GetRange("賞状大会回数２").Value = GetRange("大会回数").Value
+    GetRange("賞状年").Value = GetRange("大会元号年").Value
+    GetRange("賞状月").Value = GetRange("大会月").Value
+    GetRange("賞状日").Value = GetRange("大会日").Value
+
+    ' カラム幅の変更
+    If sStyle Like "*リレー" Then
+        GetRange("賞状氏名").ColumnWidth = 1.13
+        GetRange("賞状所属").ColumnWidth = 2.5
+    Else
+        GetRange("賞状氏名").ColumnWidth = 2.5
+        GetRange("賞状所属").ColumnWidth = 1.13
+    End If
+
 End Sub
 
 '
@@ -245,5 +296,10 @@ sStyle As String)
     GetRange("賞状性別").Value = sGender
     GetRange("賞状距離").Value = sDistance
     GetRange("賞状種目").Value = sStyle
+    
+    GetRange("賞状大会回数").Value = GetRange("大会回数").Value
+    GetRange("賞状年").Value = GetRange("大会元号年").Value
+    GetRange("賞状月").Value = GetRange("大会月").Value
+    GetRange("賞状日").Value = GetRange("大会日").Value
 End Sub
 

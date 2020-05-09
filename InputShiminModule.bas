@@ -1,8 +1,33 @@
 Attribute VB_Name = "InputShiminModule"
 '
+' 市民大会の自動試験
+'
+Public Sub 試験市民大会()
+
+    GetRange("大会名").Value = 市民大会
+    GetRange("大会組最少人数").Value = 4
+    GetRange("大会組合せ方式").Value = "単純方式"
+    GetRange("大会年").Value = 2019
+    GetRange("大会回数").Value = 92
+    GetRange("大会元号年").Value = "令和元年"
+    GetRange("大会月").Value = 9
+    GetRange("大会日").Value = 8
+
+    Call エントリー読込み("C:\Users\新\Documents\水泳協会\競技運営部\市民申込み")
+    Call 組み合わせ決定
+    Call 試験市民補正
+    Call レース番号修正
+    Call プログラム作成
+    Call 試験市民記録
+    Call 優勝者一覧作成
+    Call 大会記録更新
+
+End Sub
+
+'
 ' 市民大会のプログラム補正
 '
-Sub 入力市民補正()
+Public Sub 試験市民補正()
 
     Call EventChange(False)
 
@@ -268,7 +293,7 @@ End Sub
 '
 ' 令和元年度のプログラムの記録を入れる
 '
-Sub 入力市民記録()
+Public Sub 試験市民記録()
     Sheets("記録画面").Select
     Call SetRace(1, 1)
     Call SetLean(2, 4, "")

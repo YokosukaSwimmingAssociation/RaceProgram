@@ -1,8 +1,34 @@
 Attribute VB_Name = "InputSenshukenModule"
 '
+' 市民大会の自動試験
+'
+Public Sub 試験選手権大会()
+
+    GetRange("大会名").Value = 選手権大会
+    GetRange("大会組最少人数").Value = 3
+    GetRange("大会組合せ方式").Value = "単純方式"
+    GetRange("大会年").Value = 2019
+    GetRange("大会回数").Value = 32
+    GetRange("大会元号年").Value = "令和元年"
+    GetRange("大会月").Value = 9
+    GetRange("大会日").Value = 29
+
+    Call エントリー読込み("C:\Users\新\Documents\水泳協会\競技運営部\選手権申込み")
+    Call 組み合わせ決定
+    'Call 試験選手権補正
+    Call レース番号修正
+    Call プログラム作成
+    Call 試験選手権予選記録
+    Call 試験選手権決勝記録
+    Call 優勝者一覧作成
+    Call 大会記録更新
+
+End Sub
+
+'
 ' 選手権大会のプログラム補正
 '
-'Sub 選手権プログラム補正()
+'Public Sub 試験選手権補正()
 '
 '    Call EventChange(False)
 '
@@ -17,7 +43,7 @@ Attribute VB_Name = "InputSenshukenModule"
 '
 ' 令和元年度のプログラムの記録を入れる
 '
-Sub 入力選手権予選記録()
+Public Sub 試験選手権予選記録()
     Sheets("記録画面").Select
     ' 2 男子 50M 背泳ぎ 予選
     Call SetRace(2, 1)
@@ -595,7 +621,7 @@ Sub 入力選手権予選記録()
 
 End Sub
 
-Sub 入力選手権決勝記録()
+Public Sub 試験選手権決勝記録()
     Sheets("記録画面").Select
 
     ' 17 女子 200M 個人メドレー 決勝

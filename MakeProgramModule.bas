@@ -13,9 +13,8 @@ Sub プログラム作成()
     Set oWorkBook = ActiveWorkbook
 
     ' エントリー一覧シート
-    Call SheetActivate(エントリーシート)
     Dim oEntrySheet As Worksheet
-    Set oEntrySheet = ActiveSheet
+    Set oEntrySheet = SheetActivate(エントリーシート)
     
     ' プログラムシートを作成（ヘッダ行まで）
     Call MakeSheet(oWorkBook, プログラムシート)
@@ -79,7 +78,10 @@ Public Sub ReadEntrySheet(sTableName As String, oEntryList As Object)
     ' プログラムNo毎に読み込み
     Dim vProNo As Variant
     For Each vProNo In Range(sTableName & "[プロNo]")
-        If Not oEntryList.Exists(vProNo.Value) Then
+        If Not IsNumeric(vProNo.Value) Then
+            MsgBox CStr(vProNo.Row) & "行目に不正な値が存在します。", vbOKOnly
+            End
+        ElseIf Not oEntryList.Exists(vProNo.Value) Then
             Set oProNo = CreateObject("Scripting.Dictionary")
             oEntryList.Add vProNo.Value, oProNo
         End If
@@ -109,6 +111,12 @@ Public Sub ReadEntrySheet(sTableName As String, oEntryList As Object)
         ' レーン登録
         oHeats.Add nLane, vProNo
     Next vProNo
+
+    ' １件も登録されてなければ終了
+    If oEntryList.Count = 0 Then
+        MsgBox "エントリー一覧が存在しません。", vbOKOnly
+        End
+    End If
 
 End Sub
 
@@ -162,6 +170,14 @@ Private Sub CheckFinal(oEntryList As Object)
         End If
     Next vProNo
 
+End Sub
+
+'
+' プログラムシート初期化
+'
+Public Sub プログラム初期化()
+    Call DeleteProgramSheet(プログラムシート)
+    Call プログラム名前定義
 End Sub
 
 '
@@ -611,6 +627,7 @@ nRow As Integer, nProNo As Integer, nHeat As Integer)
         Call CopyCell(oWorkSheet, nCurrentRow, "Prog備考")
 
         ' 横須賀選手権水泳大会
+        
         If GetRange("大会名").Value = 選手権大会 Then
             Dim nFinalNo As Integer
             nFinalNo = VLookupArea(.ListColumns("プロNo").Range(nRow).Value, "選手権種目区分", "決勝番号")
@@ -620,14 +637,16 @@ nRow As Integer, nProNo As Integer, nHeat As Integer)
         ' 横須賀市民体育大会
         ElseIf GetRange("大会名").Value = 市民大会 Then
             Call CopyCell(oWorkSheet, nCurrentRow, "Prog大会記録", _
-                    VLookupArea(.ListColumns("プロNo").Range(nRow).Value & _
-                    .ListColumns("区分").Range(nRow).Value, "市民大会記録", "記録"))
+                    VLookupArea(GetRecordKey(市民大会, _
+                    .ListColumns("プロNo").Range(nRow).Value, _
+                    .ListColumns("区分").Range(nRow).Value), "市民大会記録", "記録"))
         
         ' 学童マスターズ大会
         Else
             Call CopyCell(oWorkSheet, nCurrentRow, "Prog大会記録", _
-                    VLookupArea(.ListColumns("プロNo").Range(nRow).Value & _
-                    .ListColumns("ソート区分").Range(nRow).Value, "学マ大会記録", "記録"))
+                    VLookupArea(GetRecordKey(学マ大会, _
+                    .ListColumns("プロNo").Range(nRow).Value, _
+                    .ListColumns("ソート区分").Range(nRow).Value), "学マ大会記録", "記録"))
         End If
 
         
@@ -667,11 +686,13 @@ End Sub
 Private Sub SetProgramName(oWorkSheet As Worksheet)
     Call DeleteName("プログラム*")
     Call SetNoName(oWorkSheet)
-    Call SetProNoName(oWorkSheet)
-    Call SetProNoListName(oWorkSheet)
-    Call SetHeatName(oWorkSheet)
-    Call SetRaceName(oWorkSheet)
-    Call SetSameRaceLabel(oWorkSheet)
+    If IsNameExists("プログラム通番") Then
+        Call SetProNoName(oWorkSheet)
+        Call SetProNoListName(oWorkSheet)
+        Call SetHeatName(oWorkSheet)
+        Call SetRaceName(oWorkSheet)
+        Call SetSameRaceLabel(oWorkSheet)
+    End If
 End Sub
 
 '
@@ -685,9 +706,11 @@ End Sub
 '
 Private Sub SetNoName(oWorkSheet As Worksheet)
     oWorkSheet.Activate
-    Cells(2, GetRange("Header通番").Column).Select
-    Range(Selection, Selection.End(xlDown)).Select
-    Call DefineName("プログラム通番", Selection.Address(ReferenceStyle:=xlA1))
+    Dim oCell As Range
+    Set oCell = Cells(2, GetRange("Header通番").Column)
+    If oCell.Value <> "" Then
+        Call DefineName("プログラム通番", RowRangeAddress(oCell.Address))
+    End If
     Call SetForcusTop
 End Sub
 

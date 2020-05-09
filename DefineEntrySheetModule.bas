@@ -25,10 +25,10 @@ End Sub
 '
 Private Sub 記入票名前定義()
 
-    Dim vVisible As Variant
-    vVisible = SheetActivate("記入票")
+    ' アクティブ／解除
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate("記入票")
+    Call SheetProtect(False, oWorkSheet)
 
     ' 名前をすべて削除
     Call DeleteName("*")
@@ -238,12 +238,12 @@ Private Sub 記入票名前定義()
     Call DefineNameByRelayColumns("リレー秒列", "リレー秒")
     Call DefineNameByRelayColumns("リレーミリ秒列", "リレーミリ秒")
 
-    Sheets("記入票").Select
+    Set oWorkSheet = SheetActivate("記入票")
     Call SetForcusTop
 
-    ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
-    oWorkSheet.Visible = vVisible
+    ' シートの表示／保護
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = xlSheetVisible
 
 End Sub
 
@@ -251,10 +251,11 @@ End Sub
 '種目番号区分シートに名前を定義する
 '
 Private Sub 種目番号区分名前定義()
-    Dim vVisible As Variant
-    vVisible = SheetActivate("種目番号区分")
+    
+    ' シートの表示／アクティブ／解除
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate("種目番号区分")
+    Call SheetProtect(False, oWorkSheet)
 
     If Range("大会名").Value = 選手権大会 Then
     
@@ -291,12 +292,12 @@ Private Sub 種目番号区分名前定義()
     
     End If
 
-    Sheets("種目番号区分").Select
+    Set oWorkSheet = SheetActivate("種目番号区分")
     Call SetForcusTop
 
     ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
-    oWorkSheet.Visible = vVisible
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = xlSheetVisible
 End Sub
 
 '
@@ -516,10 +517,10 @@ End Sub
 ' 入力制限設定
 '
 Private Sub 入力制限定義()
-    Dim vVisible As Variant
-    vVisible = SheetActivate("記入票")
+    ' 表示／アクティブ／解除
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate("記入票")
+    Call SheetProtect(False, oWorkSheet)
     
     ' 入力制限全解除
     Call ClearValidation("記入票")
@@ -565,12 +566,12 @@ Private Sub 入力制限定義()
     Call DefineSecondValidation("リレー秒")
     Call DefineMiliSecondValidation("リレーミリ秒")
     
-    Sheets("記入票").Select
+    Set oWorkSheet = SheetActivate("記入票")
     Call SetForcusTop
 
     ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
-    oWorkSheet.Visible = vVisible
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = xlSheetVisible
 End Sub
 
 '
@@ -1234,10 +1235,10 @@ End Sub
 ' 条件付き書式設定
 '
 Private Sub 条件付き書式定義()
-    Dim vVisible As Variant
-    vVisible = SheetActivate("記入票")
+    ' 表示／アクティブ／解除
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = SheetProtect(False)
+    Set oWorkSheet = SheetActivate("記入票")
+    Call SheetProtect(False, oWorkSheet)
     
     ' すべての条件付き書式をクリア
     Cells.FormatConditions.Delete
@@ -1290,12 +1291,12 @@ Private Sub 条件付き書式定義()
     Call DefineRelayStyleNotification("リレー種目")
     Call DefineRelaySecondNotification("リレー秒")
     
-    Sheets("記入票").Select
+    Set oWorkSheet = SheetActivate("記入票")
     Call SetForcusTop
 
     ' シートのロック
-    Set oWorkSheet = SheetProtect(True, oWorkSheet)
-    oWorkSheet.Visible = vVisible
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = xlSheetVisible
 End Sub
 
 '
@@ -1719,7 +1720,7 @@ End Sub
 ' 印刷範囲を設定する
 '
 Private Sub 印刷範囲の設定()
-    Seehts("記入票").Select
+    Sheets("記入票").Select
     
     Application.PrintCommunication = True
     If Range("大会名").Value = 選手権大会 Then

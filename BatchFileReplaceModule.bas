@@ -34,6 +34,7 @@ Sub エントリーファイル一括変換()
         Worksheets("記入票").Activate
 
         ' エントリー一覧の読込み
+        Call エントリーファイル変換
         Call エントリーシート定義
     
         ' 警告なしでファイルを閉じる（保存しない）
@@ -47,7 +48,7 @@ Sub エントリーファイル一括変換()
     
 End Sub
 
-Private Sub エントリーファイル変換1()
+Private Sub エントリーファイル変換()
     Sheets("種目番号区分").Select
     ActiveSheet.Unprotect
     Range("B1").Value = "種目区分"

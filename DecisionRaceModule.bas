@@ -97,7 +97,7 @@ Private Sub WriteHeatLaneOrder(sTableName As String, oEntryList As Object)
     Dim nHeats As Integer           ' 組数
     Dim nNumOfHeats() As Integer    ' 組毎の人数
     Dim nMinNumberOfRace As Integer ' 組の最小人数
-    nMinNumberOfRace = GetRange("組最少人数").Value
+    nMinNumberOfRace = GetRange("大会組最少人数").Value
     Dim bAverage As Boolean         ' 平均分け方式の利用有無
     
     Dim nRaceNo As Integer          ' レースNo
@@ -375,7 +375,7 @@ End Function
 ' nCount        IN      人数
 ' nStart        IN      開始位置
 '
-Private Function GetCenterLane(nCount As Integer, nStart As Integer, Optional bFlag As Boolean = True) As Integer
+Public Function GetCenterLane(nCount As Integer, nStart As Integer, Optional bFlag As Boolean = True) As Integer
     If bFlag Then
         GetCenterLane = nStart + Application.WorksheetFunction.RoundDown((nCount - 1) / 2, 0)
     Else
@@ -431,7 +431,7 @@ End Function
 Private Function IsAverageOrder(vProNo As Variant, nHeats As Integer) As Boolean
     IsAverageOrder = False
     If GetRange("大会名").Value = 選手権大会 And nHeats >= 平均分け組数 Then
-        If GetRange("組合せ方式").Value = "混合分け方式" And _
+        If GetRange("大会組合せ方式").Value = "混合分け方式" And _
             VLookupArea(vProNo, "選手権種目区分", "予選／決勝") = "予選" Then
             IsAverageOrder = True
         End If
@@ -555,9 +555,8 @@ Sub レース番号修正()
     Set oWorkBook = ActiveWorkbook
 
     ' 出力用シート
-    Call SheetActivate(エントリーシート)
     Dim oWorkSheet As Worksheet
-    Set oWorkSheet = ActiveSheet
+    Set oWorkSheet = SheetActivate(エントリーシート)
     
     ' 再ソート
     Call SortByRace(oWorkSheet, エントリーテーブル)
@@ -568,9 +567,9 @@ Sub レース番号修正()
     
     ' レース番号修正
     If GetRange("大会名").Value = 選手権大会 Then
-        Call ModifyRaceNoForSenshuken(oWorkSheet, エントリーテーブル)
+        Call ModifyRaceNoForSenshuken(エントリーテーブル)
     Else
-        Call ModifyRaceNo(oWorkSheet, エントリーテーブル)
+        Call ModifyRaceNo(エントリーテーブル)
     End If
 
     ' イベント発生を再開
@@ -580,10 +579,9 @@ End Sub
 '
 ' レース番号修正
 '
-' oWorkSheet    IN  ワークシート
 ' sTableName    IN  テーブル名
 '
-Private Sub ModifyRaceNo(oWorkSheet As Worksheet, sTableName As String)
+Private Sub ModifyRaceNo(sTableName As String)
     
     ' エントリー一覧
     Dim oEntryList As Object
@@ -669,10 +667,9 @@ End Sub
 '
 ' レース番号修正(選手権用)
 '
-' oWorkSheet    IN  ワークシート
 ' sTableName    IN  テーブル名
 '
-Private Sub ModifyRaceNoForSenshuken(oWorkSheet As Worksheet, sTableName As String)
+Private Sub ModifyRaceNoForSenshuken(sTableName As String)
     
     ' エントリー一覧
     Dim oEntryList As Object
@@ -740,10 +737,10 @@ End Sub
 '
 ' レース番号修正(選手権用)
 '
-' oWorkSheet    IN  ワークシート
 ' sTableName    IN  テーブル名
+' oEntryList    IN  エントリー一覧
 '
-Private Sub ModifyEntryByProNoForSenshuken(oWorkSheet As Worksheet, sTableName As String)
+Private Sub ModifyEntryByProNoForSenshuken(sTableName As String, oEntryList As Object)
     
     ' レース番号修正
     Dim nRaceNo As Integer
@@ -758,7 +755,9 @@ Private Sub ModifyEntryByProNoForSenshuken(oWorkSheet As Worksheet, sTableName A
             Call ModifyFinalEntry(vProNo, oEntryList, nRaceNo)
             
             ' レースNoの修正
-            Call ModifyEntryByRaceNoForSenshuken(vProNo, oEntryList, nRaceNo)
+            If oEntryList.Exists(vProNo.Value) Then
+                Call ModifyEntryByRaceNoForSenshuken(sTableName, vProNo, oEntryList, nRaceNo)
+            End If
                  
         End If
     Next vProNo
@@ -808,11 +807,13 @@ End Sub
 '
 ' レース番号の修正出力
 '
+' sTableName    IN  テーブル名
 ' vProNo        IN      ProNo列のセル
 ' oEntryList    IN/OUT  エントリー配列
 ' nRaceNo       IN/OUT  レース番号
 '
-Private Sub ModifyEntryByRaceNoForSenshuken(vProNo As Variant, oEntryList As Object, nRaceNo As Integer)
+Private Sub ModifyEntryByRaceNoForSenshuken(sTableName As String, _
+vProNo As Variant, oEntryList As Object, nRaceNo As Integer)
     Dim oCell As Range
     Dim oProNo As Object
     Dim oRaceNo As Object
@@ -825,6 +826,7 @@ Private Sub ModifyEntryByRaceNoForSenshuken(vProNo As Variant, oEntryList As Obj
         Set oRaceNo = oProNo.Item(vRaceNo)
     
         ' レーン
+        Dim vLane As Variant
         For Each vLane In oRaceNo.Keys
             Set oCell = oRaceNo.Item(vLane)
             

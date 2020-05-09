@@ -53,13 +53,22 @@ End Sub
 '
 ' シートの保護
 '
+' シートの保護／解除を行う。
+' 設定前のシートの保護状態を返す。
+'
 ' bFlag         IN      True：保護／False：解除
 ' oWorkSheet    IN      保護するシートオブジェクト
 '
-Public Function SheetProtect(bFlag As Boolean, Optional oWorkSheet As Worksheet = Nothing)
+Public Function SheetProtect(bFlag As Boolean, Optional oWorkSheet As Worksheet = Nothing) As Boolean
 
     If oWorkSheet Is Nothing Then
         Set oWorkSheet = ActiveSheet
+    End If
+
+    If ActiveSheet.ProtectContents = True Then
+        SheetProtect = True
+    Else
+        SheetProtect = False
     End If
 
     If bFlag Then
@@ -68,9 +77,20 @@ Public Function SheetProtect(bFlag As Boolean, Optional oWorkSheet As Worksheet 
     Else
         oWorkSheet.Unprotect
     End If
-    Set SheetProtect = oWorkSheet
 
 End Function
+
+'
+' オートフィルタの設定
+'
+' sName         IN      範囲の名前
+' bFlag         IN      True：フィルタ表示／False：解除
+'
+Public Sub SetAutoFilter(sName As String, bFlag As Boolean)
+    If GetRange(sName).Parent.AutoFilterMode <> bFlag Then
+        GetRange(sName).AutoFilter
+    End If
+End Sub
 
 '
 ' セルを選択
@@ -157,23 +177,39 @@ End Function
 ' シートの存在を確認しVisibleがTrueでなければTrueにしてから
 ' Activateする
 '
-' Sheets.Visibleの値を返す
-'
 ' sSheetName    IN      シート名
 '
 Public Function SheetActivate(sSheetName As String) As Variant
     If IsSheetExists(sSheetName) Then
-        SheetActivate = Worksheets(sSheetName).Visible
         If Worksheets(sSheetName).Visible <> True Then
             Worksheets(sSheetName).Visible = True
         End If
         Worksheets(sSheetName).Activate
+        Set SheetActivate = ActiveSheet
     Else
         MsgBox "「" & sSheetName & "」シートが存在しません。" & vbCrLf & _
                 "正しいファイルをお使いください。", vbOKOnly
         End
     End If
 End Function
+
+
+'
+' シートのVisibleを返す
+'
+' xlSheetVisible/True(-1)
+' xlSheetHidden/False(0)
+' xlSheetVeryHidden(2)
+' Empty(3)
+'
+Public Function GetSheetVisible(sSheetName As String) As Variant
+    If IsSheetExists(sSheetName) Then
+        GetSheetVisible = Worksheets(sSheetName).Visible
+    Else
+        GetSheetVisible = 3
+    End If
+End Function
+
 
 '
 ' シートの存在チェック付き非表示
@@ -303,6 +339,25 @@ Private Function med3(ByVal x As Long, ByVal y As Long, ByVal z As Long) As Long
             med3 = z
         End If
     End If
+End Function
+
+'
+' 配列に値が存在するか確認する
+'
+' vAry          IN  配列
+' vValue        IN  値
+'
+Public Function isAryExist(vAry As Variant, vValue As Variant) As Boolean
+
+    Dim vTemp As Variant
+    For Each vTemp In vAry
+        If vTemp = vValue Then
+            isAryExist = True
+            Exit Function
+        End If
+    Next
+    isAryExist = False
+
 End Function
 
 '
@@ -574,7 +629,17 @@ End Function
 '            OUT     一致した値
 '
 Public Function VLookupArea(vValue As Variant, sName As String, sColName As String, Optional bFlag As Boolean = False) As Variant
+On Error GoTo ErrorHandler_VLookupArea
+    
     VLookupArea = Application.WorksheetFunction.VLookup(vValue, GetRange(sName), GetAreaColumnIndex(sName, sColName), bFlag)
+    Exit Function
+
+ErrorHandler_VLookupArea:
+    MsgBox "範囲名：" & sName & vbCrLf & _
+            "項目名：" & sColName & vbCrLf & _
+            "検索値：" & CStr(vValue) & vbCrLf & _
+            "が見つかりません。シートを確認してください。", vbOKOnly
+    End
 End Function
 
 '
