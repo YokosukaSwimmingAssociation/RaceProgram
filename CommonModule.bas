@@ -16,12 +16,13 @@ Public Const フォーマットシート As String = "プログラムフォーマット"
 Public Const 記録画面シート As String = "記録画面"
 Public Const 設定各種シート As String = "設定各種"
 
-Public Const レース定員 As Integer = 7       ' １レースの人数
-Public Const 最大レーン番号 As Integer = 9     ' レーンの最大番号
-Public Const 最小レーン番号 As Integer = 3     ' レーンの最小番号
-Public Const 平均分け組数 As Integer = 3 ' 平均分け方式にする組数
-Public Const 個人最大行数 As Integer = 2 ' 個人の申込み行数
-Public Const リレー最大行数 As Integer = 24 ' リレーの最大申込み行数
+Public Const レース定員 As Integer = 7          ' １レースの人数
+Public Const 最大レーン番号 As Integer = 9      ' レーンの最大番号
+Public Const 最小レーン番号 As Integer = 3      ' レーンの最小番号
+Public Const 平均分け組数 As Integer = 3        ' 平均分け方式にする組数
+Public Const 個人最大行数 As Integer = 2        ' 個人の申込み行数
+Public Const リレー最大行数 As Integer = 24     ' リレーの最大申込み行数
+Public Const ページレース数 As Integer = 5      ' １ページのレース数
 
 Public Const 選手名ブランク As String = "　　．　　．　　．"
 Private Const ARRAYSIZE = 10000
@@ -576,21 +577,23 @@ End Function
 
 '
 ' 範囲から指定した名前の列番号を返す
+' 存在しない場合はゼロを返す
 '
 ' sName      IN      範囲名
 ' sColName   IN      カラム名
 '
-Public Function GetAreaColumnIndex(sName As String, sColName As String) As Integer
+Public Function GetColIdx(sName As String, sColName As String) As Integer
     Dim nIndex As Integer
     nIndex = 1
     Dim oCell As Range
     For Each oCell In GetRange(sName).Rows(1).Columns
         If STrimAll(oCell.Value) = sColName Then
-            GetAreaColumnIndex = nIndex
+            GetColIdx = nIndex
             Exit Function
         End If
         nIndex = nIndex + 1
     Next oCell
+    GetColIdx = 0
 End Function
 
 '
@@ -631,7 +634,7 @@ End Function
 Public Function VLookupArea(vValue As Variant, sName As String, sColName As String, Optional bFlag As Boolean = False) As Variant
 On Error GoTo ErrorHandler_VLookupArea
     
-    VLookupArea = Application.WorksheetFunction.VLookup(vValue, GetRange(sName), GetAreaColumnIndex(sName, sColName), bFlag)
+    VLookupArea = Application.WorksheetFunction.VLookup(vValue, GetRange(sName), GetColIdx(sName, sColName), bFlag)
     Exit Function
 
 ErrorHandler_VLookupArea:
@@ -641,6 +644,50 @@ ErrorHandler_VLookupArea:
             "が見つかりません。シートを確認してください。", vbOKOnly
     End
 End Function
+
+'
+' 結合エリアのどの部分かを返す
+'
+' 1:先頭
+' 2:末尾
+' 3:中間
+'
+' oCell     IN      セル
+'
+Public Function CheckMergeArea(oCell As Range)
+    Dim nIdx As Integer
+    nIdx = 1
+    Dim nMax As Integer
+    nMax = oCell.MergeArea.Rows.Count
+    Dim vCell As Range
+    For Each vCell In oCell.MergeArea.Rows
+        If vCell.Address = oCell.Address Then
+            If nIdx = 1 Then
+                CheckMergeArea = 1
+            ElseIf nIdx = nMax Then
+                CheckMergeArea = 2
+            Else
+                CheckMergeArea = 3
+            End If
+        End If
+        nIdx = nIdx + 1
+    Next vCell
+End Function
+
+'
+' 罫線を引く
+'
+Public Sub SetBorder(oRange As Range)
+    With oRange
+        .Borders(xlEdgeTop).LineStyle = xlContinuous
+        .Borders(xlEdgeBottom).LineStyle = xlContinuous
+        .Borders(xlEdgeRight).LineStyle = xlContinuous
+        .Borders(xlEdgeLeft).LineStyle = xlContinuous
+        .Borders(xlInsideVertical).LineStyle = xlContinuous
+        .Borders(xlInsideHorizontal).LineStyle = xlContinuous
+    End With
+End Sub
+
 
 '
 ' モジュールの読込み
@@ -818,6 +865,38 @@ Public Function SearchCell(nProNo As Integer, sName As String, sColName As Strin
             Exit Function
         End If
     Next vCell
+
+End Function
+
+'
+' プログラム補正用：プログラム番号のアドレスを探す
+'
+' nProNo     IN      プログラム番号
+' sTeam      IN      所属名
+' sClass     IN      区分
+' sColName   IN      カラム名（Prog氏名）
+'            OUT     アドレス文字列
+'
+Public Function SearchRelayCell(nProNo As Integer, _
+sTeam As String, sClass As String, sColName As String) As String
+
+    Dim sName As String
+    sName = "プログラム番号" & Trim(CStr(nProNo))
+
+    Dim nLane As Integer
+    Dim nOrder As Integer
+    Dim vCell As Range
+    
+    If IsNameExists(sName) Then
+        Dim vProNo As Range
+        For Each vProNo In GetRange(sName)
+            If GetOffset(vProNo, Range("Prog所属").Column).Value = sTeam And _
+                GetOffset(vProNo, Range("Prog区分").Column).Value = sClass Then
+                SearchRelayCell = GetOffset(vProNo, Range(sColName).Column).Address
+                Exit Function
+            End If
+        Next vProNo
+    End If
 
 End Function
 

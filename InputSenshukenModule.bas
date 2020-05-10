@@ -19,6 +19,7 @@ Public Sub 試験選手権大会()
     Call レース番号修正
     Call プログラム作成
     Call 試験選手権予選記録
+    Call 試験選手権リレー
     Call 試験選手権決勝記録
     Call 優勝者一覧作成
     Call 大会記録更新
@@ -618,6 +619,56 @@ Public Sub 試験選手権予選記録()
     Call 順位決定
     Call 決勝登録
     Call 初期化
+
+End Sub
+
+Public Sub 試験選手権リレー()
+
+    Sheets(プログラムシート).Select
+
+    ' 27 女子 4×50M メドレーリレー
+    Call ModCell(SearchRelayCell(27, "追浜高校", "", "Prog氏名"), "鈴木．三浦．高橋．高野")
+    Call ModCell(SearchRelayCell(27, "KSS横須賀", "", "Prog氏名"), "日向．緒形．佐野．吉田")
+    Call ModCell(SearchRelayCell(27, "三浦学苑高校", "", "Prog氏名"), "杉山．増田．福島．二宮")
+    Call ModCell(SearchRelayCell(27, "久里浜中学校", "", "Prog氏名"), "野村．今岡．高橋．杉山")
+    Call ModCell(SearchRelayCell(27, "オアシスよこすか", "", "Prog氏名"), "岩田．小林．猪熊．増田")
+    Call ModCell(SearchRelayCell(27, "逗子高校", "", "Prog氏名"), "鈴木．勝山．間瀬．村田")
+    
+    ' 28 男子 4×50M メドレーリレー
+    Call ModCell(SearchRelayCell(28, "横須賀大津高校", "", "Prog氏名"), "鈴木．渡邊．神山．川畑")
+    Call ModCell(SearchRelayCell(28, "県立横須賀高校", "", "Prog氏名"), "佐野．松永．二本木．田中")
+    Call ModCell(SearchRelayCell(28, "追浜高校", "", "Prog氏名"), "村野．梶谷．小林．光田")
+    
+    Call ModCell(SearchRelayCell(28, "久里浜中学校", "", "Prog氏名"), "脇．小澤．谷口．新本T")
+    Call ModCell(SearchRelayCell(28, "大津中学", "", "Prog氏名"), "矢部．清水．後藤．皆越")
+    Call ModCell(SearchRelayCell(28, "野比中学", "", "Prog氏名"), "小菅．山田．小澤．松浦")
+    Call ModCell(SearchRelayCell(28, "逗子開成高校", "", "Prog氏名"), "岡村．井上．清水．丸山")
+    Call ModCell(SearchRelayCell(28, "三浦学苑高校", "", "Prog氏名"), "村上．佐枝．堀口．前場")
+    Call ModCell(SearchRelayCell(28, "TeamOGS", "", "Prog氏名"), "平田．関．杉山．石田")
+    Call ModCell(SearchRelayCell(28, "逗子開成中学", "", "Prog氏名"), "石田．小湊．石井．松本")
+    
+    ' 45 女子 4×50M フリーリレー
+    Call ModCell(SearchRelayCell(45, "オアシスよこすか", "", "Prog氏名"), "猪熊．増田．岩田．小林")
+    Call ModCell(SearchRelayCell(45, "KSS横須賀", "", "Prog氏名"), "吉田．日向．緒形．佐野")
+    Call ModCell(SearchRelayCell(45, "久里浜中学校", "", "Prog氏名"), "野村．高橋．岩波．杉山")
+    Call ModCell(SearchRelayCell(45, "三浦学苑高校", "", "Prog氏名"), "二宮．増田．三中．福島")
+    Call ModCell(SearchRelayCell(45, "追浜高校", "", "Prog氏名"), "鈴木．高野．三浦．高橋")
+    Call ModCell(SearchRelayCell(45, "逗子高校", "", "Prog氏名"), "鈴木．間瀬．勝山．村田")
+    
+    ' 46 男子 4×50M フリーリレー
+    Call ModCell(SearchRelayCell(46, "逗子高校", "", "Prog氏名"), "福岡．堀江．水島．高坂")
+    Call ModCell(SearchRelayCell(46, "追浜高校", "", "Prog氏名"), "小林．村野．光田．梶谷")
+    Call ModCell(SearchRelayCell(46, "大津中学", "", "Prog氏名"), "後藤．皆越．小林．清水")
+    Call ModCell(SearchRelayCell(46, "久里浜中学校", "", "Prog氏名"), "新本．高橋．谷口．小澤")
+    Call ModCell(SearchRelayCell(46, "津久井浜高校", "", "Prog氏名"), "後藤．荒木．渡辺．佐久間")
+    Call ModCell(SearchRelayCell(46, "逗子開成中学", "", "Prog氏名"), "石田．松本．西田．石井")
+    Call ModCell(SearchRelayCell(46, "横須賀大津高校", "", "Prog氏名"), "神山．渡邊．川畑．山内")
+    Call ModCell(SearchRelayCell(46, "TeamOGS", "", "Prog氏名"), "石田．杉山．熱田．平田")
+    Call ModCell(SearchRelayCell(46, "三浦学苑高校", "", "Prog氏名"), "前場．堀口．佐枝．村上")
+    Call ModCell(SearchRelayCell(46, "逗子開成高校", "", "Prog氏名"), "丸山．岡村．井上．白石")
+    Call ModCell(SearchRelayCell(46, "野比中学", "", "Prog氏名"), "小澤．小菅．川島．山田")
+    Call ModCell(SearchRelayCell(46, "県立横須賀高校", "", "Prog氏名"), "佐野．佐々木．二本木．田中")
+
 
 End Sub
 

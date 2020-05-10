@@ -1084,24 +1084,30 @@ Private Sub SetPageBreaks()
     ActiveWindow.View = xlPageBreakPreview
     
     ' 改ページ設定
-    Dim nNum As Integer
+    Dim nNum As Integer     ' レース数カウンタ
     nNum = 0
+    Dim nProNo As Integer   ' プロNoの値
+    Dim bFlag As Boolean    ' 範囲フラグ(True：範囲外／False：範囲内)
+    bFlag = True
+    
     Dim nRow As Integer
     Dim nBottom As Integer
-    Dim bFlag As Boolean
-    bFlag = True
-    Dim nProNo As Integer
+    nBottom = GetAreaBottomRow("プログラム通番")
     
     Dim vNo As Variant
     For Each vNo In GetRange("プログラム通番")
-        nProNo = Cells(vNo.Row, GetRange("HeaderプロNo").Column).Value
+        ' ProNoの値を取得
+        nProNo = Val(GetOffset(vNo, GetRange("HeaderプロNo").Column).Value)
+        ' 空欄でない場合
         If nProNo > 0 Then
+            ' 連続でない場合はカウンタを上げる
             If bFlag Then
                 nNum = nNum + 1
             End If
             bFlag = False
         Else
-            If bFlag = False And nNum Mod 5 = 0 Then
+            ' 空白で範囲外に出た場合（bFlag=False)
+            If bFlag = False And nNum Mod ページレース数 = 0 Then
                 ' 改行ページ
                 nRow = vNo.Row + 1
                 If nRow < nBottom Then

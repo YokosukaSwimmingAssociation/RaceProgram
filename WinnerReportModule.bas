@@ -41,6 +41,8 @@ End Sub
 ' 　　　　│
 ' 　　　　├─所属
 ' 　　　　│
+' 　　　　├─区分
+' 　　　　│
 ' 　　　　├─記録
 ' 　　　　│
 ' 　　　　└─大会新
@@ -119,6 +121,7 @@ Private Sub SetWinnerInfo(sGameName As String, vProNo As Variant, oWinnerList As
     oWinner.Add "氏名", GetOffset(vCell, Range("Header氏名").Column).Value
     oWinner.Add "所属", GetOffset(vCell, Range("Header所属").Column).Value
     oWinner.Add "記録", GetOffset(vCell, Range("Header時間").Column).Value
+    oWinner.Add "区分", GetOffset(vCell, Range("Header区分").Column).Value
     
     If Not IsNumeric(nRecord) Or oWinner.Item("記録") <= nRecord Then
         oWinner.Add "大会新", "大会新"
@@ -184,21 +187,32 @@ Private Sub WriteWinner(sGameName As String, oWinnerList As Object)
     Dim sWinnerAreaName As String
     sWinnerAreaName = GetWinnerAreaName(sGameName)
 
-    ' 削除
-    Call DeleteWinnerSheet(sWinnerAreaName)
-
     ' 大会記録範囲名
     Dim sRecordAreaName As String
     sRecordAreaName = GetRecordAreaName(sGameName)
         
-    ' 出力する
-    Call WriteWinnerList(sWinnerAreaName, sRecordAreaName, oWinnerList)
-
-    ' 優勝者シート設定
-    Call DefineWinnerSheet(sSheetName, sWinnerAreaName)
-
-    ' 書式設定
-    Call SetWinnerRecordStyle(sGameName)
+    If sGameName = 選手権大会 Then
+        ' 初期化
+        Call DeleteWinnerSheetForSenshuken(sWinnerAreaName)
+        
+        ' 出力する
+        Call WriteWinnerListForSenshuken(sWinnerAreaName, oWinnerList)
+    
+        ' 優勝者シート設定
+        Call 選手権大会記録設定(sSheetName, sWinnerAreaName)
+    Else
+        ' 初期化
+        Call DeleteWinnerSheet(sWinnerAreaName)
+        
+        ' 出力する
+        Call WriteWinnerList(sWinnerAreaName, sRecordAreaName, oWinnerList)
+        
+        ' 優勝者シート設定
+        Call DefineWinnerSheet(sSheetName, sWinnerAreaName)
+    
+        ' 書式設定
+        Call SetWinnerRecordStyle(sGameName)
+    End If
 
     ' シートの保護
     Call SheetProtect(True, oWorkSheet)
@@ -242,6 +256,44 @@ Private Sub WriteWinnerList(sWinnerAreaName As String, sRecordAreaName As String
     Next vKey
 End Sub
 
+'
+' 優勝者書込み（選手権用）
+'
+' sAreaName         IN  優勝者範囲名
+' oWinnerList       IN  優勝者リスト
+'
+Private Sub WriteWinnerListForSenshuken(sAreaName As String, oWinnerList As Object)
+    
+    Dim oProNo As Object
+    Set oProNo = CreateObject("Scripting.Dictionary")
+    
+    Dim oWinners As Object
+    Dim oWinner As Object
+        
+    Dim vProNo As Variant
+    For Each vProNo In GetAreaKeyData(sAreaName)
+        If vProNo.Value > 0 Then
+            ' 優勝者が存在する場合
+            If oWinnerList.Exists(CStr(vProNo.Value)) Then
+                ' 同一ProNoには１回だけ実施
+                If Not oProNo.Exists(CStr(vProNo.Value)) Then
+                    Set oWinners = oWinnerList.Item(CStr(vProNo.Value))
+                    Dim vIdx As Variant
+                    For Each vIdx In oWinners
+                        Set oWinner = oWinners.Item(vIdx)
+                        If vIdx > 1 Then
+                            ' 同タイム記録の場合は行を挿入
+                            Set vProNo = InsertWinnerRow(vProNo, sAreaName)
+                        End If
+                        Call WriteWinnerLineForSenshuken(sAreaName, vProNo, oWinner)
+                    Next vIdx
+                    oProNo.Add CStr(vProNo.Value), 1
+                End If
+            End If
+        End If
+    Next vProNo
+
+End Sub
 
 '
 ' 優勝者シート初期化
@@ -265,6 +317,52 @@ Private Sub DeleteWinnerSheet(sWinnerAreaName As String, Optional nRow As Intege
 End Sub
 
 '
+' 優勝者シート初期化（選手権用）
+'
+' sAreaName         IN  優勝者範囲名
+'
+Private Sub DeleteWinnerSheetForSenshuken(sAreaName As String)
+
+    ' 複数行ある場合は削除最小とする
+    Dim oProNo As Object
+    Set oProNo = CreateObject("Scripting.Dictionary")
+    Dim oDelList As Object
+    Set oDelList = CreateObject("Scripting.Dictionary")
+
+    Dim vProNo As Variant
+    For Each vProNo In GetAreaKeyData(sAreaName)
+        If vProNo.Value > 0 Then
+            If oProNo.Exists(vProNo.Value) Then
+                ' ループ中に削除すると範囲がおかしくなるので
+                ' 一旦削除対象リストに追加する
+                oDelList.Add oDelList.Count + 1, vProNo
+            Else
+                oProNo.Add vProNo.Value, 1
+                GetOffset(vProNo, GetColIdx(sAreaName, "氏名")) = ""
+                GetOffset(vProNo, GetColIdx(sAreaName, "所属")) = ""
+                GetOffset(vProNo, GetColIdx(sAreaName, "区分")) = ""
+                GetOffset(vProNo, GetColIdx(sAreaName, "記録")) = ""
+                If GetColIdx(sAreaName, "大会新") > 0 Then
+                    GetOffset(vProNo, GetColIdx(sAreaName, "大会新")) = ""
+                End If
+                If GetColIdx(sAreaName, "年") > 0 Then
+                    GetOffset(vProNo, GetColIdx(sAreaName, "年")) = ""
+                End If
+            End If
+        End If
+    Next vProNo
+
+    ' 削除リストを削除する
+    Dim oDelCell As Range
+    Dim vDelCell As Variant
+    For Each vDelCell In oDelList
+        Set oDelCell = oDelList.Item(vDelCell)
+        oDelCell.EntireRow.Delete
+    Next vDelCell
+
+End Sub
+
+'
 ' 優勝者シート記入
 '
 ' sWinnerAreaName   IN  優勝者範囲名
@@ -273,20 +371,71 @@ End Sub
 ' vKey              IN  大会記録の参照元の基準セル
 ' oWinner           IN  優勝者情報
 '
-Private Sub WriteWinnerLine(sWinnerAreaName As String, sRecordAreaName As String, nRow As Integer, vKey As Variant, oWinner As Object)
+Private Sub WriteWinnerLine(sWinnerAreaName As String, sRecordAreaName As String, _
+nRow As Integer, vKey As Variant, oWinner As Object)
     
-    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "プロNo.")) = GetOffset(vKey, GetAreaColumnIndex(sRecordAreaName, "プロNo."))
-    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "性別")) = GetOffset(vKey, GetAreaColumnIndex(sRecordAreaName, "性別"))
-    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "距離")) = GetOffset(vKey, GetAreaColumnIndex(sRecordAreaName, "距離"))
-    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "種目")) = GetOffset(vKey, GetAreaColumnIndex(sRecordAreaName, "種目"))
-    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "区分")) = GetOffset(vKey, GetAreaColumnIndex(sRecordAreaName, "区分"))
+    Cells(nRow, GetColIdx(sWinnerAreaName, "プロNo.")) = GetOffset(vKey, GetColIdx(sRecordAreaName, "プロNo."))
+    Cells(nRow, GetColIdx(sWinnerAreaName, "性別")) = GetOffset(vKey, GetColIdx(sRecordAreaName, "性別"))
+    Cells(nRow, GetColIdx(sWinnerAreaName, "距離")) = GetOffset(vKey, GetColIdx(sRecordAreaName, "距離"))
+    Cells(nRow, GetColIdx(sWinnerAreaName, "種目")) = GetOffset(vKey, GetColIdx(sRecordAreaName, "種目"))
+    Cells(nRow, GetColIdx(sWinnerAreaName, "区分")) = GetOffset(vKey, GetColIdx(sRecordAreaName, "区分"))
     
-    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "氏名")) = oWinner.Item("氏名")
-    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "所属")) = oWinner.Item("所属")
-    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "記録")) = oWinner.Item("記録")
-    Cells(nRow, GetAreaColumnIndex(sWinnerAreaName, "大会新")) = oWinner.Item("大会新")
+    Cells(nRow, GetColIdx(sWinnerAreaName, "氏名")) = oWinner.Item("氏名")
+    Cells(nRow, GetColIdx(sWinnerAreaName, "所属")) = oWinner.Item("所属")
+    Cells(nRow, GetColIdx(sWinnerAreaName, "記録")) = oWinner.Item("記録")
+    Cells(nRow, GetColIdx(sWinnerAreaName, "大会新")) = oWinner.Item("大会新")
 
 End Sub
+
+'
+' 優勝者シート記入（選手権用）
+'
+' sAreaName         IN  優勝者範囲名
+' vKey              IN  優勝者の基準セル
+' oWinner           IN  優勝者情報
+'
+Private Sub WriteWinnerLineForSenshuken(sAreaName As String, vKey As Variant, oWinner As Object)
+    
+    GetOffset(vKey, GetColIdx(sAreaName, "氏名")) = Replace(oWinner.Item("氏名"), "．", vbCrLf)
+    GetOffset(vKey, GetColIdx(sAreaName, "所属")) = oWinner.Item("所属")
+    GetOffset(vKey, GetColIdx(sAreaName, "区分")) = oWinner.Item("区分")
+    GetOffset(vKey, GetColIdx(sAreaName, "記録")) = oWinner.Item("記録")
+    
+    If GetColIdx(sAreaName, "大会新") > 0 Then
+        GetOffset(vKey, GetColIdx(sAreaName, "大会新")) = oWinner.Item("大会新")
+    End If
+    
+    If GetColIdx(sAreaName, "年") > 0 Then
+        GetOffset(vKey, GetColIdx(sAreaName, "年")) = oWinner.Item("年")
+    End If
+    
+
+End Sub
+
+'
+' 優勝者シート行挿入（選手権用）
+'
+' 同タイムの場合に行を挿入する
+'
+' oCell         IN      基準のセル
+' sAreaName         IN  優勝者範囲名
+'
+Private Function InsertWinnerRow(oCell As Variant, sAreaName As String) As Range
+    Dim oNewCell As Range
+    oCell.Offset(1).EntireRow.Insert Shift:=xlDown, CopyOrigin:=xlFormatFromLeftOrAbove
+    Set oNewCell = oCell.Offset(1)
+    oNewCell.Value = oCell.Value
+    GetOffset(oNewCell, GetColIdx(sAreaName, "性別")).Value = GetOffset(oCell, GetColIdx(sAreaName, "性別")).Value
+    ' 種目列は結合
+    Union(GetOffset(oNewCell, GetColIdx(sAreaName, "種目")), GetOffset(oCell, GetColIdx(sAreaName, "種目")).MergeArea).Merge
+    GetOffset(oNewCell, GetColIdx(sAreaName, "距離")).Value = GetOffset(oCell, GetColIdx(sAreaName, "距離")).Value
+    ' 全体に罫線を設定
+    Call SetBorder(GetOffset(oNewCell, GetColIdx(sAreaName, "種目")) _
+        .Resize(1, GetRange(sAreaName).Columns.Count - (GetColIdx(sAreaName, "種目") - oCell.Column)))
+    ' 新しい行の基準セルを返す
+    Set InsertWinnerRow = oNewCell
+End Function
+
 
 '
 ' 優勝者シートの書式を大会記録からコピーする
@@ -329,6 +478,8 @@ End Sub
 ' 大会記録シートの書式を２行目からコピーする
 '
 ' sGameName         IN  大会名
+' sSheetName        IN  シート名
+' sAreaName         IN  範囲名
 '
 Private Sub SetRecordWinnerStyle(sGameName As String, sSheetName As String, sAreaName As String)
 
@@ -412,8 +563,13 @@ Public Sub 大会記録更新()
     ' 新大会記録の読込み
     Call ReadNewRecords(sGameName, oWinnerList)
     
-    ' 大会記録の書込み
-    Call WriteNewRecords(sGameName, oWinnerList)
+    If sGameName = 選手権大会 Then
+        ' 大会記録の書込み
+        Call WriteNewRecordsForSenshuken(sGameName, oWinnerList)
+    Else
+        ' 大会記録の書込み
+        Call WriteNewRecords(sGameName, oWinnerList)
+    End If
 
     ' イベント発生を発生
     Call EventChange(True)
@@ -546,6 +702,7 @@ Private Sub ReadNewRecords(sGameName As String, oRecordList As Object)
     Dim oWinner As Object
     Dim oWinnerOld As Object
 
+    Dim sKeyName As String
     Dim sKey As String
 
     ' 優勝者毎
@@ -553,20 +710,25 @@ Private Sub ReadNewRecords(sGameName As String, oRecordList As Object)
     For Each vCell In RowRange(GetRange(sWinnerAreaName).Columns(1).Address).Offset(1)
         
         ' 大会新なら格納する
-        If GetOffset(vCell, GetAreaColumnIndex(sWinnerAreaName, "大会新")).Value = "大会新" Then
-                
-            ' キーを取得
-            sKey = GetRecordKey(sGameName, CInt(vCell.Value), _
-                    GetOffset(vCell, GetAreaColumnIndex(sWinnerAreaName, "区分")))
+        If GetOffset(vCell, GetColIdx(sWinnerAreaName, "大会新")).Value = "大会新" Then
                 
             Set oWinner = CreateObject("Scripting.Dictionary")
             
-            ' カラムの値の登録
+            ' キーを取得
+            sKeyName = GetAreaKeyName(sRecordAreaName)
+            sKey = GetRecordKey(sGameName, CInt(vCell.Value), _
+                    GetOffset(vCell, GetColIdx(sWinnerAreaName, "区分")))
+            
+            ' 優勝者の列値をすべて登録
             Dim vKey As Variant
             For Each vKey In GetRange(sWinnerAreaName).Rows(1).Columns()
                 oWinner.Add STrimAll(vKey.Value), GetOffset(vCell, vKey.Column).Value
             Next vKey
-            oWinner.Add GetAreaKeyName(sRecordAreaName), sKey
+            
+            ' 選手権の場合はKeyが範囲内にあるのでチェックしてから追加
+            If Not oWinner.Exists(sKeyName) Then
+                oWinner.Add sKeyName, sKey
+            End If
             oWinner.Add "年", nYear
                 
             ' プロNo＋区分の１位が未登録の場合
@@ -658,6 +820,43 @@ Private Sub WriteNewRecords(sGameName As String, oRecordList As Object)
 End Sub
 
 '
+' 大会記録書込み（選手権用）
+'
+' sGameName     IN  大会名
+' oWinnerList   IN  優勝者リスト
+'
+Private Sub WriteNewRecordsForSenshuken(sGameName As String, oRecordList As Object)
+
+    ' 大会記録シート
+    Dim sSheetName As String
+    sSheetName = GetRecordSheetName(sGameName)
+    
+    ' 表示／アクティブ／解除
+    Dim vVisible As Variant
+    vVisible = GetSheetVisible(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
+    
+    ' 大会記録範囲名
+    Dim sRecordAreaName As String
+    sRecordAreaName = GetRecordAreaName(sGameName)
+    
+    ' 初期化
+    Call DeleteWinnerSheetForSenshuken(sRecordAreaName)
+
+    ' 書込み
+    Call WriteWinnerListForSenshuken(sRecordAreaName, oRecordList)
+
+    ' 優勝者シート設定
+    Call 選手権大会記録設定(sSheetName, sRecordAreaName)
+
+    ' シートの保護
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
+End Sub
+
+'
 ' 大会記録シート記入
 '
 ' sGameName     IN  大会名
@@ -666,9 +865,9 @@ End Sub
 '
 Private Sub WriteRecordLine(sAreaName As String, vCell As Variant, oWinner As Object)
 
-    vCell.Offset(0, GetAreaColumnIndex(sAreaName, "氏名") - 1).Value = oWinner.Item("氏名")
-    vCell.Offset(0, GetAreaColumnIndex(sAreaName, "所属") - 1).Value = oWinner.Item("所属")
-    vCell.Offset(0, GetAreaColumnIndex(sAreaName, "記録") - 1).Value = oWinner.Item("記録")
-    vCell.Offset(0, GetAreaColumnIndex(sAreaName, "年") - 1).Value = oWinner.Item("年")
+    vCell.Offset(0, GetColIdx(sAreaName, "氏名") - 1).Value = oWinner.Item("氏名")
+    vCell.Offset(0, GetColIdx(sAreaName, "所属") - 1).Value = oWinner.Item("所属")
+    vCell.Offset(0, GetColIdx(sAreaName, "記録") - 1).Value = oWinner.Item("記録")
+    vCell.Offset(0, GetColIdx(sAreaName, "年") - 1).Value = oWinner.Item("年")
 
 End Sub

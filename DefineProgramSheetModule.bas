@@ -382,6 +382,9 @@ Public Sub 選手権大会記録設定(sSheetName As String, sAreaName As String)
     ' フィルタ設定
     Call SetAutoFilter(sAreaName, False)
     
+    ' 行の高さの設定
+    Call SetWinnerRowHeight(sAreaName, 16)
+    
     ' 印刷範囲の設定
     Dim oRange As Range
     Set oRange = GetRange(sAreaName)
@@ -390,6 +393,24 @@ Public Sub 選手権大会記録設定(sSheetName As String, sAreaName As String)
     ' シートの表示／保護
     Call SheetProtect(True, oWorkSheet)
     oWorkSheet.Visible = vVisible
+End Sub
+
+'
+' 大会記録／優勝者シートの高さ設定（選手権用）
+'
+' sSheetName    IN      シート名
+' nHeight       IN      高さ
+'
+Private Sub SetWinnerRowHeight(sAreaName As String, nHeight As Integer)
+    Dim vKey As Variant
+    For Each vKey In GetAreaKeyData(sAreaName)
+        ' リレー種目は4倍
+        If GetOffset(vKey, GetColIdx(sAreaName, "種目")).MergeArea.Item(1).Value Like "*リレー" Then
+            vKey.RowHeight = nHeight * 4
+        Else
+            vKey.RowHeight = nHeight
+        End If
+    Next vKey
 End Sub
 
 '
