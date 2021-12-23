@@ -89,7 +89,8 @@ Private Sub Prog名前定義(sSheetName As String)
     Call DefineName("Prog所属後", "$I$5")
     Call DefineName("Prog区分", "$J$5")
     Call DefineName("Prog時間", "$K$5")
-    Call DefineName("Prog順位", "$L$5")
+    'Call DefineName("Prog順位", "$L$5")
+    Call DefineName("Prog検定", "$L$5")
     Call DefineName("Prog備考", "$M$5")
     Call DefineName("Prog大会記録", "$N$5")
     Call DefineName("Prog申込み記録", "$O$5")
@@ -204,7 +205,7 @@ Public Sub 各種設定名前定義(sSheetName As String)
                 Application.Run VLookupArea(vGameName, "設定各種", "大会記録関数名"), _
                                     VLookupArea(vGameName, "設定各種", "大会記録シート名"), _
                                     VLookupArea(vGameName, "設定各種", "大会記録範囲名")
-            Else
+            ElseIf VLookupArea(vGameName, "設定各種", "大会記録シート名") <> "" Then
                 Call DefineRecordSheet(VLookupArea(vGameName, "設定各種", "大会記録シート名"), _
                                     VLookupArea(vGameName, "設定各種", "大会記録範囲名"))
             End If
@@ -215,7 +216,7 @@ Public Sub 各種設定名前定義(sSheetName As String)
                 Application.Run VLookupArea(vGameName, "設定各種", "大会記録関数名"), _
                                     VLookupArea(vGameName, "設定各種", "優勝者シート名"), _
                                     VLookupArea(vGameName, "設定各種", "優勝者範囲名")
-            Else
+            ElseIf VLookupArea(vGameName, "設定各種", "優勝者シート名") <> "" Then
                 Call DefineWinnerSheet(VLookupArea(vGameName, "設定各種", "優勝者シート名"), _
                                     VLookupArea(vGameName, "設定各種", "優勝者範囲名"))
             End If
@@ -295,6 +296,27 @@ Private Sub 市民大会種目区分設定(sSheetName As String)
     Call DefineName("市民選手年齢区分", RowRangeAddress("$H$1"))
     Call DefineName("市民リレー年齢区分", RowRangeAddress("$IJ$1"))
     Call DefineName("市民年齢区分", TableRangeAddress("$K$1"))
+
+    ' シートの表示／保護
+    Call SheetProtect(True, oWorkSheet)
+    oWorkSheet.Visible = vVisible
+End Sub
+
+'
+' 室内記録会種目区分の名前を定義する
+'
+' sSheetName    IN      シート名
+'
+Private Sub 室内記録会種目区分設定(sSheetName As String)
+    ' 表示／アクティブ／解除
+    Dim vVisible As Variant
+    vVisible = GetSheetVisible(sSheetName)
+    Dim oWorkSheet As Worksheet
+    Set oWorkSheet = SheetActivate(sSheetName)
+    Call SheetProtect(False, oWorkSheet)
+    
+    Call DefineName("記録会年齢区分", TableRangeAddress("$J$1"))
+    Call DefineName("検定年齢区分", TableRangeAddress("$O$1"))
 
     ' シートの表示／保護
     Call SheetProtect(True, oWorkSheet)
@@ -619,7 +641,8 @@ Private Sub 大会名定義()
     sAry(0) = 学マ大会
     sAry(1) = 市民大会
     sAry(2) = 選手権大会
-    
+    sAry(3) = 室内記録会
+
     Call DefineListValidation("大会名", "$B$1", sAry)
     
 End Sub
@@ -756,6 +779,7 @@ Private Sub 組最少人数定義(Optional sValue As String = "")
     Dim sAry(2) As String
     sAry(0) = "3"
     sAry(1) = "4"
+    sAry(2) = "2"
     Call DefineListValidation("大会組最少人数", "$E$2", sAry)
 
 End Sub
