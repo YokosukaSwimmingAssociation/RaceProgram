@@ -1,5 +1,12 @@
 Attribute VB_Name = "DefineEntrySheetModule"
 '
+' エントリーシートの設定を行う
+'
+'
+'
+'
+
+'
 ' エントリーシートに名前を定義する
 '
 Public Sub エントリーシート定義()
@@ -40,6 +47,8 @@ Private Sub 記入票名前定義()
         Call DefineName("申込み期間", "$M$7")
     ElseIf Range("大会名").Value = 市民大会 Then
         Call DefineName("申込み期間", "$L$7")
+    ElseIf Range("大会名").Value = 室内記録会 Then
+        Call DefineName("申込み期間", "$M$7")
     Else
         Call DefineName("申込み期間", "$K$7")
     End If
@@ -49,16 +58,18 @@ Private Sub 記入票名前定義()
     If Range("大会名").Value = 市民大会 Then
         Call DefineName("選手番号", "$B$12:$B$71,$B$98:$B$175,$B$194:$B$270,$B$290:$B$366,$B$386:$B$462,$B$482:$B$558")
         Call DefineName("リレー範囲", "$B$74:$B$77,$B$178:$B$181,$B$274:$B$277,$B$370:$B$373,$B$466:$B$469,$B$562:$B$565")
+    ElseIf Range("大会名").Value = 室内記録会 Then
+        Call DefineName("選手番号", "$B$13:$B$32,$B$55:$B$80,$B$95:$B$120,$B$135:$B$160,$B$175:$B$200,$B$215:$B$240")
     Else
         Call DefineName("選手番号", "$B$12:$B$31,$B$58:$B$83,$B$102:$B$127,$B$146:$B$171,$B$190:$B$215,$B$234:$B$259")
         Call DefineName("リレー範囲", "$B$34:$B$37,$B$86:$B$89,$B$130:$B$133,$B$174:$B$177,$B$218:$B$221,$B$262:$B$265")
     End If
 
-    Call DefineName("選手性別列", "$C$10")
+    Call DefineName("選手性別列", "$C$11")
     Call DefineNameByColumns("選手性別列", "選手性別")
 
-    Call DefineName("選手名列", "$D$10")
-    Call DefineName("選手区分列", "$F$10")
+    Call DefineName("選手名列", "$D$11")
+    Call DefineName("選手区分列", "$F$11")
     
     If Range("大会名").Value = 選手権大会 Then
         Call DefineName("種目一覧", "$G$10:$S$10")
@@ -121,6 +132,43 @@ Private Sub 記入票名前定義()
         Call DefineName("リレー秒列", "$N$34")
         Call DefineName("リレーミリ秒列", "$P$34")
     
+    ElseIf Range("大会名").Value = 室内記録会 Then
+        Call DefineName("種目一覧", "$G$11:$T$11")
+        Call DefineName("種目距離", "$G$12:$T$12")
+        
+        Call DefineName("自由形25M列", "$G$12")
+        Call DefineName("自由形50M列", "$H$12")
+        Call DefineName("自由形100M列", "$I$12")
+        Call DefineName("平泳ぎ25M列", "$J$12")
+        Call DefineName("平泳ぎ50M列", "$K$12")
+        Call DefineName("平泳ぎ100M列", "$L$12")
+        Call DefineName("バタフライ25M列", "$M$12")
+        Call DefineName("バタフライ50M列", "$N$12")
+        Call DefineName("バタフライ100M列", "$O$12")
+        Call DefineName("背泳ぎ25M列", "$P$12")
+        Call DefineName("背泳ぎ50M列", "$Q$12")
+        Call DefineName("背泳ぎ100M列", "$R$12")
+        Call DefineName("個人メドレー100M列", "$S$12")
+        Call DefineName("個人メドレー200M列", "$T$12")
+        'Call DefineName("フリーリレー4×50M列", "$Q$11")
+        'Call DefineName("メドレーリレー4×50M列", "$R$11")
+        
+        Call DefineName("選手種目列", "$G$12:$T$12")
+        'Call DefineName("選手リレー種目列", "$Q$11:$R$11")
+        
+        Call DefineName("選手分列", "$U$12")
+        Call DefineName("選手秒列", "$W$12")
+        Call DefineName("選手ミリ秒列", "$Y$12")
+        
+        'Call DefineName("リレー区分列", "$B$33")
+        
+        'Call DefineName("リレー分列", "$L$34")
+        'Call DefineName("リレー秒列", "$N$34")
+        'Call DefineName("リレーミリ秒列", "$P$34")
+    
+        Call DefineName("選手検定列", "$Z$11")
+        Call DefineNameByColumns("選手検定列", "選手検定")
+    
     Else
         ' 学童マスターズ大会
         Call DefineName("種目一覧", "$G$10:$O$10")
@@ -168,6 +216,7 @@ Private Sub 記入票名前定義()
     Call DefineName("表示区分列", "$AJ$11")
     Call DefineName("表示性別列", "$AK$11")
     Call DefineName("表示距離列", "$AL$11")
+    Call DefineName("表示検定列", "$AM$11")
 
     Call DefineName("リレー種目列", "$E$33")
     Call DefineName("リレー種目名列", "$F$33")
@@ -184,10 +233,16 @@ Private Sub 記入票名前定義()
         Call DefineNameByTripleColumns("選手区分列", "選手区分", "選手年齢", "")
         Call DefineNameByTripleColumns("選手種目列", "選手種目偶数", "選手種目奇数", "")
     
+    ElseIf Range("大会名").Value = 室内記録会 Then
+    
+        Call DefineNameByEvenOddColumns("選手名列", "選手フリガナ", "選手名")
+        Call DefineNameByEvenOddColumns("選手区分列", "選手年齢", "選手学年")
+        Call DefineNameByEvenOddColumns("選手種目列", "選手種目偶数", "選手種目奇数")
+        
     ElseIf Range("大会名").Value = マスターズ大会 Then
     
         Call DefineNameByEvenOddColumns("選手名列", "選手フリガナ", "選手名")
-        Call DefineNameByColumns("選手区分列", "選手年齢")
+        Call DefineNameByColumns("選手区分列", "選手学年")
         Call DefineNameByEvenOddColumns("選手種目列", "選手種目偶数", "選手種目奇数")
         
     Else
@@ -200,18 +255,23 @@ Private Sub 記入票名前定義()
 
     Call DefineNameByColumns("選手リレー種目列", "選手リレー種目")
                     
+    Call DefineNameByColumns("自由形25M列", "自由形25M")
     Call DefineNameByColumns("自由形50M列", "自由形50M")
     Call DefineNameByColumns("自由形100M列", "自由形100M")
     Call DefineNameByColumns("自由形200M列", "自由形200M")
+    Call DefineNameByColumns("平泳ぎ25M列", "平泳ぎ25M")
     Call DefineNameByColumns("平泳ぎ50M列", "平泳ぎ50M")
     Call DefineNameByColumns("平泳ぎ100M列", "平泳ぎ100M")
     Call DefineNameByColumns("平泳ぎ200M列", "平泳ぎ200M")
+    Call DefineNameByColumns("バタフライ25M列", "バタフライ25M")
     Call DefineNameByColumns("バタフライ50M列", "バタフライ50M")
     Call DefineNameByColumns("バタフライ100M列", "バタフライ100M")
     Call DefineNameByColumns("バタフライ200M列", "バタフライ200M")
+    Call DefineNameByColumns("背泳ぎ25M列", "背泳ぎ25M")
     Call DefineNameByColumns("背泳ぎ50M列", "背泳ぎ50M")
     Call DefineNameByColumns("背泳ぎ100M列", "背泳ぎ100M")
     Call DefineNameByColumns("背泳ぎ200M列", "背泳ぎ200M")
+    Call DefineNameByColumns("個人メドレー100M列", "個人メドレー100M")
     Call DefineNameByColumns("個人メドレー200M列", "個人メドレー200M")
     Call DefineNameByColumns("フリーリレー4×50M列", "フリーリレー4×50M")
     Call DefineNameByColumns("メドレーリレー4×50M列", "メドレーリレー4×50M")
@@ -230,6 +290,7 @@ Private Sub 記入票名前定義()
     Call DefineNameByColumns("表示区分列", "表示区分")
     Call DefineNameByColumns("表示性別列", "表示性別")
     Call DefineNameByColumns("表示距離列", "表示距離")
+    Call DefineNameByColumns("表示検定列", "表示検定")
 
     Call DefineNameByRelayColumns("リレー区分列", "リレー区分")
     Call DefineNameByRelayColumns("リレー種目列", "リレー種目")
@@ -273,6 +334,13 @@ Private Sub 種目番号区分名前定義()
         Call DefineName("申込み期間開始", "$J$2")
         Call DefineName("申込み期間終了", "$J$3")
         Call DefineName("リレー種目番号", RowRangeAddress("$L$2"))
+
+    ElseIf Range("大会名").Value = 室内記録会 Then
+
+        Call DefineName("種目番号区分", TableRangeAddress("$A$1"))
+        Call DefineName("申込み期間開始", "$G$2")
+        Call DefineName("申込み期間終了", "$G$3")
+        'Call DefineName("リレー種目番号", RowRangeAddress("$L$2"))
 
     ElseIf Range("大会名").Value = マスターズ大会 Then
     
@@ -541,8 +609,17 @@ Private Sub 入力制限定義()
         Call DefineSchoolValidation("選手学校名")
         Call DefineClassValidation("選手区分")
         Call DefineAgeValidation("選手年齢", 12)
-        Call DefineShiminEntryValidations("")
+        'Call DefineShiminEntryValidationsS2021("")
+        Call DefineShiminEntryValidationsM2021("")
         Call DefineRelayClassValidation("リレー区分")
+    
+    ElseIf Range("大会名").Value = 室内記録会 Then
+        
+        Call DefineAgeValidation("選手年齢", 6)
+        Call DefineSchoolGradeValidation("選手学年")
+        Call DefineShitsunaiEntryValidations("")
+        'Call DefineRelayClassValidation("リレー区分")
+        Call DefineKenteiValidation("選手検定")
     
     ElseIf Range("大会名").Value = マスターズ大会 Then
         
@@ -553,7 +630,7 @@ Private Sub 入力制限定義()
     Else
         ' 学童大会
         Call DefineSchoolGradeValidation("選手学年")
-        Call DefineGakudoEntryValidations("")
+        Call DefineGakudoEntryValidations2021("")
     
     End If
     
@@ -701,7 +778,7 @@ Private Sub DefineAgeValidation(sName As String, Optional nAge As Integer = 18)
         .ErrorTitle = "入力エラー"
         .InputMessage = ""
         .ErrorMessage = CStr(nAge) & "～120までの数字を入力してください。"
-        .IMEMode = xlIMEModeAlpha
+        .IMEMode = xlIMEModeOff
         .ShowInput = True
         .ShowError = True
     End With
@@ -723,7 +800,7 @@ Private Sub DefineSchoolGradeValidation(sName As String)
         .ErrorTitle = "入力エラー"
         .InputMessage = ""
         .ErrorMessage = "1～6までの数字を入力してください。"
-        .IMEMode = xlIMEModeAlpha
+        .IMEMode = xlIMEModeOff
         .ShowInput = True
         .ShowError = True
     End With
@@ -771,6 +848,104 @@ Private Sub DefineSchoolValidation(sName As String)
         .ShowInput = False
         .ShowError = False
     End With
+End Sub
+
+'
+' 検定の入力制限設定
+'
+' sName             IN      範囲の名前
+'
+Private Sub DefineKenteiValidation(sName As String)
+    With Range(sName).Validation
+        .Delete
+        .Add Type:=xlValidateWholeNumber, AlertStyle:=xlValidAlertStop, _
+        Operator:=xlBetween, Formula1:="1", Formula2:="7"
+        .IgnoreBlank = True
+        .InCellDropdown = True
+        .InputTitle = "検定は数字だけで入力してください。"
+        .ErrorTitle = "入力エラー"
+        .InputMessage = ""
+        .ErrorMessage = "1～7までの数字を入力してください。"
+        .IMEMode = xlIMEModeOff
+        .ShowInput = True
+        .ShowError = True
+    End With
+End Sub
+
+'
+' 学童大会の種目選択の入力制限設定
+'
+Private Sub DefineGakudoEntryValidations2021(sName As String)
+    Dim sTarget As String
+    
+    ' 50M自由形(13～18)
+    sTarget = GetRange("自由形50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("自由形50M", _
+        "=AND(" & sTarget & ">=13," & sTarget & "<=18)", _
+        "13：小学1・2年女子50M自由形" & vbCrLf & "14：小学1・2年男子50M自由形" & vbCrLf & _
+        "15：小学3・4年女子50M自由形" & vbCrLf & "16：小学3・4年男子50M自由形" & vbCrLf & _
+        "17：小学5・6年女子50M自由形" & vbCrLf & "18：小学5・6年男子50M自由形")
+    '100M自由形(37～40)
+    sTarget = GetRange("自由形100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("自由形100M", _
+        "=AND(" & sTarget & ">=37," & sTarget & "<=40)", _
+        "37：小学4年以下女子100M自由形" & vbCrLf & "38：小学4年以下男子100M自由形" & vbCrLf & _
+        "39：小学5・6年女子100M自由形" & vbCrLf & "40：小学5・6年男子100M自由形")
+    ' 50M平泳ぎ(25～30)
+    sTarget = GetRange("平泳ぎ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("平泳ぎ50M", _
+        "=AND(" & sTarget & ">=25," & sTarget & "<=30)", _
+        "25：小学1・2年女子50M平泳ぎ" & vbCrLf & "26：小学1・2年男子50M平泳ぎ" & vbCrLf & _
+        "27：小学3・4年女子50M平泳ぎ" & vbCrLf & "28：小学3・4年男子50M平泳ぎ" & vbCrLf & _
+        "29：小学5・6年女子50M平泳ぎ" & vbCrLf & "30：小学5・6年男子50M平泳ぎ")
+    '100M平泳ぎ(45～48)
+    sTarget = GetRange("平泳ぎ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("平泳ぎ100M", _
+        "=AND(" & sTarget & ">=45," & sTarget & "<=48)", _
+        "45：小学4年以下女子100M平泳ぎ" & vbCrLf & "46：小学4年以下男子100M平泳ぎ" & vbCrLf & _
+        "47：小学5・6年女子100M平泳ぎ" & vbCrLf & "48：小学5・6年男子100M平泳ぎ")
+    ' 50Mバタフライ(19～24)
+    sTarget = GetRange("バタフライ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("バタフライ50M", _
+        "=AND(" & sTarget & ">=19," & sTarget & "<=24)", _
+        "19：小学1・2年女子50Mバタフライ" & vbCrLf & "20：小学1・2年男子50Mバタフライ" & vbCrLf & _
+        "21：小学3・4年女子50Mバタフライ" & vbCrLf & "22：小学3・4年男子50Mバタフライ" & vbCrLf & _
+        "23：小学5・6年女子50Mバタフライ" & vbCrLf & "24：小学5・6年男子50Mバタフライ")
+    '100Mバタフライ(41～44)
+    sTarget = GetRange("バタフライ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("バタフライ100M", _
+        "=AND(" & sTarget & ">=41," & sTarget & "<=44)", _
+        "41：小学4年以下女子100Mバタフライ" & vbCrLf & "42：小学4年以下男子100Mバタフライ" & vbCrLf & _
+        "43：小学5・6年女子100Mバタフライ" & vbCrLf & "44：小学5・6年男子100Mバタフライ")
+    ' 50M背泳ぎ(7～12)
+    sTarget = GetRange("背泳ぎ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("背泳ぎ50M", _
+        "=AND(" & sTarget & ">=7," & sTarget & "<=12)", _
+        " 7：小学1・2年女子50M背泳ぎ" & vbCrLf & " 8：小学1・2年男子50M背泳ぎ" & vbCrLf & _
+        " 9：小学3・4年女子50M背泳ぎ" & vbCrLf & "10：小学3・4年男子50M背泳ぎ" & vbCrLf & _
+        "11：小学5・6年女子50M背泳ぎ" & vbCrLf & "12：小学5・6年男子50M背泳ぎ")
+    '100M背泳ぎ(33～36)
+    sTarget = GetRange("背泳ぎ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("背泳ぎ100M", _
+        "=AND(" & sTarget & ">=33," & sTarget & "<=36)", _
+        "33：小学4年以下女子100M背泳ぎ" & vbCrLf & "34：小学4年以下男子100M背泳ぎ" & vbCrLf & _
+        "35：小学5・6年女子100M背泳ぎ" & vbCrLf & "36：小学5・6年男子100M背泳ぎ")
+    '200M個人メドレー(3～6)
+    sTarget = GetRange("個人メドレー200M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("個人メドレー200M", _
+        "=AND(" & sTarget & ">=3," & sTarget & "<=6)", _
+        " 3：小学4年以下女子200M個人メドレー" & vbCrLf & " 4：小学4年以下男子200M個人メドレー" & vbCrLf & _
+        " 5：小学5・6年女子200M個人メドレー" & vbCrLf & " 6：小学5・6年男子200M個人メドレー")
+    '4×50Mフリーリレー(31,32)
+    sTarget = GetRange("フリーリレー4×50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("フリーリレー4×50M", _
+        "=AND(" & sTarget & ">=31," & sTarget & "<=32)", _
+        "31：小学女子4×50Mフリーリレー" & vbCrLf & "32：小学男子4×50Mフリーリレー")
+    '4×50Mメドレーリレー(1,2)
+    sTarget = GetRange("メドレーリレー4×50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("メドレーリレー4×50M", _
+        "=AND(" & sTarget & ">=1," & sTarget & "<=2)", _
+        " 1：小学女子4×50Mメドレーリレー" & vbCrLf & " 2：小学男子4×50Mメドレーリレー")
 End Sub
 
 '
@@ -921,6 +1096,132 @@ Private Sub DefineMastersEntryValidations(sName As String)
         "=AND(" & sTarget & ">=5," & sTarget & "<=5)", _
         "5：4×50M混合メドレーリレー")
 
+End Sub
+
+'
+' 市民大会の種目選択の入力制限設定
+'
+Private Sub DefineShiminEntryValidationsS2021(sName As String)
+    Dim sTarget As String
+    
+    ' 50M自由形(17～18)
+    sTarget = GetRange("自由形50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("自由形50M", _
+        "=AND(" & sTarget & ">=17," & sTarget & "<=18)", _
+        "17：女子50M自由形" & vbCrLf & "18：男子50M自由形")
+    '100M自由形(11～12)
+    sTarget = GetRange("自由形100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("自由形100M", _
+        "=AND(" & sTarget & ">=11," & sTarget & "<=12)", _
+        "11：女子100M自由形" & vbCrLf & "12：男子100M自由形")
+    ' 50M平泳ぎ(19～20)
+    sTarget = GetRange("平泳ぎ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("平泳ぎ50M", _
+        "=AND(" & sTarget & ">=19," & sTarget & "<=20)", _
+        "19：女子50M平泳ぎ" & vbCrLf & "20：男子50M平泳ぎ")
+    '100M平泳ぎ(9～10)
+    sTarget = GetRange("平泳ぎ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("平泳ぎ100M", _
+        "=AND(" & sTarget & ">=9," & sTarget & "<=10)", _
+        " 9：女子100M平泳ぎ" & vbCrLf & "10：男子100M平泳ぎ")
+    ' 50Mバタフライ(15～16)
+    sTarget = GetRange("バタフライ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("バタフライ50M", _
+        "=AND(" & sTarget & ">=15," & sTarget & "<=16)", _
+        "15：女子50Mバタフライ" & vbCrLf & "16：男子50Mバタフライ")
+    '100Mバタフライ(7～8)
+    sTarget = GetRange("バタフライ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("バタフライ100M", _
+        "=AND(" & sTarget & ">=7," & sTarget & "<=8)", _
+        " 7：女子100Mバタフライ" & vbCrLf & " 8：男子100Mバタフライ")
+    ' 50M背泳ぎ(13～14)
+    sTarget = GetRange("背泳ぎ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("背泳ぎ50M", _
+        "=AND(" & sTarget & ">=13," & sTarget & "<=14)", _
+        "13：女子50M背泳ぎ" & vbCrLf & "14：男子50M背泳ぎ")
+    '100M背泳ぎ(5～6)
+    sTarget = GetRange("背泳ぎ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("背泳ぎ100M", _
+        "=AND(" & sTarget & ">=5," & sTarget & "<=6)", _
+        " 5：女子100M背泳ぎ" & vbCrLf & " 6：男子100M背泳ぎ")
+    '200M個人メドレー(3～4)
+    sTarget = GetRange("個人メドレー200M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("個人メドレー200M", _
+        "=AND(" & sTarget & ">=3," & sTarget & "<=4)", _
+        " 3：女子200M個人メドレー" & vbCrLf & " 4：男子200M個人メドレー")
+    '4×50Mフリーリレー(21～22)
+    sTarget = GetRange("フリーリレー4×50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("フリーリレー4×50M", _
+        "=AND(" & sTarget & ">=21," & sTarget & "<=22)", _
+        "21：女子4×50Mフリーリレー" & vbCrLf & "22：男子4×50Mフリーリレー")
+    '4×50Mメドレーリレー(1～2)
+    sTarget = GetRange("メドレーリレー4×50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("メドレーリレー4×50M", _
+        "=AND(" & sTarget & ">=1," & sTarget & "<=2)", _
+        " 1：女子4×50Mメドレーリレー" & vbCrLf & " 2：男子4×50Mメドレーリレー")
+End Sub
+
+'
+' 市民大会の種目選択の入力制限設定（マスターズ）
+'
+Private Sub DefineShiminEntryValidationsM2021(sName As String)
+    Dim sTarget As String
+    
+    ' 50M自由形(9～10)
+    sTarget = GetRange("自由形50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("自由形50M", _
+        "=AND(" & sTarget & ">=9," & sTarget & "<=10)", _
+        " 9：女子50M自由形" & vbCrLf & "10：男子50M自由形")
+    '100M自由形(21～22)
+    sTarget = GetRange("自由形100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("自由形100M", _
+        "=AND(" & sTarget & ">=21," & sTarget & "<=22)", _
+        "21：女子100M自由形" & vbCrLf & "22：男子100M自由形")
+    ' 50M平泳ぎ(11～12)
+    sTarget = GetRange("平泳ぎ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("平泳ぎ50M", _
+        "=AND(" & sTarget & ">=11," & sTarget & "<=12)", _
+        "11：女子50M平泳ぎ" & vbCrLf & "12：男子50M平泳ぎ")
+    '100M平泳ぎ(19～20)
+    sTarget = GetRange("平泳ぎ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("平泳ぎ100M", _
+        "=AND(" & sTarget & ">=19," & sTarget & "<=20)", _
+        "19：女子100M平泳ぎ" & vbCrLf & "20：男子100M平泳ぎ")
+    ' 50Mバタフライ(7～8)
+    sTarget = GetRange("バタフライ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("バタフライ50M", _
+        "=AND(" & sTarget & ">=7," & sTarget & "<=8)", _
+        " 7：女子50Mバタフライ" & vbCrLf & " 8：男子50Mバタフライ")
+    '100Mバタフライ(17～18)
+    sTarget = GetRange("バタフライ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("バタフライ100M", _
+        "=AND(" & sTarget & ">=17," & sTarget & "<=18)", _
+        "17：女子100Mバタフライ" & vbCrLf & "18：男子100Mバタフライ")
+    ' 50M背泳ぎ(5～6)
+    sTarget = GetRange("背泳ぎ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("背泳ぎ50M", _
+        "=AND(" & sTarget & ">=5," & sTarget & "<=6)", _
+        " 5：女子50M背泳ぎ" & vbCrLf & " 6：男子50M背泳ぎ")
+    '100M背泳ぎ(15～16)
+    sTarget = GetRange("背泳ぎ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("背泳ぎ100M", _
+        "=AND(" & sTarget & ">=15," & sTarget & "<=16)", _
+        "15：女子100M背泳ぎ" & vbCrLf & "16：男子100M背泳ぎ")
+    '200M個人メドレー(3～4)
+    sTarget = GetRange("個人メドレー200M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("個人メドレー200M", _
+        "=AND(" & sTarget & ">=3," & sTarget & "<=4)", _
+        " 3：女子200M個人メドレー" & vbCrLf & " 4：男子200M個人メドレー")
+    '4×50Mフリーリレー(13～14)
+    sTarget = GetRange("フリーリレー4×50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("フリーリレー4×50M", _
+        "=AND(" & sTarget & ">=13," & sTarget & "<=14)", _
+        "13：女子4×50Mフリーリレー" & vbCrLf & "14：男子4×50Mフリーリレー")
+    '4×50Mメドレーリレー(1～2)
+    sTarget = GetRange("メドレーリレー4×50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("メドレーリレー4×50M", _
+        "=AND(" & sTarget & ">=1," & sTarget & "<=2)", _
+        " 1：女子4×50Mメドレーリレー" & vbCrLf & " 2：男子4×50Mメドレーリレー")
 End Sub
 
 '
@@ -1099,6 +1400,86 @@ Private Sub DefineSenshukenEntryValidations(sName As String)
 End Sub
 
 '
+' 室内記録会の種目選択の入力制限設定
+'
+Private Sub DefineShitsunaiEntryValidations(sName As String)
+    Dim sTarget As String
+
+    ' 25M自由形(3,4)
+    sTarget = GetRange("自由形25M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("自由形25M", _
+        "=AND(" & sTarget & ">=3," & sTarget & "<=4)", _
+        " 3：女子25M自由形" & vbCrLf & " 4：男子25M自由形")
+    ' 50M自由形(21,22)
+    sTarget = GetRange("自由形50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("自由形50M", _
+        "=AND(" & sTarget & ">=21," & sTarget & "<=22)", _
+        "21：女子50M自由形" & vbCrLf & "22：男子50M自由形")
+    '100M自由形(11,12)
+    sTarget = GetRange("自由形100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("自由形100M", _
+        "=AND(" & sTarget & ">=11," & sTarget & "<=12)", _
+        "11：女子100M自由形" & vbCrLf & "12：男子100M自由形")
+    ' 25M平泳ぎ(5,6)
+    sTarget = GetRange("平泳ぎ25M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("平泳ぎ25M", _
+        "=AND(" & sTarget & ">=5," & sTarget & "<=6)", _
+        " 5：女子25M平泳ぎ" & vbCrLf & " 6：男子25M平泳ぎ")
+    ' 50M平泳ぎ(23,24)
+    sTarget = GetRange("平泳ぎ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("平泳ぎ50M", _
+        "=AND(" & sTarget & ">=23," & sTarget & "<=24)", _
+        "23：女子50M平泳ぎ" & vbCrLf & "24：男子50M平泳ぎ")
+    '100M平泳ぎ(13,14)
+    sTarget = GetRange("平泳ぎ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("平泳ぎ100M", _
+        "=AND(" & sTarget & ">=13," & sTarget & "<=14)", _
+        "13：女子100M平泳ぎ" & vbCrLf & "14：男子100M平泳ぎ")
+    ' 25Mバタフライ(9,10)
+    sTarget = GetRange("バタフライ25M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("バタフライ25M", _
+        "=AND(" & sTarget & ">=9," & sTarget & "<=10)", _
+        " 9：女子25Mバタフライ" & vbCrLf & "10：男子25Mバタフライ")
+    ' 50Mバタフライ(27,28)
+    sTarget = GetRange("バタフライ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("バタフライ50M", _
+        "=AND(" & sTarget & ">=27," & sTarget & "<=28)", _
+        "27：女子50Mバタフライ" & vbCrLf & "28：男子50Mバタフライ")
+    '100Mバタフライ(17,18)
+    sTarget = GetRange("バタフライ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("バタフライ100M", _
+        "=AND(" & sTarget & ">=17," & sTarget & "<=18)", _
+        "17：女子100Mバタフライ" & vbCrLf & "18：男子100Mバタフライ")
+    ' 25M背泳ぎ(7,8)
+    sTarget = GetRange("背泳ぎ25M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("背泳ぎ25M", _
+        "=AND(" & sTarget & ">=7," & sTarget & "<=8)", _
+        " 7：女子25M背泳ぎ" & vbCrLf & " 8：男子25M背泳ぎ")
+    ' 50M背泳ぎ(25,26)
+    sTarget = GetRange("背泳ぎ50M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("背泳ぎ50M", _
+        "=AND(" & sTarget & ">=25," & sTarget & "<=26)", _
+        "25：女子50M背泳ぎ" & vbCrLf & "26：男子50M背泳ぎ")
+    '100M背泳ぎ(15,16)
+    sTarget = GetRange("背泳ぎ100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("背泳ぎ100M", _
+        "=AND(" & sTarget & ">=15," & sTarget & "<=16)", _
+        "15：女子100M背泳ぎ" & vbCrLf & "16：男子100M背泳ぎ")
+    '100M個人メドレー(19,20)
+    sTarget = GetRange("個人メドレー100M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("個人メドレー100M", _
+        "=AND(" & sTarget & ">=19," & sTarget & "<=20)", _
+        "19：女子100M個人メドレー" & vbCrLf & "20：男子100M個人メドレー")
+    '200M個人メドレー(1,2)
+    sTarget = GetRange("個人メドレー200M").Rows(1).Address(RowAbsolute:=False)
+    Call DefineEntryValidation("個人メドレー200M", _
+        "=AND(" & sTarget & ">=1," & sTarget & "<=2)", _
+        " 1：女子200M個人メドレー" & vbCrLf & " 2：男子200M個人メドレー")
+
+End Sub
+
+
+'
 ' 種目選択の入力制限設定
 '
 ' sName             IN      範囲の名前
@@ -1115,7 +1496,7 @@ Private Sub DefineEntryValidation(sName As String, sValidationString As String, 
         .ErrorTitle = "入力間違い"
         .InputMessage = ""
         .ErrorMessage = "プログラム番号は以下のいずれかを入力してください。" & vbCrLf & sErrorMessage
-        .IMEMode = xlIMEModeAlpha
+        .IMEMode = xlIMEModeOff
         .ShowInput = False
         .ShowError = True
     End With
@@ -1137,7 +1518,7 @@ Private Sub DefineMinuteValidation(sName As String)
         .ErrorTitle = "入力エラー"
         .InputMessage = ""
         .ErrorMessage = "1～9の半角数字だけ入力してください。"
-        .IMEMode = xlIMEModeAlpha
+        .IMEMode = xlIMEModeOff
         .ShowInput = False
         .ShowError = True
     End With
@@ -1159,7 +1540,7 @@ Private Sub DefineSecondValidation(sName As String)
         .ErrorTitle = "入力エラー"
         .InputMessage = ""
         .ErrorMessage = "0～59の半角数字だけ入力してください。"
-        .IMEMode = xlIMEModeAlpha
+        .IMEMode = xlIMEModeOff
         .ShowInput = False
         .ShowError = True
     End With
@@ -1181,7 +1562,7 @@ Private Sub DefineMiliSecondValidation(sName As String)
         .ErrorTitle = "入力エラー"
         .InputMessage = ""
         .ErrorMessage = "0～99の半角数字だけ入力してください。"
-        .IMEMode = xlIMEModeAlpha
+        .IMEMode = xlIMEModeOff
         .ShowInput = False
         .ShowError = True
     End With
@@ -1203,7 +1584,7 @@ Private Sub DefineRelayClassValidation(sName As String)
         .ErrorTitle = ""
         .InputMessage = ""
         .ErrorMessage = ""
-        .IMEMode = xlIMEModeAlpha
+        .IMEMode = xlIMEModeOff
         .ShowInput = True
         .ShowError = True
     End With
@@ -1225,7 +1606,7 @@ Private Sub DefineRelayStyleValidation(sName As String)
         .ErrorTitle = ""
         .InputMessage = ""
         .ErrorMessage = ""
-        .IMEMode = xlIMEModeAlpha
+        .IMEMode = xlIMEModeOff
         .ShowInput = True
         .ShowError = True
     End With
@@ -1261,6 +1642,14 @@ Private Sub 条件付き書式定義()
         Call DefineSchoolNotification("選手学校名")
         Call DefineClassNotification("選手区分", nIdx)
         Call DefineShiminNotification("選手年齢")
+    
+    ElseIf Range("大会名").Value = 室内記録会 Then
+        
+        Call DefineGenderNotification("選手性別", "選手年齢")
+        Call DefineNameNotification("選手名", "選手年齢")
+        Call DefineRubyNotification("選手フリガナ", "選手年齢")
+        Call DefineClassNotification("選手年齢")
+        Call DefineKenteiNotification("選手検定")
     
     ElseIf Range("大会名").Value = マスターズ大会 Then
         
@@ -1519,6 +1908,33 @@ Private Sub DefineShiminNotification(sName As String)
 End Sub
 
 '
+' 室内記録会の検定の注意表示定義
+'
+' sName             IN      範囲の名前
+'
+'  =AND(選手検定<>"",表示検定<>1)
+'
+Private Sub DefineKenteiNotification(sName As String)
+    
+    Dim 選手検定 As String
+    選手検定 = GetRange("選手検定").Rows(1).Address(RowAbsolute:=False)
+    Dim 表示検定 As String
+    表示検定 = GetRange("表示検定").Rows(1).Address(RowAbsolute:=False)
+    
+    With Range(sName)
+        .FormatConditions.Add Type:=xlExpression, Formula1:= _
+            "=AND(" & 選手検定 & "<>""""," & 表示検定 & "<>1)"
+        .FormatConditions(.FormatConditions.Count).SetFirstPriority
+        With .FormatConditions(1).Interior
+            .PatternColorIndex = xlAutomatic
+            .Color = 65535
+            .TintAndShade = 0
+        End With
+        .FormatConditions(1).StopIfTrue = False
+    End With
+End Sub
+
+'
 ' 選手種目の注意表示定義
 '
 ' sName             IN      範囲の名前
@@ -1705,7 +2121,7 @@ Private Sub DefineRelaySecondNotification(sName As String)
     
     With Range(sName)
         .FormatConditions.Add Type:=xlExpression, Formula1:= _
-            "=AND(TRIM(" & リレー種目 & ")="""",OR(TRIM(" & リレー秒 & ")<>""""))"
+            "=OR(AND(TRIM(" & リレー種目 & ")="""",TRIM(" & リレー秒 & ")<>""""),AND(TRIM(" & リレー種目 & ")<>"""",TRIM(" & リレー秒 & ")=""""))"
         .FormatConditions(.FormatConditions.Count).SetFirstPriority
         With .FormatConditions(1).Interior
             .PatternColorIndex = xlAutomatic
@@ -1724,6 +2140,11 @@ Private Sub 印刷範囲の設定()
     
     Application.PrintCommunication = True
     If Range("大会名").Value = 選手権大会 Then
+        With ActiveSheet.PageSetup
+            .PrintArea = "$A$1:$Z$265"
+            .FitToPagesWide = 1
+        End With
+    ElseIf Range("大会名").Value = 室内記録会 Then
         With ActiveSheet.PageSetup
             .PrintArea = "$A$1:$Z$265"
             .FitToPagesWide = 1

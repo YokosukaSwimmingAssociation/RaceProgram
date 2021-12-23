@@ -195,6 +195,7 @@ Private Sub ReadEntryFile(ByRef oGameList As Object)
     Call ReadPersonEntry(nNum, sTeamName, oEntryList)
 
     ' リレー用エントリーの読込み
+    ' ※リレー無しの特別対応
     Call ReadRelayEntry(nNum, oEntryList)
 
 End Sub
@@ -279,6 +280,13 @@ Private Sub ReadEntrySwimmer(nNum As Integer, oCell As Range, ByRef oEntry As Ob
         oEntry.Add "選手名", ReplaceName(GetOffset(oCell, GetRange("選手名").Column).Offset(1).Value)
         oEntry.Add "年齢", GetOffset(oCell, GetRange("選手年齢").Column).Value
     
+    ElseIf Range("大会名").Value = 室内記録会 Then
+    
+        oEntry.Add "選手名", ReplaceName(GetOffset(oCell, GetRange("選手名").Column).Offset(1).Value)
+        oEntry.Add "年齢", GetOffset(oCell, GetRange("選手年齢").Column).Value
+        oEntry.Add "区分", GetOffset(oCell, GetRange("選手学年").Column).Offset(1).Value
+        oEntry.Add "検定", GetOffset(oCell, GetRange("選手検定").Column).Value
+    
     Else
     
         oEntry.Add "選手名", ReplaceName(GetOffset(oCell, GetRange("選手名").Column).Offset(1).Value)
@@ -320,7 +328,7 @@ Private Sub ReadEntryLine(nNum As Integer, nRow As Integer, oEntry As Object)
             oEntry.Add nNum, oLines
             
             oLines.Add "種目番号", VLookupArea(oProNo.Value, "種目番号区分", "種目番号")
-            oLines.Add "種目区分", VLookupArea(oProNo.Value, "種目番号区分", "種目区分")
+            oLines.Add "種目区分", VLookupArea(oProNo.Value, "種目番号区分", "区分") ' 今年だけ区分にしている
             oLines.Add "種目", ReplaceStyle(sStyle)
             oLines.Add "距離", ReplaceDistance(GetRowOffset(oCell, GetRange("種目距離").Row).Value)
             nMin = GetOffset(oProNo, GetRange("選手分").Column).Value
@@ -723,6 +731,16 @@ Private Sub WriteLine( _
         Cells(nRow, Range(sTable & "[区分]").Column).Value = _
             VLookupArea(oEntry.Item("区分"), "学マ学年表示", "学年表示")
         Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = ""
+    
+    ElseIf sGame = 室内記録会 Then
+        
+        Cells(nRow, Range(sTable & "[種目区分]").Column).Value = ""
+        Cells(nRow, Range(sTable & "[年齢]").Column).Value = oEntry.Item("年齢")
+        Cells(nRow, Range(sTable & "[区分]").Column).Value = _
+            VLookupArea(oEntry.Item("年齢") & "_" & oEntry.Item("区分"), "記録会年齢区分", "区分")
+        Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = _
+            VLookupArea(oEntry.Item("年齢") & "_" & oEntry.Item("区分"), "記録会年齢区分", "ソート")
+        Cells(nRow, Range(sTable & "[検定]").Column).Value = oEntry.Item("検定")
     
     End If
     

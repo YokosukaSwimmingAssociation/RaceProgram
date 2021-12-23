@@ -7,6 +7,7 @@ Public Const マスターズ大会 As String = "横須賀マスターズ大会"
 Public Const 学マ大会 As String = "学童マスターズ大会"
 Public Const 市民大会 As String = "横須賀市民体育大会"
 Public Const 選手権大会 As String = "横須賀選手権水泳大会"
+Public Const 室内記録会 As String = "短水路室内水泳記録会"
 
 Public Const トップページシート As String = "トップページ"
 Public Const エントリーシート As String = "エントリー一覧"
@@ -16,13 +17,16 @@ Public Const フォーマットシート As String = "プログラムフォーマット"
 Public Const 記録画面シート As String = "記録画面"
 Public Const 設定各種シート As String = "設定各種"
 
-Public Const レース定員 As Integer = 7          ' １レースの人数
-Public Const 最大レーン番号 As Integer = 9      ' レーンの最大番号
-Public Const 最小レーン番号 As Integer = 3      ' レーンの最小番号
+'Public Const レース定員 As Integer = 7          ' １レースの人数
+'Public Const 最大レーン番号 As Integer = 9      ' レーンの最大番号
+'Public Const 最小レーン番号 As Integer = 3      ' レーンの最小番号
+Public Const レース定員 As Integer = 4          ' １レースの人数(室内記録会)
+Public Const 最大レーン番号 As Integer = 5      ' レーンの最大番号(室内記録会)
+Public Const 最小レーン番号 As Integer = 2      ' レーンの最小番号(室内記録会)
 Public Const 平均分け組数 As Integer = 3        ' 平均分け方式にする組数
 Public Const 個人最大行数 As Integer = 2        ' 個人の申込み行数
 Public Const リレー最大行数 As Integer = 24     ' リレーの最大申込み行数
-Public Const ページレース数 As Integer = 5      ' １ページのレース数
+Public Const ページレース数 As Integer = 6      ' １ページのレース数
 
 Public Const 選手名ブランク As String = "　　．　　．　　．"
 Private Const ARRAYSIZE = 10000
