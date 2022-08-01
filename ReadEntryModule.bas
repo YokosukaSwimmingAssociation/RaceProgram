@@ -196,7 +196,7 @@ Private Sub ReadEntryFile(ByRef oGameList As Object)
 
     ' リレー用エントリーの読込み
     ' ※リレー無しの特別対応
-    Call ReadRelayEntry(nNum, oEntryList)
+    ' Call ReadRelayEntry(nNum, oEntryList)
 
 End Sub
 
@@ -328,7 +328,7 @@ Private Sub ReadEntryLine(nNum As Integer, nRow As Integer, oEntry As Object)
             oEntry.Add nNum, oLines
             
             oLines.Add "種目番号", VLookupArea(oProNo.Value, "種目番号区分", "種目番号")
-            oLines.Add "種目区分", VLookupArea(oProNo.Value, "種目番号区分", "区分") ' 今年だけ区分にしている
+            oLines.Add "種目区分", VLookupArea(oProNo.Value, "種目番号区分", "種目区分") ' 今年だけ区分にしている
             oLines.Add "種目", ReplaceStyle(sStyle)
             oLines.Add "距離", ReplaceDistance(GetRowOffset(oCell, GetRange("種目距離").Row).Value)
             nMin = GetOffset(oProNo, GetRange("選手分").Column).Value

@@ -189,6 +189,10 @@ Public Sub 大会記録判定(oTimeCell As Range)
     Dim nTime As Long
     Dim nRecordTime As Long
     Dim nQualifyTime As Long
+    
+    ' 記録会用暫定
+    GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = ""
+    Exit Sub
 
     nRaceNo = GetRange("記録画面レースNo").Value
    
