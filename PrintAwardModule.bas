@@ -140,7 +140,7 @@ Private Sub PrintAwardByProNo(nProNo As Integer)
     Dim sGender As String ' «•Ê
     sGender = VLookupArea(nProNo, sMasterName, "«•Ê")
     Dim sDistance As String ' ‹——£
-    sDistance = VLookupArea(nProNo, sMasterName, "‹——£")
+    sDistance = Replace(VLookupArea(nProNo, sMasterName, "‹——£"), "M", "")
     Dim sStyle As String ' í–Ú
     sStyle = VLookupArea(nProNo, sMasterName, "í–Ú")
     Dim nMaxOrder As Integer ' o—Í‚·‚é‡ˆÊ

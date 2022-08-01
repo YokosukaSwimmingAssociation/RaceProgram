@@ -195,8 +195,8 @@ Private Sub ReadEntryFile(ByRef oGameList As Object)
     Call ReadPersonEntry(nNum, sTeamName, oEntryList)
 
     ' リレー用エントリーの読込み
-    ' ※リレー無しの特別対応
-    ' Call ReadRelayEntry(nNum, oEntryList)
+    ' ※リレー無しの特別対応(7/3戻す)
+    Call ReadRelayEntry(nNum, oEntryList)
 
 End Sub
 

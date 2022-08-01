@@ -17,18 +17,20 @@ Public Const フォーマットシート As String = "プログラムフォーマット"
 Public Const 記録画面シート As String = "記録画面"
 Public Const 設定各種シート As String = "設定各種"
 
-'Public Const レース定員 As Integer = 7          ' １レースの人数
-'Public Const 最大レーン番号 As Integer = 9      ' レーンの最大番号
-'Public Const 最小レーン番号 As Integer = 3      ' レーンの最小番号
-Public Const レース定員 As Integer = 5          ' １レースの人数(室内記録会)
-Public Const 最大レーン番号 As Integer = 5      ' レーンの最大番号(室内記録会)
-Public Const 最小レーン番号 As Integer = 1      ' レーンの最小番号(室内記録会)
+Public Const レース定員 As Integer = 7          ' １レースの人数
+Public Const 最大レーン番号 As Integer = 9      ' レーンの最大番号
+Public Const 最小レーン番号 As Integer = 3      ' レーンの最小番号
+'Public Const レース定員 As Integer = 5          ' １レースの人数(室内記録会)
+'Public Const 最大レーン番号 As Integer = 5      ' レーンの最大番号(室内記録会)
+'Public Const 最小レーン番号 As Integer = 1      ' レーンの最小番号(室内記録会)
 Public Const 平均分け組数 As Integer = 3        ' 平均分け方式にする組数
 Public Const 個人最大行数 As Integer = 2        ' 個人の申込み行数
 Public Const リレー最大行数 As Integer = 24     ' リレーの最大申込み行数
-Public Const ページレース数 As Integer = 6      ' １ページのレース数
+Public Const ページレース数 As Integer = 5      ' １ページのレース数
 
 Public Const 選手名ブランク As String = "　　．　　．　　．"
+Public Const タイムブランク As String = "　　：　　．  "
+Public Const 順位ブランク As String = "　　"
 Private Const ARRAYSIZE = 10000
 
 Public Type RaceNumber

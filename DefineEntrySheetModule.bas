@@ -50,7 +50,7 @@ Private Sub 記入票名前定義()
     ElseIf Range("大会名").Value = 室内記録会 Then
         Call DefineName("申込み期間", "$M$7")
     Else
-        Call DefineName("申込み期間", "$K$7")
+        Call DefineName("申込み期間", "$O$8")
     End If
 
     ' 選手番号とリレー範囲の定義
@@ -61,15 +61,15 @@ Private Sub 記入票名前定義()
     ElseIf Range("大会名").Value = 室内記録会 Then
         Call DefineName("選手番号", "$B$13:$B$32,$B$55:$B$80,$B$95:$B$120,$B$135:$B$160,$B$175:$B$200,$B$215:$B$240")
     Else
-        Call DefineName("選手番号", "$B$12:$B$31,$B$58:$B$83,$B$102:$B$127,$B$146:$B$171,$B$190:$B$215,$B$234:$B$259")
-        Call DefineName("リレー範囲", "$B$34:$B$37,$B$86:$B$89,$B$130:$B$133,$B$174:$B$177,$B$218:$B$221,$B$262:$B$265")
+        Call DefineName("選手番号", "$B$13:$B$32,$B$60:$B$85,$B$105:$B$130,$B$150:$B$175,$B$195:$B$220,$B$240:$B$265")
+        Call DefineName("リレー範囲", "$B$35:$B$38,$B$88:$B$91,$B$133:$B$136,$B$178:$B$181,$B$223:$B$226,$B$268:$B$271")
     End If
 
-    Call DefineName("選手性別列", "$C$11")
+    Call DefineName("選手性別列", "$C$12")
     Call DefineNameByColumns("選手性別列", "選手性別")
 
-    Call DefineName("選手名列", "$D$11")
-    Call DefineName("選手区分列", "$F$11")
+    Call DefineName("選手名列", "$D$12")
+    Call DefineName("選手区分列", "$F$12")
     
     If Range("大会名").Value = 選手権大会 Then
         Call DefineName("種目一覧", "$G$10:$S$10")
@@ -171,55 +171,55 @@ Private Sub 記入票名前定義()
     
     Else
         ' 学童マスターズ大会
-        Call DefineName("種目一覧", "$G$10:$O$10")
-        Call DefineName("種目距離", "$G$11:$O$11")
+        Call DefineName("種目一覧", "$G$11:$O$11")
+        Call DefineName("種目距離", "$G$12:$O$12")
     
-        Call DefineName("自由形50M列", "$G$11")
-        Call DefineName("自由形100M列", "$H$11")
-        Call DefineName("平泳ぎ50M列", "$I$11")
-        Call DefineName("平泳ぎ100M列", "$J$11")
-        Call DefineName("バタフライ50M列", "$K$11")
-        Call DefineName("バタフライ100M列", "$L$11")
-        Call DefineName("背泳ぎ50M列", "$M$11")
-        Call DefineName("背泳ぎ100M列", "$N$11")
-        Call DefineName("個人メドレー200M列", "$O$11")
-        Call DefineName("フリーリレー4×50M列", "$P$11")
-        Call DefineName("メドレーリレー4×50M列", "$Q$11")
+        Call DefineName("自由形50M列", "$G$12")
+        Call DefineName("自由形100M列", "$H$12")
+        Call DefineName("平泳ぎ50M列", "$I$12")
+        Call DefineName("平泳ぎ100M列", "$J$12")
+        Call DefineName("バタフライ50M列", "$K$12")
+        Call DefineName("バタフライ100M列", "$L$12")
+        Call DefineName("背泳ぎ50M列", "$M$12")
+        Call DefineName("背泳ぎ100M列", "$N$12")
+        Call DefineName("個人メドレー200M列", "$O$12")
+        Call DefineName("フリーリレー4×50M列", "$P$12")
+        Call DefineName("メドレーリレー4×50M列", "$Q$12")
         
         If Range("大会名").Value = マスターズ大会 Then
-            Call DefineName("混合フリーリレー4×50M列", "$R$11")
-            Call DefineName("混合メドレーリレー4×50M列", "$S$11")
-            Call DefineName("選手リレー種目列", "$P$11:$S$11")
+            Call DefineName("混合フリーリレー4×50M列", "$R$12")
+            Call DefineName("混合メドレーリレー4×50M列", "$S$12")
+            Call DefineName("選手リレー種目列", "$P$12:$S$12")
             
-            Call DefineName("リレー区分列", "$B$33")
+            Call DefineName("リレー区分列", "$B$34")
         Else
-            Call DefineName("選手リレー種目列", "$P$11:$Q$11")
+            Call DefineName("選手リレー種目列", "$P$12:$Q$12")
         End If
         
-        Call DefineName("選手種目列", "$G$11:$O$11")
+        Call DefineName("選手種目列", "$G$12:$O$12")
     
-        Call DefineName("選手分列", "$T$12")
-        Call DefineName("選手秒列", "$V$12")
-        Call DefineName("選手ミリ秒列", "$X$12")
+        Call DefineName("選手分列", "$T$13")
+        Call DefineName("選手秒列", "$V$13")
+        Call DefineName("選手ミリ秒列", "$X$13")
     
-        Call DefineName("リレー分列", "$K$34")
-        Call DefineName("リレー秒列", "$M$34")
-        Call DefineName("リレーミリ秒列", "$O$34")
+        Call DefineName("リレー分列", "$K$35")
+        Call DefineName("リレー秒列", "$M$35")
+        Call DefineName("リレーミリ秒列", "$O$35")
     
     End If
 
-    Call DefineName("表示種目番号列", "$AB$11")
-    Call DefineName("表示種目区分列", "$AC$11")
-    Call DefineName("表示種目性別列", "$AD$11")
-    Call DefineName("表示種目距離列", "$AE$11")
-    Call DefineName("表示種目名列", "$AF$11")
-    Call DefineName("表示区分列", "$AJ$11")
-    Call DefineName("表示性別列", "$AK$11")
-    Call DefineName("表示距離列", "$AL$11")
-    Call DefineName("表示検定列", "$AM$11")
+    Call DefineName("表示種目番号列", "$AB$12")
+    Call DefineName("表示種目区分列", "$AC$12")
+    Call DefineName("表示種目性別列", "$AD$12")
+    Call DefineName("表示種目距離列", "$AE$12")
+    Call DefineName("表示種目名列", "$AF$12")
+    Call DefineName("表示区分列", "$AJ$12")
+    Call DefineName("表示性別列", "$AK$12")
+    Call DefineName("表示距離列", "$AL$12")
+    Call DefineName("表示検定列", "$AM$12")
 
-    Call DefineName("リレー種目列", "$E$33")
-    Call DefineName("リレー種目名列", "$F$33")
+    Call DefineName("リレー種目列", "$E$34")
+    Call DefineName("リレー種目名列", "$F$34")
 
     If Range("大会名").Value = 選手権大会 Then
         
@@ -242,7 +242,7 @@ Private Sub 記入票名前定義()
     ElseIf Range("大会名").Value = マスターズ大会 Then
     
         Call DefineNameByEvenOddColumns("選手名列", "選手フリガナ", "選手名")
-        Call DefineNameByColumns("選手区分列", "選手学年")
+        Call DefineNameByColumns("選手区分列", "選手年齢")
         Call DefineNameByEvenOddColumns("選手種目列", "選手種目偶数", "選手種目奇数")
         
     Else
@@ -630,7 +630,7 @@ Private Sub 入力制限定義()
     Else
         ' 学童大会
         Call DefineSchoolGradeValidation("選手学年")
-        Call DefineGakudoEntryValidations2021("")
+        Call DefineGakudoEntryValidations("")
     
     End If
     

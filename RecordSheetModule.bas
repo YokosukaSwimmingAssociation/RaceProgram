@@ -191,33 +191,36 @@ Public Sub 大会記録判定(oTimeCell As Range)
     Dim nQualifyTime As Long
     
     ' 記録会用暫定
-    GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = ""
-    Exit Sub
+    'GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = ""
+    'Exit Sub
 
     nRaceNo = GetRange("記録画面レースNo").Value
    
-    nLane = GetOffset(oTimeCell, GetRange("記録画面レーン").Column).Value
-    nTime = GetOffset(oTimeCell, GetRange("記録画面タイム").Column).Value
-    
-    ' レーン、タイムに値が設定されている場合
-    If nLane > 0 And nTime > 0 Then
-        nRecordTime = SearchRecord(nRaceNo, nLane)
-        nQualifyTime = SearchQualify(nRaceNo, nLane)
-        If nQualifyTime > 0 And nTime > nQualifyTime Then
-            ' 時間が標準記録より大きい場合はタイム失格
-            GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = "タイム失格"
-        ElseIf nRecordTime = 0 Or nTime < nRecordTime Then
-            ' 時間が大会記録より小さい場合は大会新（同一タイムはNG）
-            GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = "大会新"
+    Dim oOneCell As Range
+    For Each oOneCell In oTimeCell
+        nLane = GetOffset(oOneCell, GetRange("記録画面レーン").Column).Value
+        nTime = GetOffset(oOneCell, GetRange("記録画面タイム").Column).Value
+        
+        ' レーン、タイムに値が設定されている場合
+        If nLane > 0 And nTime > 0 Then
+            nRecordTime = SearchRecord(nRaceNo, nLane)
+            nQualifyTime = SearchQualify(nRaceNo, nLane)
+            If nQualifyTime > 0 And nTime > nQualifyTime Then
+                ' 時間が標準記録より大きい場合はタイム失格
+                GetOffset(oOneCell, GetRange("記録画面備考").Column).Value = "タイム失格"
+            ElseIf nRecordTime = 0 Or nTime <= nRecordTime Then
+                ' 時間が大会記録より小さい場合は大会新（同一タイムはOK）
+                GetOffset(oOneCell, GetRange("記録画面備考").Column).Value = "大会新"
+            Else
+                ' それ以外は空欄
+                GetOffset(oOneCell, GetRange("記録画面備考").Column).Value = ""
+            End If
         Else
-            ' それ以外は空欄
-            GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = ""
+            ' 何も入力されていないレーンも空欄
+            GetOffset(oOneCell, GetRange("記録画面備考").Column).Value = ""
         End If
-    Else
-        ' 何も入力されていないレーンも空欄
-        GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = ""
-    End If
-    GetOffset(oTimeCell, GetRange("記録画面違反").Column).Value = ""
+        GetOffset(oOneCell, GetRange("記録画面違反").Column).Value = ""
+    Next
 
     Application.EnableEvents = True
 End Sub
@@ -358,15 +361,20 @@ Private Sub SetRecord(nRaceNo As Integer, nLane As Integer, nTime As Long, sAddi
                 ' タイムが入力されていない場合
                 If sAdditional <> "" Then
                     ' 備考の値を設定
+                    GetOffset(vLaneNo, GetRange("Prog時間").Column).Value = タイムブランク
                     GetOffset(vLaneNo, GetRange("Prog備考").Column).Value = sAdditional
+                    GetOffset(vLaneNo, GetRange("Prog順位").Column).Value = "　　"
                 Else
                     ' 備考が空欄なら棄権
+                    GetOffset(vLaneNo, GetRange("Prog時間").Column).Value = タイムブランク
                     GetOffset(vLaneNo, GetRange("Prog備考").Column).Value = "棄権"
+                    GetOffset(vLaneNo, GetRange("Prog順位").Column).Value = 順位ブランク
                 End If
             Else
                 ' タイムが入力されている場合は時間と備考を設定
                 GetOffset(vLaneNo, GetRange("Prog時間").Column).Value = nTime
                 GetOffset(vLaneNo, GetRange("Prog備考").Column).Value = sAdditional
+                GetOffset(vLaneNo, GetRange("Prog順位").Column).Value = 順位ブランク
             End If
             Exit Sub
         End If
