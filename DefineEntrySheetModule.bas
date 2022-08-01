@@ -46,7 +46,7 @@ Private Sub 記入票名前定義()
     If Range("大会名").Value = 選手権大会 Then
         Call DefineName("申込み期間", "$M$7")
     ElseIf Range("大会名").Value = 市民大会 Then
-        Call DefineName("申込み期間", "$L$7")
+        Call DefineName("申込み期間", "$L$9")
     ElseIf Range("大会名").Value = 室内記録会 Then
         Call DefineName("申込み期間", "$M$7")
     Else
@@ -56,8 +56,8 @@ Private Sub 記入票名前定義()
     ' 選手番号とリレー範囲の定義
     ' この範囲を以降の定義で利用する
     If Range("大会名").Value = 市民大会 Then
-        Call DefineName("選手番号", "$B$12:$B$71,$B$98:$B$175,$B$194:$B$270,$B$290:$B$366,$B$386:$B$462,$B$482:$B$558")
-        Call DefineName("リレー範囲", "$B$74:$B$77,$B$178:$B$181,$B$274:$B$277,$B$370:$B$373,$B$466:$B$469,$B$562:$B$565")
+        Call DefineName("選手番号", "$B$14:$B$73,$B$102:$B$179,$B$200:$B$277,$B$298:$B$375,$B$398:$B$473,$B$494:$B$571")
+        Call DefineName("リレー範囲", "$B$76:$B$79,$B$182:$B$185,$B$280:$B$283,$B$378:$B$381,$B$476:$B$479,$B$574:$B$577")
     ElseIf Range("大会名").Value = 室内記録会 Then
         Call DefineName("選手番号", "$B$13:$B$32,$B$55:$B$80,$B$95:$B$120,$B$135:$B$160,$B$175:$B$200,$B$215:$B$240")
     Else
@@ -72,7 +72,7 @@ Private Sub 記入票名前定義()
     Call DefineName("選手区分列", "$F$12")
     
     If Range("大会名").Value = 選手権大会 Then
-        Call DefineName("種目一覧", "$G$10:$S$10")
+        Call DefineName("種目一覧", "$G$11:$S$11")
         Call DefineName("種目距離", "$G$11:$S$11")
    
         Call DefineName("自由形50M列", "$G$11")
@@ -103,34 +103,34 @@ Private Sub 記入票名前定義()
         Call DefineName("リレーミリ秒列", "$P$34")
     
     ElseIf Range("大会名").Value = 市民大会 Then
-        Call DefineName("種目一覧", "$G$10:$P$10")
-        Call DefineName("種目距離", "$G$11:$P$11")
+        Call DefineName("種目一覧", "$G$12:$P$12")
+        Call DefineName("種目距離", "$G$13:$P$13")
         
-        Call DefineName("自由形50M列", "$G$11")
-        Call DefineName("自由形100M列", "$H$11")
-        Call DefineName("自由形200M列", "$I$11")
-        Call DefineName("平泳ぎ50M列", "$J$11")
-        Call DefineName("平泳ぎ100M列", "$K$11")
-        Call DefineName("バタフライ50M列", "$L$11")
-        Call DefineName("バタフライ100M列", "$M$11")
-        Call DefineName("背泳ぎ50M列", "$N$11")
-        Call DefineName("背泳ぎ100M列", "$O$11")
-        Call DefineName("個人メドレー200M列", "$P$11")
-        Call DefineName("フリーリレー4×50M列", "$Q$11")
-        Call DefineName("メドレーリレー4×50M列", "$R$11")
+        Call DefineName("自由形50M列", "$G$13")
+        Call DefineName("自由形100M列", "$H$13")
+        Call DefineName("自由形200M列", "$I$13")
+        Call DefineName("平泳ぎ50M列", "$J$13")
+        Call DefineName("平泳ぎ100M列", "$K$13")
+        Call DefineName("バタフライ50M列", "$L$13")
+        Call DefineName("バタフライ100M列", "$M$13")
+        Call DefineName("背泳ぎ50M列", "$N$13")
+        Call DefineName("背泳ぎ100M列", "$O$13")
+        Call DefineName("個人メドレー200M列", "$P$13")
+        Call DefineName("フリーリレー4×50M列", "$Q$13")
+        Call DefineName("メドレーリレー4×50M列", "$R$13")
         
-        Call DefineName("選手種目列", "$G$11:$P$11")
-        Call DefineName("選手リレー種目列", "$Q$11:$R$11")
+        Call DefineName("選手種目列", "$G$13:$P$13")
+        Call DefineName("選手リレー種目列", "$Q$13:$R$13")
         
-        Call DefineName("選手分列", "$T$12")
-        Call DefineName("選手秒列", "$V$12")
-        Call DefineName("選手ミリ秒列", "$X$12")
+        Call DefineName("選手分列", "$T$14")
+        Call DefineName("選手秒列", "$V$14")
+        Call DefineName("選手ミリ秒列", "$X$14")
         
-        Call DefineName("リレー区分列", "$B$33")
+        Call DefineName("リレー区分列", "$B$75")
         
-        Call DefineName("リレー分列", "$L$34")
-        Call DefineName("リレー秒列", "$N$34")
-        Call DefineName("リレーミリ秒列", "$P$34")
+        Call DefineName("リレー分列", "$L$75")
+        Call DefineName("リレー秒列", "$N$75")
+        Call DefineName("リレーミリ秒列", "$P$75")
     
     ElseIf Range("大会名").Value = 室内記録会 Then
         Call DefineName("種目一覧", "$G$11:$T$11")
@@ -609,8 +609,7 @@ Private Sub 入力制限定義()
         Call DefineSchoolValidation("選手学校名")
         Call DefineClassValidation("選手区分")
         Call DefineAgeValidation("選手年齢", 12)
-        'Call DefineShiminEntryValidationsS2021("")
-        Call DefineShiminEntryValidationsM2021("")
+        Call DefineShiminEntryValidations("")
         Call DefineRelayClassValidation("リレー区分")
     
     ElseIf Range("大会名").Value = 室内記録会 Then
@@ -1311,9 +1310,9 @@ Private Sub DefineShiminEntryValidations(sName As String)
     sTarget = GetRange("メドレーリレー4×50M").Rows(1).Address(RowAbsolute:=False)
     Call DefineEntryValidation("メドレーリレー4×50M", _
         "=AND(" & sTarget & ">=1," & sTarget & "<=6)", _
-        "67：中学女子4×50Mメドレーリレー" & vbCrLf & "68：高校女子4×50Mメドレーリレー" & vbCrLf & _
-        "69：年齢区分女子4×50Mメドレーリレー" & vbCrLf & "70：中学男子4×50Mメドレーリレー" & vbCrLf & _
-        "71：高校男子4×50Mメドレーリレー" & vbCrLf & "72：年齢区分男子4×50Mメドレーリレー")
+        " 1：中学女子4×50Mメドレーリレー" & vbCrLf & " 2：高校女子4×50Mメドレーリレー" & vbCrLf & _
+        " 3：年齢区分女子4×50Mメドレーリレー" & vbCrLf & " 4：中学男子4×50Mメドレーリレー" & vbCrLf & _
+        " 5：高校男子4×50Mメドレーリレー" & vbCrLf & " 6：年齢区分男子4×50Mメドレーリレー")
 End Sub
 
 '
@@ -2142,6 +2141,11 @@ Private Sub 印刷範囲の設定()
     If Range("大会名").Value = 選手権大会 Then
         With ActiveSheet.PageSetup
             .PrintArea = "$A$1:$Z$265"
+            .FitToPagesWide = 1
+        End With
+    ElseIf Range("大会名").Value = 市民大会 Then
+        With ActiveSheet.PageSetup
+            .PrintArea = "$A$1:$X$578"
             .FitToPagesWide = 1
         End With
     ElseIf Range("大会名").Value = 室内記録会 Then
