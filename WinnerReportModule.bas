@@ -507,6 +507,38 @@ Private Sub SetRecordWinnerStyle(sGameName As String, sSheetName As String, sAre
 End Sub
 
 '
+' 大会記録シートを並び替える
+'
+' sSheetName        IN  シート名
+' sAreaName         IN  範囲名
+'
+Private Sub SortRecordWinner(sSheetName As String, sAreaName As String)
+
+    ' シートをアクティブ化
+    Sheets(sSheetName).Activate
+    Range("A1").Select
+    Selection.AutoFilter
+   
+    With ActiveSheet.AutoFilter.Sort
+        .SortFields.Clear
+        .SortFields.Add2 Key:= _
+            Range(RowRangeAddress("B2")), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption _
+            :=xlSortTextAsNumbers
+        .SortFields.Add2 Key:= _
+            Range(RowRangeAddress("F2")), SortOn:=xlSortOnValues, Order:=xlDescending, DataOption _
+            :=xlSortNormal
+
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+
+    Range("A1").Select
+End Sub
+
+'
 ' 優勝者シート名
 '
 ' sGameName     IN      大会名
@@ -810,6 +842,9 @@ Private Sub WriteNewRecords(sGameName As String, oRecordList As Object)
 
     ' 書式設定
     Call SetRecordWinnerStyle(sGameName, sSheetName, sRecordAreaName)
+
+    ' 並び替え
+    Call SortRecordWinner(sSheetName, sRecordAreaName)
 
     ' 大会記録シートの設定
     Call DefineRecordSheet(sSheetName, sRecordAreaName)
