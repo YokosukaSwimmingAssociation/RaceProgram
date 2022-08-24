@@ -639,10 +639,11 @@ nRow As Integer, nProNo As Integer, nHeat As Integer)
         
         ' ‰¡{‰ês–¯‘Ìˆç‘å‰ï
         ElseIf GetRange("‘å‰ï–¼").Value = s–¯‘å‰ï Then
-            ' Call CopyCell(oWorkSheet, nCurrentRow, "Prog‘å‰ï‹L˜^", _
-            '        VLookupArea(GetRecordKey(s–¯‘å‰ï, _
-            '        .ListColumns("ƒvƒNo").Range(nRow).Value, _
-            '        .ListColumns("‹æ•ª").Range(nRow).Value), "s–¯‘å‰ï‹L˜^", "‹L˜^"))
+            Call CopyCell(oWorkSheet, nCurrentRow, "Prog‘å‰ï‹L˜^", _
+                   VLookupArea(GetRecordKey(s–¯‘å‰ï, _
+                   .ListColumns("ƒvƒNo").Range(nRow).Value, _
+                   Replace(.ListColumns("‹æ•ª").Range(nRow).Value, "ˆê”Ê", "20‘ã")), "s–¯‘å‰ï‹L˜^", "‹L˜^"))
+
         
         ' º“à‹L˜^‰ï
         ElseIf GetRange("‘å‰ï–¼").Value = º“à‹L˜^‰ï Then

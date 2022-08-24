@@ -150,7 +150,7 @@ Public Function GetRecordKey(sGameName As String, nProNo As Integer, sClass As S
     If sGameName = 選手権大会 Then
         GetRecordKey = CStr(nProNo)
     ElseIf sGameName = 市民大会 Then
-        GetRecordKey = CStr(nProNo) & "_" & STrimAll(sClass)
+        GetRecordKey = CStr(nProNo) & "_" & Replace(STrimAll(sClass), "一般", "20代")
     Else
         Dim sMasterName As String
         sMasterName = GetMaster(sGameName)
@@ -539,6 +539,35 @@ Private Sub SortRecordWinner(sSheetName As String, sAreaName As String)
 End Sub
 
 '
+' 大会記録シートを並び替える（市民大会）
+'
+' sSheetName        IN  シート名
+' sAreaName         IN  範囲名
+'
+Private Sub SortRecordWinnerShimin(sSheetName As String, sAreaName As String)
+
+    ' シートをアクティブ化
+    Sheets(sSheetName).Activate
+    Range("A1").Select
+    Selection.AutoFilter
+   
+    With ActiveSheet.AutoFilter.Sort
+        .SortFields.Clear
+        .SortFields.Add2 Key:= _
+            Range(RowRangeAddress("A2")), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption _
+            :=xlSortNormal
+
+        .Header = xlYes
+        .MatchCase = False
+        .Orientation = xlTopToBottom
+        .SortMethod = xlPinYin
+        .Apply
+    End With
+
+    Range("A1").Select
+End Sub
+
+'
 ' 優勝者シート名
 '
 ' sGameName     IN      大会名
@@ -844,7 +873,11 @@ Private Sub WriteNewRecords(sGameName As String, oRecordList As Object)
     Call SetRecordWinnerStyle(sGameName, sSheetName, sRecordAreaName)
 
     ' 並び替え
-    Call SortRecordWinner(sSheetName, sRecordAreaName)
+    If sGameName = 市民大会 Then
+        Call SortRecordWinnerShimin(sSheetName, sRecordAreaName)
+    Else
+        Call SortRecordWinner(sSheetName, sRecordAreaName)
+    End If
 
     ' 大会記録シートの設定
     Call DefineRecordSheet(sSheetName, sRecordAreaName)
