@@ -145,12 +145,13 @@ oProNo As Object, sTableName As String, bAverage As Boolean)
     ' 組毎
     Dim nHeat As Integer
     For nHeat = 1 To nHeats
-        ' レースNoをインクリメント
+        ' レースNoをインクリメント(調整しやすいように10ずつ増やす)
         nRaceNo = nRaceNo + 10
         
         ' 平均分け方式
         If bAverage And nHeat = (nHeats - 平均分け組数) + 1 Then
-            Call WriteHeatLaneOrderByAverage(nRaceNo, nHeat, nOrder, oProNo, sTableName)
+            Call WriteHeatLaneOrderByAverage(nRaceNo, nHeat, nNumOfHeats, nOrder, oProNo, sTableName)
+            Exit Sub
         Else
             ' 組の人数
             nNumOfHeat = nNumOfHeats(nHeat - 1)
@@ -478,12 +479,13 @@ End Function
 '
 ' nStartRaceNo  IN/OUT  開始のRaceNo
 ' nStartHeat    IN      開始の組番号
+' nNumOfHeats   IN      組毎の人数
 ' nOrder        IN      順番
 ' oProNo        IN      順番
 ' sTableName    IN      テーブル名
 '
 Private Sub WriteHeatLaneOrderByAverage(nStartRaceNo As Integer, nStartHeat As Integer, _
-nOrder As Integer, oProNo As Object, sTableName As String)
+nNumOfHeats() As Integer, nOrder As Integer, oProNo As Object, sTableName As String)
     Dim nMaxNum As Integer
     nMaxNum = 0
     Dim i As Integer
@@ -518,12 +520,12 @@ nOrder As Integer, oProNo As Object, sTableName As String)
     nCenterLane = GetCenterLane(レース定員, 最小レーン番号)
     
     ' 組の人数が残っている間
-    Dim vProNo As Variant
+    Dim oCell As Range              ' カレント行のセル
     Dim nIndex As Integer
     For nIndex = 1 To nMaxNum
         
         ' カレント行番号
-        vProNo = oProNo.Item(nOrder)
+        Set oCell = oProNo.Item(nOrder)
         
         ' レースNo
         nRaceNo = (GetOrderHeat(平均分け組数, nMaxNum, nIndex) + (nStartRaceNo / 10 - 1)) * 10
@@ -531,11 +533,11 @@ nOrder As Integer, oProNo As Object, sTableName As String)
         nHeat = GetOrderHeat(平均分け組数, nMaxNum, nIndex) + (nStartHeat - 1)
     
         ' レースNo、組の書込み
-        GetOffset(vProNo, Range(sTableName & "[レースNo]").Column).Value = nRaceNo
-        GetOffset(vProNo, Range(sTableName & "[組]").Column).Value = nHeat
+        GetOffset(oCell, Range(sTableName & "[レースNo]").Column).Value = nRaceNo
+        GetOffset(oCell, Range(sTableName & "[組]").Column).Value = nHeat
     
         ' レースNo、組、レーンを記述
-        GetOffset(vProNo, Range(sTableName & "[レーン]").Column).Value = GetLane2(nCenterLane, nMaxNum, nIndex)
+        GetOffset(oCell, Range(sTableName & "[レーン]").Column).Value = GetLane2(nCenterLane, nMaxNum, nIndex)
     
         ' 順番をインクリメント
         nOrder = nOrder + 1
