@@ -264,10 +264,10 @@ sStyle As String, _
 sClass As String)
     If sRaceClass = "”N—î‹æ•ª" Then
         GetRange("Üóí–Ú‹æ•ª").Value = sGender
-        GetRange("Üóí–Ú‹——£‹æ•ª").Value = sDistance & sStyle & "@" & sClass
+        GetRange("Üóí–Ú‹——£‹æ•ª").Value = sDistance & "‚l" & sStyle & "@" & sClass
     Else
         GetRange("Üóí–Ú‹æ•ª").Value = sRaceClass & sGender
-        GetRange("Üóí–Ú‹——£‹æ•ª").Value = sDistance & sStyle
+        GetRange("Üóí–Ú‹——£‹æ•ª").Value = sDistance & "‚l" & sStyle
     End If
     GetRange("Üó‘å‰ï‰ñ”‚P").Value = GetRange("‘å‰ï‰ñ”").Value
     GetRange("Üó‘å‰ï‰ñ”‚Q").Value = GetRange("‘å‰ï‰ñ”").Value

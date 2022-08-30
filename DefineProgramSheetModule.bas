@@ -483,17 +483,17 @@ Sub 市民賞状名前定義(sSheetName As String)
 
     Call DefineName("賞状種目区分", "$AC$4")
     Call DefineName("賞状種目距離区分", "$AC$16")
-    Call DefineName("賞状順位", "$AA$7")
+    Call DefineName("賞状順位", "$AA$10")
     Call DefineName("賞状タイム", "$Y$10")
     Call DefineName("賞状大会新", "$Y$27")
     Call DefineName("賞状氏名", "$U$9")
     Call DefineName("賞状所属", "$W$6")
     
-    Call DefineName("賞状大会回数１", "$C$11")
-    Call DefineName("賞状大会回数２", "$R$19")
-    Call DefineName("賞状年", "$F$8")
-    Call DefineName("賞状月", "$F$18")
-    Call DefineName("賞状日", "$F$23")
+    Call DefineName("賞状大会回数１", "$C$7")
+    Call DefineName("賞状大会回数２", "$R$15")
+    Call DefineName("賞状年", "$F$5")
+    Call DefineName("賞状月", "$F$15")
+    Call DefineName("賞状日", "$F$20")
  
     ' シートの表示／保護
     Call SheetProtect(True, oWorkSheet)
