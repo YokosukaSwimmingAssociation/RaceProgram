@@ -771,7 +771,8 @@ Private Sub ReadNewRecords(sGameName As String, oRecordList As Object)
     For Each vCell In RowRange(GetRange(sWinnerAreaName).Columns(1).Address).Offset(1)
         
         ' 大会新なら格納する
-        If GetOffset(vCell, GetColIdx(sWinnerAreaName, "大会新")).Value = "大会新" Then
+        If GetOffset(vCell, GetColIdx(sWinnerAreaName, "大会新")).Value = "大会新" _
+            Or GetOffset(vCell, GetColIdx(sWinnerAreaName, "大会新")).Value = "参考記録" Then
                 
             Set oWinner = CreateObject("Scripting.Dictionary")
             
