@@ -123,7 +123,9 @@ Private Sub SetWinnerInfo(sGameName As String, vProNo As Variant, oWinnerList As
     oWinner.Add "記録", GetOffset(vCell, Range("Header時間").Column).Value
     oWinner.Add "区分", GetOffset(vCell, Range("Header区分").Column).Value
     
-    If Not IsNumeric(nRecord) Or oWinner.Item("記録") <= nRecord Then
+    If Not IsNumeric(nRecord) Then
+        oWinner.Add "大会新", "参考記録"
+    ElseIf oWinner.Item("記録") <= nRecord Then
         oWinner.Add "大会新", "大会新"
     End If
     
@@ -150,7 +152,7 @@ Public Function GetRecordKey(sGameName As String, nProNo As Integer, sClass As S
     If sGameName = 選手権大会 Then
         GetRecordKey = CStr(nProNo)
     ElseIf sGameName = 市民大会 Then
-        GetRecordKey = CStr(nProNo) & "_" & Replace(STrimAll(sClass), "一般", "20代")
+        GetRecordKey = Format(nProNo, "00") & "_" & Replace(STrimAll(sClass), "一般", "20代")
     Else
         Dim sMasterName As String
         sMasterName = GetMaster(sGameName)
