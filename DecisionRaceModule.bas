@@ -191,7 +191,7 @@ nOrder As Integer, oProNo As Object, sTableName As String)
     nRemNumber = nNumOfHeat
     
     ' 組の開始位置
-    nStartLane = GetStartLane(nNumOfHeat, GetCenterLane(レース定員, 最小レーン番号), bFlag)
+    nStartLane = GetStartLane(nNumOfHeat, GetCenterLane(Range("大会組レース定員").Value, GetRange("大会組最小レーン番号").Value), bFlag)
     
     ' 組の人数が残っている間
     While nRemNumber > 0
@@ -307,7 +307,7 @@ Private Sub GetNumberOfHeat(nTotalNum As Integer, nHeats As Integer, nNumberOfHe
         If nHeats > 2 Then
             Dim i As Integer
             For i = 2 To nHeats - 1
-                nNumberOfHeat(i) = レース定員
+                nNumberOfHeat(i) = Range("大会組レース定員").Value
             Next i
         End If
     End If
@@ -322,7 +322,7 @@ End Sub
 '
 Private Function GetHeats(nTotalNum As Integer) As Integer
 
-    GetHeats = Application.WorksheetFunction.RoundUp(nTotalNum / レース定員, 0)
+    GetHeats = Application.WorksheetFunction.RoundUp(nTotalNum / Range("大会組レース定員").Value, 0)
 
 End Function
 
@@ -336,14 +336,16 @@ End Function
 '
 Private Function GetFirstHeatNumber(nTotalNum As Integer, nMinNumberOfRace As Integer) As Integer
 
-    If nTotalNum <= レース定員 Then
+    Dim maxNum
+    maxNum = Range("大会組レース定員").Value
+    If nTotalNum <= maxNum Then
         GetFirstHeatNumber = nTotalNum
-    ElseIf nTotalNum Mod レース定員 = 0 Then
-        GetFirstHeatNumber = レース定員
-    ElseIf nTotalNum Mod レース定員 <= nMinNumberOfRace Then
+    ElseIf nTotalNum Mod maxNum = 0 Then
+        GetFirstHeatNumber = maxNum
+    ElseIf nTotalNum Mod maxNum <= nMinNumberOfRace Then
         GetFirstHeatNumber = nMinNumberOfRace
     Else
-        GetFirstHeatNumber = nTotalNum Mod レース定員
+        GetFirstHeatNumber = nTotalNum Mod maxNum
     End If
 
 End Function
@@ -358,14 +360,16 @@ End Function
 '
 Private Function GetSecondHeatNumber(nTotalNum As Integer, nMinNumberOfRace As Integer) As Integer
 
-    If nTotalNum <= レース定員 Then
+    Dim maxNum
+    maxNum = Range("大会組レース定員").Value
+    If nTotalNum <= maxNum Then
         GetSecondHeatNumber = 0
-    ElseIf nTotalNum Mod レース定員 = 0 Then
-        GetSecondHeatNumber = レース定員
-    ElseIf nTotalNum Mod レース定員 <= nMinNumberOfRace Then
-        GetSecondHeatNumber = レース定員 + (nTotalNum Mod レース定員 - nMinNumberOfRace)
+    ElseIf nTotalNum Mod maxNum = 0 Then
+        GetSecondHeatNumber = maxNum
+    ElseIf nTotalNum Mod maxNum <= nMinNumberOfRace Then
+        GetSecondHeatNumber = maxNum + (nTotalNum Mod maxNum - nMinNumberOfRace)
     Else
-        GetSecondHeatNumber = レース定員
+        GetSecondHeatNumber = maxNum
     End If
 
 End Function
@@ -517,7 +521,7 @@ nOrder As Integer, oProNo As Object, sTableName As String)
     Dim nHeat As Integer
     
     ' 組のセンター
-    nCenterLane = GetCenterLane(レース定員, 最小レーン番号)
+    nCenterLane = GetCenterLane(Range("大会組レース定員").Value, GetRange("大会組最小レーン番号").Value)
     
     ' 組の人数が残っている間
     Dim oCell As Range              ' カレント行のセル

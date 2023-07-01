@@ -190,9 +190,11 @@ Public Sub 大会記録判定(oTimeCell As Range)
     Dim nRecordTime As Long
     Dim nQualifyTime As Long
     
-    ' 記録会用暫定
-    'GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = ""
-    'Exit Sub
+    ' 記録会用
+    If GetRange("大会名").Value = 室内記録会 Then
+        GetOffset(oTimeCell, GetRange("記録画面備考").Column).Value = ""
+        Exit Sub
+    End If
 
     nRaceNo = GetRange("記録画面レースNo").Value
    
@@ -363,18 +365,24 @@ Private Sub SetRecord(nRaceNo As Integer, nLane As Integer, nTime As Long, sAddi
                     ' 備考の値を設定
                     GetOffset(vLaneNo, GetRange("Prog時間").Column).Value = タイムブランク
                     GetOffset(vLaneNo, GetRange("Prog備考").Column).Value = sAdditional
-                    GetOffset(vLaneNo, GetRange("Prog順位").Column).Value = "　　"
+                    If GetRange("大会名").Value <> 室内記録会 Then
+                        GetOffset(vLaneNo, GetRange("Prog順位").Column).Value = 順位ブランク
+                    End If
                 Else
                     ' 備考が空欄なら棄権
                     GetOffset(vLaneNo, GetRange("Prog時間").Column).Value = タイムブランク
                     GetOffset(vLaneNo, GetRange("Prog備考").Column).Value = "棄権"
-                    GetOffset(vLaneNo, GetRange("Prog順位").Column).Value = 順位ブランク
+                    If GetRange("大会名").Value <> 室内記録会 Then
+                        GetOffset(vLaneNo, GetRange("Prog順位").Column).Value = 順位ブランク
+                    End If
                 End If
             Else
                 ' タイムが入力されている場合は時間と備考を設定
                 GetOffset(vLaneNo, GetRange("Prog時間").Column).Value = nTime
                 GetOffset(vLaneNo, GetRange("Prog備考").Column).Value = sAdditional
-                GetOffset(vLaneNo, GetRange("Prog順位").Column).Value = 順位ブランク
+                If GetRange("大会名").Value <> 室内記録会 Then
+                    GetOffset(vLaneNo, GetRange("Prog順位").Column).Value = 順位ブランク
+                End If
             End If
             Exit Sub
         End If
@@ -389,6 +397,13 @@ End Sub
 ' すべて順位をつける
 '
 Public Sub 順位決定()
+    
+    
+    If GetRange("大会名").Value = 室内記録会 Then
+        Exit Sub
+    End If
+  
+    
     ' イベント発生を抑制
     Call EventChange(False)
 
@@ -581,7 +596,7 @@ Private Sub ReadFinalist(nProNo As Integer, oFinalist As Object)
             If STrimAll(GetOffset(vProNo, GetRange("Header順位").Column).Value) <> "" Then
                 nOrder = STrimAll(GetOffset(vProNo, GetRange("Header順位").Column).Value)
                 ' 決勝人数まで保存
-                If nOrder > 0 And nOrder <= レース定員 Then
+                If nOrder > 0 And nOrder <= Range("大会組レース定員").Value Then
                     oFinalist.Add nOrder, vProNo
                 End If
             End If
@@ -611,7 +626,7 @@ Private Sub WriteFinalist(nProNo As Integer, oFinalist As Object, nRecord As Lon
             ' レーン毎
             nLane = GetOffset(vProNo, GetRange("Headerレーン").Column).Value
             ' レーンから順位を取得
-            nOrder = GetOrderByLane(GetCenterLane(レース定員, 最小レーン番号), nLane)
+            nOrder = GetOrderByLane(GetCenterLane(Range("大会組レース定員").Value, GetRange("大会組最小レーン番号").Value), nLane)
             ' 予選の行を取得
             Set vCell = oFinalist.Item(nOrder)
             

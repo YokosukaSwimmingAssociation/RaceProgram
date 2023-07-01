@@ -736,8 +736,8 @@ Private Sub WriteLine( _
         
         Cells(nRow, Range(sTable & "[種目区分]").Column).Value = ""
         Cells(nRow, Range(sTable & "[年齢]").Column).Value = oEntry.Item("年齢")
-        Cells(nRow, Range(sTable & "[区分]").Column).Value = _
-            VLookupArea(oEntry.Item("年齢") & "_" & oEntry.Item("区分"), "記録会年齢区分", "区分")
+        'Cells(nRow, Range(sTable & "[区分]").Column).Value = _
+        '    VLookupArea(oEntry.Item("年齢") & "_" & oEntry.Item("区分"), "記録会年齢区分", "区分")
         Cells(nRow, Range(sTable & "[ソート区分]").Column).Value = _
             VLookupArea(oEntry.Item("年齢") & "_" & oEntry.Item("区分"), "記録会年齢区分", "ソート")
         Cells(nRow, Range(sTable & "[検定]").Column).Value = oEntry.Item("検定")

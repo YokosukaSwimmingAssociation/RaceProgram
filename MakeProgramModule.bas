@@ -227,8 +227,8 @@ Private Sub MakeSheet(oWorkBook As Workbook, sSheetName As String)
     Call CopyHeaderCell(oWorkSheet, "Header所属後")
     Call CopyHeaderCell(oWorkSheet, "Header区分")
     Call CopyHeaderCell(oWorkSheet, "Header時間")
-    Call CopyHeaderCell(oWorkSheet, "Header順位")
-    'Call CopyHeaderCell(oWorkSheet, "Header検定")
+    'Call CopyHeaderCell(oWorkSheet, "Header順位")
+    Call CopyHeaderCell(oWorkSheet, "Header検定")
     Call CopyHeaderCell(oWorkSheet, "Header備考")
     Call CopyHeaderCell(oWorkSheet, "Header大会記録")
     Call CopyHeaderCell(oWorkSheet, "Header申込み記録")
@@ -347,7 +347,9 @@ Private Sub MakeProgram(oWorkSheet As Worksheet, sTableName As String, oEntryLis
             Else
                 ' レーン毎
                 Dim nLane As Integer
-                For nLane = 最小レーン番号 To 最大レーン番号
+                Dim nMaxLane
+                nMaxLane = GetRange("大会組最小レーン番号").Value + GetRange("大会組レース定員").Value - 1
+                For nLane = GetRange("大会組最小レーン番号").Value To nMaxLane
                     Call SetNoCell(oWorkSheet, nCurrentRow)
                     
                     If oHeats Is Nothing Then
@@ -536,8 +538,8 @@ Private Sub MakeHeatHeader(oWorkSheet As Worksheet, sTableName As String, nCurre
     Call CopyCell(oWorkSheet, nCurrentRow, "Header所属後")
     Call CopyCell(oWorkSheet, nCurrentRow, "Header区分")
     Call CopyCell(oWorkSheet, nCurrentRow, "Header時間")
-    Call CopyCell(oWorkSheet, nCurrentRow, "Header順位")
-    'Call CopyCell(oWorkSheet, nCurrentRow, "Header検定")
+    'Call CopyCell(oWorkSheet, nCurrentRow, "Header順位")
+    Call CopyCell(oWorkSheet, nCurrentRow, "Header検定")
     Call CopyCell(oWorkSheet, nCurrentRow, "Header備考")
     Call CopyCell(oWorkSheet, nCurrentRow, "Header大会記録")
 
@@ -572,8 +574,8 @@ Optional sRaceNo As String = Empty)
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog所属後")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog区分")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog時間")
-    Call CopyCell(oWorkSheet, nCurrentRow, "Prog順位")
-    'Call CopyCell(oWorkSheet, nCurrentRow, "Prog検定")
+    'Call CopyCell(oWorkSheet, nCurrentRow, "Prog順位")
+    Call CopyCell(oWorkSheet, nCurrentRow, "Prog検定")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog備考")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog大会記録")
     Call CopyCell(oWorkSheet, nCurrentRow, "Prog申込み記録")
@@ -626,7 +628,7 @@ nRow As Integer, nProNo As Integer, nHeat As Integer)
         Call CopyCell(oWorkSheet, nCurrentRow, "Prog区分", _
                             .ListColumns("区分").Range(nRow).Value)
         Call CopyCell(oWorkSheet, nCurrentRow, "Prog時間")
-        Call CopyCell(oWorkSheet, nCurrentRow, "Prog順位")
+        'Call CopyCell(oWorkSheet, nCurrentRow, "Prog順位")
         Call CopyCell(oWorkSheet, nCurrentRow, "Prog備考")
 
         ' 横須賀選手権水泳大会

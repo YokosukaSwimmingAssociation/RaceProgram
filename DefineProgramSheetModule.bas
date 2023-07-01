@@ -89,8 +89,8 @@ Private Sub Prog名前定義(sSheetName As String)
     Call DefineName("Prog所属後", "$I$5")
     Call DefineName("Prog区分", "$J$5")
     Call DefineName("Prog時間", "$K$5")
-    Call DefineName("Prog順位", "$L$5")
-    'Call DefineName("Prog検定", "$L$5")
+    'Call DefineName("Prog順位", "$L$5")
+    Call DefineName("Prog検定", "$L$5")
     Call DefineName("Prog備考", "$M$5")
     Call DefineName("Prog大会記録", "$N$5")
     Call DefineName("Prog申込み記録", "$O$5")
@@ -554,6 +554,8 @@ Private Sub トップページ定義(sSheetName As String)
     Call プリンタ定義
     Call 組合せ方式定義
     Call 組最少人数定義
+    Call レース定員定義
+    Call 最小レーン番号定義
     Call 賞状定数定義
 
     ' シートのロック
@@ -652,7 +654,7 @@ End Sub
 '
 Private Sub 大会年定義()
     
-    Call DefineBetweenValidation("大会年", "$E$4", 2000, 2050, Year(Now))
+    Call DefineBetweenValidation("大会年", "$E$6", 2000, 2050, Year(Now))
 
 End Sub
 
@@ -671,7 +673,7 @@ End Sub
 '
 Private Sub 賞状回数定義()
     
-    Call DefineBetweenValidation("大会回数", "$E$7", 1, 150)
+    Call DefineBetweenValidation("大会回数", "$E$9", 1, 150)
 
 End Sub
 
@@ -680,7 +682,7 @@ End Sub
 '
 Private Sub 賞状年定義()
     
-    Call DefineName("大会元号年", "$E$8")
+    Call DefineName("大会元号年", "$E$10")
 
 End Sub
 
@@ -689,7 +691,7 @@ End Sub
 '
 Private Sub 賞状月定義()
     
-    Call DefineBetweenValidation("大会月", "$E$9", 1, 12)
+    Call DefineBetweenValidation("大会月", "$E$11", 1, 12)
 
 End Sub
 
@@ -698,7 +700,7 @@ End Sub
 '
 Private Sub 賞状日定義()
     
-    Call DefineBetweenValidation("大会日", "$E$10", 1, 31)
+    Call DefineBetweenValidation("大会日", "$E$12", 1, 31)
 
 End Sub
 
@@ -719,7 +721,7 @@ Private Sub プリンタ名定義()
 
     Dim sAry() As String
     sAry = GetPrinters
-    Call DefineListValidation("大会プリンタ名", "$E$5", sAry)
+    Call DefineListValidation("大会プリンタ名", "$E$7", sAry)
     
 End Sub
 
@@ -750,7 +752,7 @@ Private Sub 賞状印刷プレビュー定義()
     Dim sAry(2) As String
     sAry(0) = "しない"
     sAry(1) = "する"
-    Call DefineListValidation("大会印刷プレビュー", "$E$6", sAry)
+    Call DefineListValidation("大会印刷プレビュー", "$E$8", sAry)
     
 End Sub
 
@@ -765,12 +767,12 @@ Private Sub 組合せ方式定義(Optional sValue As String = "")
     Dim sAry(2) As String
     sAry(0) = "単純方式"
     sAry(1) = "混合分け方式"
-    Call DefineListValidation("大会組合せ方式", "$E$3", sAry)
+    Call DefineListValidation("大会組合せ方式", "$E$5", sAry)
     
 End Sub
 
 '
-' 組最小人数定
+' 組最小人数定義
 '
 ' sValue        IN      ダミー
 '
@@ -783,6 +785,39 @@ Private Sub 組最少人数定義(Optional sValue As String = "")
     Call DefineListValidation("大会組最少人数", "$E$2", sAry)
 
 End Sub
+
+'
+' レース定員定義
+'
+' sValue        IN      ダミー
+'
+Private Sub レース定員定義(Optional sValue As String = "")
+
+    Dim sAry(2) As String
+    sAry(0) = "7"
+    sAry(1) = "6"
+    sAry(2) = "5"
+    Call DefineListValidation("大会組レース定員", "$E$3", sAry)
+
+End Sub
+
+'
+' 最小レーン番号定義
+'
+' sValue        IN      ダミー
+'
+Private Sub 最小レーン番号定義(Optional sValue As String = "")
+
+    Dim sAry(2) As String
+    sAry(0) = "3"
+    sAry(1) = "2"
+    sAry(2) = "1"
+    Call DefineListValidation("大会組最小レーン番号", "$E$4", sAry)
+
+End Sub
+
+
+
 
 '
 ' シート非表示の設定
