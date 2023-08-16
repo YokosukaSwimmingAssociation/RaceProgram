@@ -61,9 +61,12 @@ Private Sub 記入票名前定義()
     ElseIf Range("大会名").Value = 室内記録会 Then
         Call DefineName("選手番号", "$B$14:$B$33,$B$62:$B$87,$B$108:$B$133,$B$154:$B$179,$B$200:$B$225,$B$246:$B$271")
         Call DefineName("リレー範囲", "$B$36:$B$39,$B$90:$B$93,$B$136:$B$139,$B$182:$B$185,$B$228:$B$231,$B$274:$B$277")
-    Else
+    ElseIf Range("大会名").Value = 選手権大会 Then
         Call DefineName("選手番号", "$B$14:$B$33,$B$62:$B$87,$B$108:$B$133,$B$154:$B$179,$B$200:$B$225,$B$246:$B$271")
         Call DefineName("リレー範囲", "$B$36:$B$39,$B$90:$B$93,$B$136:$B$139,$B$182:$B$185,$B$228:$B$231,$B$274:$B$277")
+    Else
+        Call DefineName("選手番号", "$B$13:$B$32,$B$60:$B$85,$B$105:$B$130,$B$150:$B$175,$B$195:$B$220,$B$240:$B$265")
+        Call DefineName("リレー範囲", "$B$35:$B$38,$B$88:$B$91,$B$133:$B$136,$B$178:$B$181,$B$223:$B$226,$B$268:$B$271")
     End If
 
     Call DefineName("選手性別列", "$C$12")
@@ -103,6 +106,16 @@ Private Sub 記入票名前定義()
         Call DefineName("リレー秒列", "$N$36")
         Call DefineName("リレーミリ秒列", "$P$36")
     
+        Call DefineName("表示種目番号列", "$AB$12")
+        Call DefineName("表示種目区分列", "$AC$12")
+        Call DefineName("表示種目性別列", "$AD$12")
+        Call DefineName("表示種目距離列", "$AE$12")
+        Call DefineName("表示種目名列", "$AF$12")
+        Call DefineName("表示区分列", "$AJ$12")
+        Call DefineName("表示性別列", "$AK$12")
+        Call DefineName("表示距離列", "$AL$12")
+        Call DefineName("表示検定列", "$AM$12")
+    
     ElseIf Range("大会名").Value = 市民大会 Then
         Call DefineName("種目一覧", "$G$12:$P$12")
         Call DefineName("種目距離", "$G$13:$P$13")
@@ -132,6 +145,16 @@ Private Sub 記入票名前定義()
         Call DefineName("リレー分列", "$L$75")
         Call DefineName("リレー秒列", "$N$75")
         Call DefineName("リレーミリ秒列", "$P$75")
+    
+        Call DefineName("表示種目番号列", "$AB$12")
+        Call DefineName("表示種目区分列", "$AC$12")
+        Call DefineName("表示種目性別列", "$AD$12")
+        Call DefineName("表示種目距離列", "$AE$12")
+        Call DefineName("表示種目名列", "$AF$12")
+        Call DefineName("表示区分列", "$AJ$12")
+        Call DefineName("表示性別列", "$AK$12")
+        Call DefineName("表示距離列", "$AL$12")
+        Call DefineName("表示検定列", "$AM$12")
     
     ElseIf Range("大会名").Value = 室内記録会 Then
         Call DefineName("種目一覧", "$G$12:$T$12")
@@ -170,6 +193,17 @@ Private Sub 記入票名前定義()
         Call DefineName("選手検定列", "$AB$12")
         Call DefineNameByColumns("選手検定列", "選手検定")
     
+        ' 室内記録会用に2列ずらす
+        Call DefineName("表示種目番号列", "$AD$12")
+        Call DefineName("表示種目区分列", "$AE$12")
+        Call DefineName("表示種目性別列", "$AF$12")
+        Call DefineName("表示種目距離列", "$AG$12")
+        Call DefineName("表示種目名列", "$AH$12")
+        Call DefineName("表示区分列", "$AN$12")
+        Call DefineName("表示性別列", "$AM$12")
+        Call DefineName("表示距離列", "$AN$12")
+        Call DefineName("表示検定列", "$AO$12")
+    
     Else
         ' 学童マスターズ大会
         Call DefineName("種目一覧", "$G$11:$O$11")
@@ -207,18 +241,18 @@ Private Sub 記入票名前定義()
         Call DefineName("リレー秒列", "$M$35")
         Call DefineName("リレーミリ秒列", "$O$35")
     
+        Call DefineName("表示種目番号列", "$AB$12")
+        Call DefineName("表示種目区分列", "$AC$12")
+        Call DefineName("表示種目性別列", "$AD$12")
+        Call DefineName("表示種目距離列", "$AE$12")
+        Call DefineName("表示種目名列", "$AF$12")
+        Call DefineName("表示区分列", "$AJ$12")
+        Call DefineName("表示性別列", "$AK$12")
+        Call DefineName("表示距離列", "$AL$12")
+        Call DefineName("表示検定列", "$AM$12")
+    
     End If
 
-    ' 室内記録会用に2列ずらす
-    Call DefineName("表示種目番号列", "$AD$12")
-    Call DefineName("表示種目区分列", "$AE$12")
-    Call DefineName("表示種目性別列", "$AF$12")
-    Call DefineName("表示種目距離列", "$AG$12")
-    Call DefineName("表示種目名列", "$AH$12")
-    Call DefineName("表示区分列", "$AN$12")
-    Call DefineName("表示性別列", "$AM$12")
-    Call DefineName("表示距離列", "$AN$12")
-    Call DefineName("表示検定列", "$AO$12")
 
     Call DefineName("リレー種目列", "$E$34")
     Call DefineName("リレー種目名列", "$F$34")
@@ -2169,7 +2203,7 @@ Private Sub 印刷範囲の設定()
         End With
     Else
         With ActiveSheet.PageSetup
-            .PrintArea = "$A$1:$X$265"
+            .PrintArea = "$A$1:$X$272"
             .FitToPagesWide = 1
         End With
     End If
