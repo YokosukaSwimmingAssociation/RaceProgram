@@ -152,15 +152,15 @@ Public Function GetRecordKey(sGameName As String, nProNo As Integer, sClass As S
     If sGameName = ‘IŽèŒ ‘å‰ï Then
         GetRecordKey = CStr(nProNo)
     ElseIf sGameName = Žs–¯‘å‰ï Then
-        GetRecordKey = Format(nProNo, "00") & "_" & Replace(STrimAll(sClass), "ˆê”Ê", "20‘ã")
+        GetRecordKey = Right("00" & CStr(nProNo), 2) & "_" & Replace(STrimAll(sClass), "ˆê”Ê", "20‘ã")
     Else
         Dim sMasterName As String
         sMasterName = GetMaster(sGameName)
         ' ‹æ•ª‚ðŽæ“¾
         If Trim(VLookupArea(nProNo, sMasterName, "Ží–Ú‹æ•ª")) = "" Then
-            GetRecordKey = CStr(nProNo) & "_" & sClass
+            GetRecordKey = Right("00" & CStr(nProNo), 2) & "_" & sClass
         Else
-            GetRecordKey = CStr(nProNo) & "_"
+            GetRecordKey = Right("00" & CStr(nProNo), 2) & "_"
         End If
     End If
 
