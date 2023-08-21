@@ -869,20 +869,3 @@ Public Sub 設定各種表示()
 End Sub
 
 
-'
-' モジュール読込み
-'
-Public Sub モジュール読込み()
-    Dim sPathName As String
-    sPathName = SelectDir()
-    Call ImportAll(ActiveWorkbook, sPathName)
-End Sub
-
-'
-' モジュールExport
-'
-Public Sub モジュール出力()
-    Dim sPathName As String
-    sPathName = SelectDir()
-    Call ExportAll(ActiveWorkbook, sPathName)
-End Sub
